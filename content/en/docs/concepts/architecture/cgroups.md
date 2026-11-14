@@ -38,7 +38,7 @@ cgroup v2 offers several improvements over cgroup v1, such as the following:
 
 Some Kubernetes features exclusively use cgroup v2 for enhanced resource
 management and isolation. For example, the
-[MemoryQoS](/blog/2021/11/26/qos-memory-resources/) feature improves memory QoS
+[MemoryQoS](/docs/concepts/workloads/pods/pod-qos/#memory-qos-with-cgroup-v2) feature improves memory QoS
 and relies on cgroup v2 primitives.
 
 
@@ -102,11 +102,23 @@ updated to newer versions that support cgroup v2. For example:
  Update these agents to versions that support cgroup v2.
 * If you run [cAdvisor](https://github.com/google/cadvisor) as a stand-alone
  DaemonSet for monitoring pods and containers, update it to v0.43.0 or later.
-* If you use JDK, prefer to use JDK 11.0.16 and later or JDK 15 and later, which [fully support cgroup v2](https://bugs.openjdk.org/browse/JDK-8230305).
+* If you deploy Java applications, prefer to use versions which fully support cgroup v2:
+    * [OpenJDK / HotSpot](https://bugs.openjdk.org/browse/JDK-8230305): jdk8u372, 11.0.16, 15 and later
+    * [IBM Semeru Runtimes](https://www.ibm.com/support/pages/apar/IJ46681): 8.0.382.0, 11.0.20.0, 17.0.8.0, and later
+    * [IBM Java](https://www.ibm.com/support/pages/apar/IJ46681): 8.0.8.6 and later
+* If you are using the [uber-go/automaxprocs](https://github.com/uber-go/automaxprocs) package, make sure
+  the version you use is v1.5.1 or higher.
+* If you deploy [Node.js](https://nodejs.org/) applications, prefer to use versions that detect cgroup v2
+  memory limits. Node.js reads cgroup v2 memory limits (through [libuv](https://libuv.org/))
+  starting with Node.js v20.3.0. The v18 release line does not reliably detect cgroup v2 memory limits.
+  Versions without this support may read the host's total memory instead of the
+  limit applied to the pod, which can lead to an incorrectly sized heap and out-of-memory (OOM)
+  terminations. On affected versions, set the heap size explicitly, for example with the
+  `--max-old-space-size` flag.
 
 ## Identify the cgroup version on Linux Nodes  {#check-cgroup-version}
 
-The cgroup version depends on on the Linux distribution being used and the
+The cgroup version depends on the Linux distribution being used and the
 default cgroup version configured on the OS. To check which cgroup version your
 distribution uses, run the `stat -fc %T /sys/fs/cgroup/` command on
 the node:
@@ -119,8 +131,18 @@ For cgroup v2, the output is `cgroup2fs`.
 
 For cgroup v1, the output is `tmpfs.`
 
+## Deprecation of cgroup v1
+
+{{< feature-state for_k8s_version="v1.35" state="deprecated" >}}
+
+Kubernetes has deprecated cgroup v1.
+Removal will follow [Kubernetes deprecation policy](/docs/reference/using-api/deprecation-policy/).
+
+Kubelet will no longer start on a cgroup v1 node by default.
+To disable this setting a cluster admin should set `failCgroupV1` to false in the [kubelet configuration file](/docs/tasks/administer-cluster/kubelet-config-file/).
+
 ## {{% heading "whatsnext" %}}
 
 - Learn more about [cgroups](https://man7.org/linux/man-pages/man7/cgroups.7.html)
-- Learn more about [container runtime](/docs/concepts/architecture/cri)
+- Learn more about [container runtime](/docs/concepts/containers/cri/)
 - Learn more about [cgroup drivers](/docs/setup/production-environment/container-runtimes#cgroup-drivers)

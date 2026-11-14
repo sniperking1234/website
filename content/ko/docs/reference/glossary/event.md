@@ -1,7 +1,6 @@
 ---
-title: 이벤트(Event)
+title: 이벤트 (원문, Event)
 id: event
-date: 2022-01-16
 full_link: /docs/reference/kubernetes-api/cluster-resources/event-v1/
 short_description: >
    클러스터 어딘가에서 발생한 이벤트에 대한 보고서이다. 일반적으로 시스템의 상태 변화를 나타낸다.
@@ -21,4 +20,4 @@ tags:
 
 이벤트는 유익(imformative)해야 하고, 최선을 다한(best-effort), 보완적(supplemental) 데이터로 취급되어야 한다.
 
-쿠버네티스에서, [감사(auditing)](/docs/tasks/debug/debug-cluster/audit/)는 다른 종류의 이벤트 레코드를 생성한다. (API 그룹 `audit.k8s.io`).
+쿠버네티스에서, [감사(auditing)](/ko/docs/tasks/debug/debug-cluster/audit/)는 다른 종류의 이벤트 레코드를 생성한다. (API 그룹 `audit.k8s.io`).

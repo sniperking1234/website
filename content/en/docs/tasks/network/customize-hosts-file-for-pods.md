@@ -13,8 +13,10 @@ min-kubernetes-server-version: 1.7
 
 Adding entries to a Pod's `/etc/hosts` file provides Pod-level override of hostname resolution when DNS and other options are not applicable. You can add these custom entries with the HostAliases field in PodSpec.
 
-Modification not using HostAliases is not suggested because the file is managed by the kubelet and can be overwritten on during Pod creation/restart.
-
+The Kubernetes project recommends modifying DNS configuration using the `hostAliases` field
+(part of the `.spec` for a Pod), and not by using an init container or other means to edit `/etc/hosts`
+directly.
+Change made in other ways may be overwritten by the kubelet during Pod creation or restart.
 
 <!-- steps -->
 
@@ -69,7 +71,7 @@ For example: to resolve `foo.local`, `bar.local` to `127.0.0.1` and `foo.remote`
 `bar.remote` to `10.1.2.3`, you can configure HostAliases for a Pod under
 `.spec.hostAliases`:
 
-{{< codenew file="service/networking/hostaliases-pod.yaml" >}}
+{{% code_sample file="service/networking/hostaliases-pod.yaml" %}}
 
 You can start a Pod with that configuration by running:
 

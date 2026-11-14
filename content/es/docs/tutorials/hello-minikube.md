@@ -2,12 +2,6 @@
 title: Hello Minikube
 content_type: tutorial
 weight: 5
-menu:
-  main:
-    title: "Get Started"
-    weight: 10
-    post: >
-      <p>¿Listo para poner manos a la obra? Construye un clúster sencillo de Kubernetes que ejecuta un Hola Mundo para Node.js</p>
 card:
   name: tutorials
   weight: 10
@@ -39,9 +33,9 @@ También se puede  seguir este tutorial si se ha instalado [Minikube localmente]
 
 Este tutorial provee una imagen de contenedor construida desde los siguientes archivos:
 
-{{< codenew language="js" file="minikube/server.js" >}}
+{{% code_sample language="js" file="minikube/server.js" %}}
 
-{{< codenew language="conf" file="minikube/Dockerfile" >}}
+{{% code_sample language="conf" file="minikube/Dockerfile" %}}
 
 Para más información sobre el comando `docker build`, lea la [documentación de Docker ](https://docs.docker.com/engine/reference/commandline/build/).
 
@@ -76,7 +70,7 @@ Un [*Deployment*](/docs/concepts/workloads/controllers/deployment/) en Kubernete
 1. Ejecutar el comando `kubectl create` para crear un Deployment que maneje un Pod. El Pod ejecuta un contenedor basado en la imagen proveida por Docker.
 
     ```shell
-    kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4
+    kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.53 -- /agnhost netexec --http-port=8080
     ```
 
 2. Ver el Deployment:

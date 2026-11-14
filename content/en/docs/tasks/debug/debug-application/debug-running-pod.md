@@ -25,7 +25,7 @@ This page explains how to debug Pods running (or crashing) on a Node.
 
 For this example we'll use a Deployment to create two pods, similar to the earlier example.
 
-{{< codenew file="application/nginx-with-request.yaml" >}}
+{{% code_sample file="application/nginx-with-request.yaml" %}}
 
 Create deployment by running following command:
 
@@ -119,15 +119,15 @@ Events:
 
 Here you can see configuration information about the container(s) and Pod (labels, resource requirements, etc.), as well as status information about the container(s) and Pod (state, readiness, restart count, events, etc.).
 
-The container state is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided -- here you can see that for a container in Running state, the system tells you when the container started.
+The container state is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided - here you can see that for a container in Running state, the system tells you when the container started.
 
 Ready tells you whether the container passed its last readiness probe. (In this case, the container does not have a readiness probe configured; the container is assumed to be ready if no readiness probe is configured.)
 
-Restart Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of 'always.'
+Restart Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of `Always`.
 
 Currently the only Condition associated with a Pod is the binary Ready condition, which indicates that the pod is able to service requests and should be added to the load balancing pools of all matching services.
 
-Lastly, you see a log of recent events related to your Pod. The system compresses multiple identical events by indicating the first and last time it was seen and the number of times it was seen. "From" indicates the component that is logging the event, "SubobjectPath" tells you which object (e.g. container within the pod) is being referred to, and "Reason" and "Message" tell you what happened.
+Lastly, you see a log of recent events related to your Pod. "From" indicates the component that is logging the event. "Reason" and "Message" tell you what happened.
 
 
 ## Example: debugging Pending Pods
@@ -205,7 +205,7 @@ kubectl get events --namespace=my-namespace
 
 To see events from all namespaces, you can use the `--all-namespaces` argument.
 
-In addition to `kubectl describe pod`, another way to get extra information about a pod (beyond what is provided by `kubectl get pod`) is to pass the `-o yaml` output format flag to `kubectl get pod`. This will give you, in YAML format, even more information than `kubectl describe pod`--essentially all of the information the system has about the Pod. Here you will see things like annotations (which are key-value metadata without the label restrictions, that is used internally by Kubernetes system components), restart policy, ports, and volumes.
+In addition to `kubectl describe pod`, another way to get extra information about a pod (beyond what is provided by `kubectl get pod`) is to pass the `-o yaml` output format flag to `kubectl get pod`. This will give you, in YAML format, even more information than `kubectl describe pod` - essentially all of the information the system has about the Pod. Here you will see things like annotations (which are key-value metadata without the label restrictions, that is used internally by Kubernetes system components), restart policy, ports, and volumes.
 
 ```shell
 kubectl get pod nginx-deployment-1006230814-6winp -o yaml
@@ -336,13 +336,13 @@ status:
 First, look at the logs of the affected container:
 
 ```shell
-kubectl logs ${POD_NAME} ${CONTAINER_NAME}
+kubectl logs ${POD_NAME} -c ${CONTAINER_NAME}
 ```
 
 If your container has previously crashed, you can access the previous container's crash log with:
 
 ```shell
-kubectl logs --previous ${POD_NAME} ${CONTAINER_NAME}
+kubectl logs ${POD_NAME} -c ${CONTAINER_NAME} --previous
 ```
 
 ## Debugging with container exec {#container-exec}
@@ -385,6 +385,76 @@ are useful for interactive troubleshooting when `kubectl exec` is insufficient
 because a container has crashed or a container image doesn't include debugging
 utilities, such as with [distroless images](
 https://github.com/GoogleContainerTools/distroless).
+
+### Permissions for ephemeral containers {#ephemeral-container-permissions}
+
+For security reasons, adding an ephemeral container to a running Pod uses the Pod's
+`ephemeralcontainers` subresource. At the API level this is an
+**update** request on `pods/ephemeralcontainers`. Just being authorized to **patch**
+a Pod does not allow users to add ephemeral containers to that Pod.
+
+The `pods/ephemeralcontainers` subresource is intentionally not part of the
+default `admin` and `edit`
+[user-facing ClusterRoles](/docs/reference/access-authn-authz/rbac/#user-facing-roles).
+For background on why, see
+[Ephemeral Containers: Access control](/docs/concepts/workloads/pods/ephemeral-containers/#access-control).
+
+If you run `kubectl debug` to add an ephemeral container without the required
+permission, you will see an error similar to:
+
+```
+Error from server (Forbidden): pods "example" is forbidden: User "alice" cannot
+patch resource "pods/ephemeralcontainers" in API group "" in the namespace "example-ns"
+```
+
+If you're managing cluster access and your cluster uses [Kubernetes RBAC](/docs/reference/access-authn-authz/rbac/), you can grant this permission in one of two ways.
+
+To extend the built-in `edit` and `admin` ClusterRoles cluster-wide, create an
+aggregated ClusterRole labeled for
+[ClusterRole aggregation](/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles).
+The `aggregate-to-edit` label is sufficient because the default `edit`
+ClusterRole itself aggregates into `admin`:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aggregate-ephemeralcontainers-edit
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+- apiGroups: [""]
+  resources: ["pods/ephemeralcontainers"]
+  verbs: ["patch", "update"]
+```
+
+To grant the permission only to specific users or groups (for example, a
+dedicated debugging or SRE group), create a narrower ClusterRole and bind it
+directly:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: debug-ephemeralcontainers
+rules:
+- apiGroups: [""]
+  resources: ["pods/ephemeralcontainers"]
+  verbs: ["patch", "update"]
+```
+
+{{< note >}}
+Ephemeral containers are evaluated by [Pod Security admission](/docs/concepts/security/pod-security-admission/)
+against the same [Pod Security Standards](/docs/concepts/security/pod-security-standards/)
+as regular containers. When granting permission to add ephemeral containers to
+Pods governed by the `baseline` or `restricted` policy, choose a matching
+[debugging profile](#debugging-profiles) such as `--profile=baseline` or
+`--profile=restricted` with `kubectl debug`.
+
+Any admission webhooks or admission policies in your cluster, that do not evaluate
+the `ephemeralContainers` field, may also need updating to intercept the
+`pods/ephemeralcontainers` resource and evaluate the `ephemeralContainers` field in a Pod's spec.
+{{< /note >}}
 
 ### Example debugging using ephemeral containers {#ephemeral-container-example}
 
@@ -631,11 +701,195 @@ When creating a debugging session on a node, keep in mind that:
 * The root filesystem of the Node will be mounted at `/host`.
 * The container runs in the host IPC, Network, and PID namespaces, although
   the pod isn't privileged, so reading some process information may fail,
-  and `chroot /host` will fail.
-* If you need a privileged pod, create it manually.
+  and `chroot /host` may fail.
+* If you need a privileged pod, create it manually or use the `--profile=sysadmin` flag.
 
 Don't forget to clean up the debugging Pod when you're finished with it:
 
 ```shell
 kubectl delete pod node-debugger-mynode-pdx84
+```
+
+### Capturing and analyzing Node/Pod traffic
+
+When debugging networking issues, capturing and analyzing network traffic from Nodes/Pods can provide valuable insights
+into connectivity problems, DNS resolution failures, or unexpected network behavior.
+
+You can use `kubectl debug` with the `--profile=sysadmin` flag to run network capture tools on a node.
+First, create a debugging session on the node where your Pod is running:
+
+```shell
+kubectl debug --profile=sysadmin node/${NODE_NAME} -it --image=ubuntu:latest
+```
+
+Once inside the debug container, install tcpdump and capture traffic on the node's network interfaces:
+
+```shell
+apt-get update && apt-get install -y tcpdump
+tcpdump -i any -n
+```
+
+{{< note >}}
+Don't forget to clean up the debugging Pod when you're finished with it:
+
+```shell
+kubectl delete pod node-debugger-mynode-pdx84
+```
+{{< /note >}}
+
+You can also capture traffic from a specific Pod:
+
+```shell
+kubectl debug --profile=sysadmin pod/${POD_NAME} -n ${NAMESPACE} -it --image=ubuntu:latest
+```
+
+And then perform the same `tcpdump` command inside the debug container to capture traffic from the Pod's network namespace.
+
+## Debugging a Pod or Node while applying a profile {#debugging-profiles}
+
+When using `kubectl debug` to debug a node via a debugging Pod, a Pod via an ephemeral container, 
+or a copied Pod, you can apply a profile to them.
+By applying a profile, specific properties such as [securityContext](/docs/tasks/configure-pod-container/security-context/)
+are set, allowing for adaptation to various scenarios.
+There are two types of profiles, static profile and custom profile.
+
+### Applying a Static Profile {#static-profile}
+
+A static profile is a set of predefined properties, and you can apply them using the `--profile` flag.
+The available profiles are as follows:
+
+| Profile      | Description                                                     |
+| ------------ | --------------------------------------------------------------- |
+| legacy       | A set of properties backwards compatibility with 1.22 behavior |
+| general      | A reasonable set of generic properties for each debugging journey |
+| baseline     | A set of properties compatible with [PodSecurityStandard baseline policy](/docs/concepts/security/pod-security-standards/#baseline) |
+| restricted   | A set of properties compatible with [PodSecurityStandard restricted policy](/docs/concepts/security/pod-security-standards/#restricted) |
+| netadmin     | A set of properties including Network Administrator privileges |
+| sysadmin     | A set of properties including System Administrator (root) privileges |
+
+
+{{< note >}}
+If you don't specify `--profile`, the `legacy` profile is used by default, but it is planned to be deprecated in the near future.
+So it is recommended to use other profiles such as `general`.
+{{< /note >}}
+
+
+Assume that you create a Pod and debug it.
+First, create a Pod named `myapp` as an example:
+
+```shell
+kubectl run myapp --image=busybox:1.28 --restart=Never -- sleep 1d
+```
+
+Then, debug the Pod using an ephemeral container.
+If the ephemeral container needs to have privilege, you can use the `sysadmin` profile:
+
+```shell
+kubectl debug -it myapp --image=busybox:1.28 --target=myapp --profile=sysadmin
+```
+
+```
+Targeting container "myapp". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+Defaulting debug container name to debugger-6kg4x.
+If you don't see a command prompt, try pressing enter.
+/ #
+```
+
+Check the capabilities of the ephemeral container process by running the following command inside the container:
+
+```shell
+/ # grep Cap /proc/$$/status
+```
+
+```
+...
+CapPrm:	000001ffffffffff
+CapEff:	000001ffffffffff
+...
+```
+
+This means the container process is granted full capabilities as a privileged container by applying `sysadmin` profile.
+See more details about [capabilities](/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container).
+
+You can also check that the ephemeral container was created as a privileged container:
+
+```shell
+kubectl get pod myapp -o jsonpath='{.spec.ephemeralContainers[0].securityContext}'
+```
+
+```
+{"privileged":true}
+```
+
+Clean up the Pod when you're finished with it:
+
+```shell
+kubectl delete pod myapp
+```
+
+### Applying Custom Profile {#custom-profile}
+
+{{< feature-state for_k8s_version="v1.32" state="stable" >}}
+
+You can define a partial container spec for debugging as a custom profile in either YAML or JSON format, 
+and apply it using the `--custom` flag.
+
+{{< note >}}
+Custom profile only supports the modification of the container spec, 
+but modifications to `name`, `image`, `command`, `lifecycle` and `volumeDevices` fields of the container spec 
+are not allowed.
+It does not support the modification of the Pod spec.
+{{< /note >}}
+
+Create a Pod named myapp as an example:
+
+```shell
+kubectl run myapp --image=busybox:1.28 --restart=Never -- sleep 1d
+```
+
+Create a custom profile in YAML or JSON format.
+Here, create a YAML format file named `custom-profile.yaml`:
+
+```yaml
+env:
+- name: ENV_VAR_1
+  value: value_1
+- name: ENV_VAR_2
+  value: value_2
+securityContext:
+  capabilities:
+    add:
+    - NET_ADMIN
+    - SYS_TIME
+
+```
+
+Run this command to debug the Pod using an ephemeral container with the custom profile:
+
+```shell
+kubectl debug -it myapp --image=busybox:1.28 --target=myapp --profile=general --custom=custom-profile.yaml
+```
+
+You can check that the ephemeral container has been added to the target Pod with the custom profile applied:
+
+```shell
+kubectl get pod myapp -o jsonpath='{.spec.ephemeralContainers[0].env}'
+```
+
+```
+[{"name":"ENV_VAR_1","value":"value_1"},{"name":"ENV_VAR_2","value":"value_2"}]
+```
+
+```shell
+kubectl get pod myapp -o jsonpath='{.spec.ephemeralContainers[0].securityContext}'
+```
+
+```
+{"capabilities":{"add":["NET_ADMIN","SYS_TIME"]}}
+```
+
+Clean up the Pod when you're finished with it:
+
+```shell
+kubectl delete pod myapp
 ```

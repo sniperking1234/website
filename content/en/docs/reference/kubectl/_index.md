@@ -1,10 +1,11 @@
 ---
 title: Command line tool (kubectl)
 content_type: reference
-weight: 60
+weight: 110
 no_list: true
 card:
   name: reference
+  title: kubectl command line tool
   weight: 20
 ---
 
@@ -20,11 +21,13 @@ files by setting the `KUBECONFIG` environment variable or by setting the
 
 This overview covers `kubectl` syntax, describes the command operations, and provides common examples.
 For details about each command, including all the supported flags and subcommands, see the
-[kubectl](/docs/reference/generated/kubectl/kubectl-commands/) reference documentation.
+[kubectl](/docs/reference/kubectl/generated/kubectl/) reference documentation.
 
+For an overview, see [The kubectl command-line tool](/docs/concepts/overview/kubectl/).
 For installation instructions, see [Installing kubectl](/docs/tasks/tools/#kubectl);
-for a quick guide, see the [cheat sheet](/docs/reference/kubectl/cheatsheet/).
-If you're used to using the `docker` command-line tool, [`kubectl` for Docker Users](/docs/reference/kubectl/docker-cli-to-kubectl/) explains some equivalent commands for Kubernetes.
+for a quick guide, see the [cheat sheet](/docs/reference/kubectl/quick-reference/).
+If you're used to using the `docker` command-line tool,
+[`kubectl` for Docker Users](/docs/reference/kubectl/docker-cli-to-kubectl/) explains some equivalent commands for Kubernetes.
 
 <!-- body -->
 
@@ -38,37 +41,41 @@ kubectl [command] [TYPE] [NAME] [flags]
 
 where `command`, `TYPE`, `NAME`, and `flags` are:
 
-* `command`: Specifies the operation that you want to perform on one or more resources, 
-for example `create`, `get`, `describe`, `delete`.
+* `command`: Specifies the operation that you want to perform on one or more resources,
+  for example `create`, `get`, `describe`, `delete`.
 
 * `TYPE`: Specifies the [resource type](#resource-types). Resource types are case-insensitive and
   you can specify the singular, plural, or abbreviated forms.
   For example, the following commands produce the same output:
 
-   ```shell
-   kubectl get pod pod1
-   kubectl get pods pod1
-   kubectl get po pod1
-   ```
+  ```shell
+  kubectl get pod pod1
+  kubectl get pods pod1
+  kubectl get po pod1
+  ```
 
-* `NAME`: Specifies the name of the resource. Names are case-sensitive. If the name is omitted, details for all resources are displayed, for example `kubectl get pods`.
+* `NAME`: Specifies the name of the resource. Names are case-sensitive. If the name is omitted,
+  details for all resources are displayed, for example `kubectl get pods`.
 
-   When performing an operation on multiple resources, you can specify each resource by type and name or specify one or more files:
+  When performing an operation on multiple resources, you can specify each resource by
+  type and name or specify one or more files:
 
-   * To specify resources by type and name:
+  * To specify resources by type and name:
 
-      * To group resources if they are all the same type:  `TYPE1 name1 name2 name<#>`.<br/>
+    * To group resources if they are all the same type:  `TYPE1 name1 name2 name<#>`.<br/>
       Example: `kubectl get pod example-pod1 example-pod2`
 
-      * To specify multiple resource types individually:  `TYPE1/name1 TYPE1/name2 TYPE2/name3 TYPE<#>/name<#>`.<br/>
+    * To specify multiple resource types individually:  `TYPE1/name1 TYPE1/name2 TYPE2/name3 TYPE<#>/name<#>`.<br/>
       Example: `kubectl get pod/example-pod1 replicationcontroller/example-rc1`
 
-   * To specify resources with one or more files:  `-f file1 -f file2 -f file<#>`
+  * To specify resources with one or more files:  `-f file1 -f file2 -f file<#>`
 
-      * [Use YAML rather than JSON](/docs/concepts/configuration/overview/#general-configuration-tips) since YAML tends to be more user-friendly, especially for configuration files.<br/>
-     Example: `kubectl get -f ./pod.yaml`
+    * Use YAML rather than JSON
+      since YAML tends to be more user-friendly, especially for configuration files.<br/>
+      Example: `kubectl get -f ./pod.yaml`
 
-* `flags`: Specifies optional flags. For example, you can use the `-s` or `--server` flags to specify the address and port of the Kubernetes API server.<br/>
+* `flags`: Specifies optional flags. For example, you can use the `-s` or `--server` flags
+  to specify the address and port of the Kubernetes API server.<br/>
 
 {{< caution >}}
 Flags that you specify from the command line override default values and any corresponding environment variables.
@@ -78,19 +85,29 @@ If you need help, run `kubectl help` from the terminal window.
 
 ## In-cluster authentication and namespace overrides
 
-By default `kubectl` will first determine if it is running within a pod, and thus in a cluster. It starts by checking for the `KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT` environment variables and the existence of a service account token file at `/var/run/secrets/kubernetes.io/serviceaccount/token`. If all three are found in-cluster authentication is assumed.
+By default `kubectl` will first determine if it is running within a pod, and thus in a cluster.
+It starts by checking for the `KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT` environment
+variables and the existence of a service account token file at `/var/run/secrets/kubernetes.io/serviceaccount/token`.
+If all three are found in-cluster authentication is assumed.
 
-To maintain backwards compatibility, if the `POD_NAMESPACE` environment variable is set during in-cluster authentication it will override the default namespace from the service account token. Any manifests or tools relying on namespace defaulting will be affected by this.
+To maintain backwards compatibility, if the `POD_NAMESPACE` environment variable is set
+during in-cluster authentication it will override the default namespace from the
+service account token. Any manifests or tools relying on namespace defaulting will be affected by this.
 
 **`POD_NAMESPACE` environment variable**
 
-If the `POD_NAMESPACE` environment variable is set, cli operations on namespaced resources will default to the variable value. For example, if the variable is set to `seattle`, `kubectl get pods` would return pods in the `seattle` namespace. This is because pods are a namespaced resource, and no namespace was provided in the command. Review the output of `kubectl api-resources` to determine if a resource is namespaced. 
+If the `POD_NAMESPACE` environment variable is set, cli operations on namespaced resources
+will default to the variable value. For example, if the variable is set to `seattle`,
+`kubectl get pods` would return pods in the `seattle` namespace. This is because pods are
+a namespaced resource, and no namespace was provided in the command. Review the output
+of `kubectl api-resources` to determine if a resource is namespaced.
 
-Explicit use of `--namespace <value>` overrides this behavior. 
+Explicit use of `--namespace <value>` overrides this behavior.
 
 **How kubectl handles ServiceAccount tokens**
 
 If:
+
 * there is Kubernetes service account token file mounted at
   `/var/run/secrets/kubernetes.io/serviceaccount/token`, and
 * the `KUBERNETES_SERVICE_HOST` environment variable is set, and
@@ -122,7 +139,7 @@ Operation       | Syntax    |       Description
 `apply`            | `kubectl apply -f FILENAME [flags]`| Apply a configuration change to a resource from a file or stdin.
 `attach`        | `kubectl attach POD -c CONTAINER [-i] [-t] [flags]` | Attach to a running container either to view the output stream or interact with the container (stdin).
 `auth`    | `kubectl auth [flags] [options]` | Inspect authorization.
-`autoscale`    | <code>kubectl autoscale (-f FILENAME &#124; TYPE NAME &#124; TYPE/NAME) [--min=MINPODS] --max=MAXPODS [--cpu-percent=CPU] [flags]</code> | Automatically scale the set of pods that are managed by a replication controller.
+`autoscale`    | <code>kubectl autoscale (-f FILENAME &#124; TYPE NAME &#124; TYPE/NAME) [--min=MINPODS] --max=MAXPODS [--cpu=CPU] [flags]</code> | Automatically scale the set of pods that are managed by a replication controller.
 `certificate`    | `kubectl certificate SUBCOMMAND [options]` | Modify certificate resources.
 `cluster-info`    | `kubectl cluster-info [flags]` | Display endpoint information about the master and services in the cluster.
 `completion`    | `kubectl completion SHELL [options]` | Output shell completion code for the specified shell (bash or zsh).
@@ -136,8 +153,9 @@ Operation       | Syntax    |       Description
 `diff`        | `kubectl diff -f FILENAME [flags]`| Diff file or stdin against live configuration.
 `drain`    | `kubectl drain NODE [options]` | Drain node in preparation for maintenance.
 `edit`        | <code>kubectl edit (-f FILENAME &#124; TYPE NAME &#124; TYPE/NAME) [flags]</code> | Edit and update the definition of one or more resources on the server by using the default editor.
+`events`      | `kubectl events` | List events
 `exec`        | `kubectl exec POD [-c CONTAINER] [-i] [-t] [flags] [-- COMMAND [args...]]` | Execute a command against a container in a pod.
-`explain`    | `kubectl explain  [--recursive=false] [flags]` | Get documentation of various resources. For instance pods, nodes, services, etc.
+`explain`    | `kubectl explain TYPE [--recursive=false] [flags]` | Get documentation of various resources. For instance pods, nodes, services, etc.
 `expose`        | <code>kubectl expose (-f FILENAME &#124; TYPE NAME &#124; TYPE/NAME) [--port=port] [--protocol=TCP&#124;UDP] [--target-port=number-or-name] [--name=name] [--external-ip=external-ip-of-service] [--type=type] [flags]</code> | Expose a replication controller, service, or pod as a new Kubernetes service.
 `get`        | <code>kubectl get (-f FILENAME &#124; TYPE [NAME &#124; /NAME &#124; -l label]) [--watch] [--sort-by=FIELD] [[-o &#124; --output]=OUTPUT_FORMAT] [flags]</code> | List one or more resources.
 `kustomize`    | `kubectl kustomize <dir> [flags] [options]` | List a set of API resources generated from instructions in a kustomization.yaml file. The argument must be the path to the directory containing the file, or a git repository URL with a path suffix specifying same with respect to the repository root.
@@ -154,7 +172,7 @@ Operation       | Syntax    |       Description
 `scale`        | <code>kubectl scale (-f FILENAME &#124; TYPE NAME &#124; TYPE/NAME) --replicas=COUNT [--resource-version=version] [--current-replicas=count] [flags]</code> | Update the size of the specified replication controller.
 `set`    | `kubectl set SUBCOMMAND [options]` | Configure application resources.
 `taint`    | `kubectl taint NODE NAME KEY_1=VAL_1:TAINT_EFFECT_1 ... KEY_N=VAL_N:TAINT_EFFECT_N [options]` | Update the taints on one or more nodes.
-`top`    | `kubectl top [flags] [options]` | Display Resource (CPU/Memory/Storage) usage.
+`top`    | <code>kubectl top (POD &#124; NODE) [flags] [options]</code> | Display Resource (CPU/Memory/Storage) usage of pod or node.
 `uncordon`    | `kubectl uncordon NODE [options]` | Mark node as schedulable.
 `version`        | `kubectl version [--client] [flags]` | Display the Kubernetes version running on the client and server.
 `wait`    | <code>kubectl wait ([-f FILENAME] &#124; resource.group/resource.name &#124; resource.group [(-l label &#124; --all)]) [--for=delete&#124;--for condition=available] [options]</code> | Experimental: Wait for a specific condition on one or many resources.
@@ -228,11 +246,15 @@ The following table includes a list of all the supported resource types and thei
 
 ## Output options
 
-Use the following sections for information about how you can format or sort the output of certain commands. For details about which commands support the various output options, see the [kubectl](/docs/reference/kubectl/kubectl/) reference documentation.
+Use the following sections for information about how you can format or sort the output
+of certain commands. For details about which commands support the various output options,
+see the [kubectl](/docs/reference/kubectl/kubectl/) reference documentation.
 
 ### Formatting output
 
-The default output format for all `kubectl` commands is the human readable plain-text format. To output details to your terminal window in a specific format, you can add either the `-o` or `--output` flags to a supported `kubectl` command.
+The default output format for all `kubectl` commands is the human readable plain-text format.
+To output details to your terminal window in a specific format, you can add either the `-o`
+or `--output` flags to a supported `kubectl` command.
 
 #### Syntax
 
@@ -249,9 +271,10 @@ Output format | Description
 `-o json`     | Output a JSON formatted API object.
 `-o jsonpath=<template>` | Print the fields defined in a [jsonpath](/docs/reference/kubectl/jsonpath/) expression.
 `-o jsonpath-file=<filename>` | Print the fields defined by the [jsonpath](/docs/reference/kubectl/jsonpath/) expression in the `<filename>` file.
+`-o kyaml`    | Output a [KYAML](/docs/reference/encodings/kyaml/) formatted API object.
 `-o name`     | Print only the resource name and nothing else.
 `-o wide`     | Output in the plain-text format with any additional information. For pods, the node name is included.
-`-o yaml`     | Output a YAML formatted API object.
+`-o yaml`     | Output a YAML formatted API object. KYAML is a Kubernetes-specific dialect of YAML, and can be parsed as YAML.
 
 ##### Example
 
@@ -322,7 +345,9 @@ pod-name   1m
 
 ### Sorting list objects
 
-To output objects to a sorted list in your terminal window, you can add the `--sort-by` flag to a supported `kubectl` command. Sort your objects by specifying any numeric or string field with the `--sort-by` flag. To specify a field, use a [jsonpath](/docs/reference/kubectl/jsonpath/) expression.
+To output objects to a sorted list in your terminal window, you can add the `--sort-by` flag
+to a supported `kubectl` command. Sort your objects by specifying any numeric or string field
+with the `--sort-by` flag. To specify a field, use a [jsonpath](/docs/reference/kubectl/jsonpath/) expression.
 
 #### Syntax
 
@@ -506,10 +531,12 @@ The following kubectl-compatible plugins are available:
 
 `kubectl plugin list` also warns you about plugins that are not
 executable, or that are shadowed by other plugins; for example:
+
 ```shell
 sudo chmod -x /usr/local/bin/kubectl-foo # remove execute permission
 kubectl plugin list
 ```
+
 ```
 The following kubectl-compatible plugins are available:
 
@@ -527,8 +554,10 @@ of the existing kubectl commands:
 ```shell
 cat ./kubectl-whoami
 ```
+
 The next few examples assume that you already made `kubectl-whoami` have
 the following contents:
+
 ```shell
 #!/bin/bash
 
@@ -555,7 +584,7 @@ Current user: plugins-user
 
 * Read the `kubectl` reference documentation:
   * the kubectl [command reference](/docs/reference/kubectl/kubectl/)
-  * the [command line arguments](/docs/reference/generated/kubectl/kubectl-commands/) reference
+  * the [command line arguments](/docs/reference/kubectl/generated/kubectl/) reference
 * Learn about [`kubectl` usage conventions](/docs/reference/kubectl/conventions/)
 * Read about [JSONPath support](/docs/reference/kubectl/jsonpath/) in kubectl
 * Read about how to [extend kubectl with plugins](/docs/tasks/extend-kubectl/kubectl-plugins)

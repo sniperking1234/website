@@ -2,12 +2,12 @@
 reviewers:
 - erictune
 title: Pods
+api_metadata:
+- apiVersion: "v1"
+  kind: "Pod"
 content_type: concept
 weight: 10
 no_list: true
-card:
-  name: concepts
-  weight: 60
 ---
 
 <!-- overview -->
@@ -22,20 +22,18 @@ containers which are relatively tightly coupled.
 In non-cloud contexts, applications executed on the same physical or virtual machine are analogous to cloud applications executed on the same logical host.
 
 As well as application containers, a Pod can contain
-[init containers](/docs/concepts/workloads/pods/init-containers/) that run
+{{< glossary_tooltip text="init containers" term_id="init-container" >}} that run
 during Pod startup. You can also inject
-[ephemeral containers](/docs/concepts/workloads/pods/ephemeral-containers/)
-for debugging if your cluster offers this.
+{{< glossary_tooltip text="ephemeral containers" term_id="ephemeral-container" >}}
+for debugging a running Pod.
 
 <!-- body -->
 
 ## What is a Pod?
 
 {{< note >}}
-While Kubernetes supports more
-{{< glossary_tooltip text="container runtimes" term_id="container-runtime" >}}
-than just Docker, [Docker](https://www.docker.com/) is the most commonly known
-runtime, and it helps to describe Pods using some terminology from Docker.
+You need to install a [container runtime](/docs/setup/production-environment/container-runtimes/)
+into each node in the cluster so that Pods can run there.
 {{< /note >}}
 
 The shared context of a Pod is a set of Linux namespaces, cgroups, and
@@ -44,11 +42,31 @@ further sub-isolations applied.
 
 A Pod is similar to a set of containers with shared namespaces and shared filesystem volumes.
 
+Pods in a Kubernetes cluster are used in two main ways:
+
+* **Pods that run a single container**. The "one-container-per-Pod" model is the
+  most common Kubernetes use case; in this case, you can think of a Pod as a
+  wrapper around a single container; Kubernetes manages Pods rather than managing
+  the containers directly.
+* **Pods that run multiple containers that need to work together**. A Pod can
+  encapsulate an application composed of
+  [multiple co-located containers](#how-pods-manage-multiple-containers) that are
+  tightly coupled and need to share resources. These co-located containers
+  form a single cohesive unit.
+
+  Grouping multiple co-located and co-managed containers in a single Pod is a
+  relatively advanced use case. You should use this pattern only in specific
+  instances in which your containers are tightly coupled.
+
+  You don't need to run multiple containers to provide replication (for resilience
+  or capacity); if you need multiple replicas, see
+  [Workload management](/docs/concepts/workloads/controllers/).
+
 ## Using Pods
 
 The following is an example of a Pod which consists of a container running the image `nginx:1.14.2`.
 
-{{< codenew file="pods/simple-pod.yaml" >}}
+{{% code_sample file="pods/simple-pod.yaml" %}}
 
 To create the Pod shown above, run the following command:
 ```shell
@@ -66,26 +84,6 @@ term_id="deployment" >}} or {{< glossary_tooltip text="Job" term_id="job" >}}.
 If your Pods need to track state, consider the
 {{< glossary_tooltip text="StatefulSet" term_id="statefulset" >}} resource.
 
-Pods in a Kubernetes cluster are used in two main ways:
-
-* **Pods that run a single container**. The "one-container-per-Pod" model is the
-  most common Kubernetes use case; in this case, you can think of a Pod as a
-  wrapper around a single container; Kubernetes manages Pods rather than managing
-  the containers directly.
-* **Pods that run multiple containers that need to work together**. A Pod can
-  encapsulate an application composed of multiple co-located containers that are
-  tightly coupled and need to share resources. These co-located containers
-  form a single cohesive unit of service—for example, one container serving data
-  stored in a shared volume to the public, while a separate _sidecar_ container
-  refreshes or updates those files.
-  The Pod wraps these containers, storage resources, and an ephemeral network
-  identity together as a single unit.
-
-  {{< note >}}
-  Grouping multiple co-located and co-managed containers in a single Pod is a
-  relatively advanced use case. You should use this pattern only in specific
-  instances in which your containers are tightly coupled.
-  {{< /note >}}
 
 Each Pod is meant to run a single instance of a given application. If you want to
 scale your application horizontally (to provide more overall resources by running
@@ -98,24 +96,9 @@ See [Pods and controllers](#pods-and-controllers) for more information on how
 Kubernetes uses workload resources, and their controllers, to implement application
 scaling and auto-healing.
 
-### How Pods manage multiple containers
-
-Pods are designed to support multiple cooperating processes (as containers) that form
-a cohesive unit of service. The containers in a Pod are automatically co-located and
-co-scheduled on the same physical or virtual machine in the cluster. The containers
-can share resources and dependencies, communicate with one another, and coordinate
-when and how they are terminated.
-
-For example, you might have a container that
-acts as a web server for files in a shared volume, and a separate "sidecar" container
-that updates those files from a remote source, as in the following diagram:
-
-{{< figure src="/images/docs/pod.svg" alt="Pod creation diagram" class="diagram-medium" >}}
-
-Some Pods have {{< glossary_tooltip text="init containers" term_id="init-container" >}} as well as {{< glossary_tooltip text="app containers" term_id="app-container" >}}. Init containers run and complete before the app containers are started.
-
 Pods natively provide two kinds of shared resources for their constituent containers:
 [networking](#pod-networking) and [storage](#pod-storage).
+
 
 ## Working with Pods
 
@@ -133,25 +116,31 @@ is not a process, but an environment for running container(s). A Pod persists un
 it is deleted.
 {{< /note >}}
 
-When you create the manifest for a Pod object, make sure the name specified is a valid
-[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
+The name of a Pod must be a valid
+[DNS subdomain](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)
+value, but this can produce unexpected results for the Pod hostname.  For best compatibility,
+the name should follow the more restrictive rules for a
+[DNS label](/docs/concepts/overview/working-with-objects/names#dns-label-names).
 
 ### Pod OS
 
 {{< feature-state state="stable" for_k8s_version="v1.25" >}}
 
-You should set the `.spec.os.name` field to either `windows` or `linux` to indicate the OS on
-which you want the pod to run. These two are the only operating systems supported for now by 
-Kubernetes. In future, this list may be expanded.
+You should set the `.spec.os.name` field to either `windows` or `linux` to indicate the
+operating system that the containers in that Pod require. These two are the only operating
+systems supported for now by Kubernetes. In the future, this list may be expanded.
 
-In Kubernetes v{{< skew currentVersion >}}, the value you set for this field has no
-effect on {{< glossary_tooltip text="scheduling" term_id="kube-scheduler" >}} of the pods.
-Setting the `.spec.os.name` helps to identify the pod OS
-authoratitively and is used for validation. The kubelet refuses to run a Pod where you have
-specified a Pod OS, if this isn't the same as the operating system for the node where
-that kubelet is running.
-The [Pod security standards](/docs/concepts/security/pod-security-standards/) also use this
-field to avoid enforcing policies that aren't relevant to that operating system.
+The kubelet refuses to run a Pod if the value of `.spec.os.name` does not match the
+operating system of the node. However, in Kubernetes
+v{{< skew currentVersion >}}, the value of `.spec.os.name` does not affect
+how the {{< glossary_tooltip text="kube-scheduler" term_id="kube-scheduler" >}}
+picks a node for the Pod to run on. In any cluster where there is more than one operating system for
+running nodes, you should set the
+[kubernetes.io/os](/docs/reference/labels-annotations-taints/#kubernetes-io-os)
+label correctly on each node, and define pods with a `nodeSelector` based on the operating system
+label. If you do not specify an OS-based `nodeSelector`, the kube-scheduler may assign the Pod
+to a node whose OS is unsuitable for its containers.
+The [Pod security standards](/docs/concepts/security/pod-security-standards/) also use the `.spec.os.name` field to avoid enforcing policies that aren't relevant to the operating system.
 
 ### Pods and controllers
 
@@ -167,6 +156,18 @@ Here are some examples of workload resources that manage one or more Pods:
 * {{< glossary_tooltip text="StatefulSet" term_id="statefulset" >}}
 * {{< glossary_tooltip text="DaemonSet" term_id="daemonset" >}}
 
+### Specifying a scheduling group
+
+{{< feature-state feature_gate_name="GenericWorkload" >}}
+
+By default, Kubernetes schedules every Pod individually. However, some tightly-coupled applications
+need a group of Pods to be scheduled simultaneously to function correctly.
+
+You can link a Pod to a [PodGroup](/docs/concepts/workloads/podgroup-api/) using the
+[scheduling group](/docs/concepts/workloads/pods/scheduling-group/) field
+(`spec.schedulingGroup`). This tells the `kube-scheduler` that the `Pod` belongs to a specific
+group, enabling it to apply group-level coordinated placement decisions for the entire group at once.
+
 ### Pod templates
 
 Controllers for {{< glossary_tooltip text="workload" term_id="workload" >}} resources create Pods
@@ -180,6 +181,10 @@ PodTemplates are specifications for creating Pods, and are included in workload 
 Each controller for a workload resource uses the `PodTemplate` inside the workload
 object to make actual Pods. The `PodTemplate` is part of the desired state of whatever
 workload resource you used to run your app.
+
+When you create a Pod, you can include
+[environment variables](/docs/tasks/inject-data-application/define-environment-variable-container/)
+in the Pod template for the containers that run in the Pod.
 
 The sample below is a manifest for a simple Job with a `template` that starts one
 container. The container in that Pod prints a message then pauses.
@@ -228,26 +233,88 @@ template instead of updating or patching the existing Pods.
 
 Kubernetes doesn't prevent you from managing Pods directly. It is possible to
 update some fields of a running Pod, in place. However, Pod update operations
-like 
+like
 [`patch`](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#patch-pod-v1-core), and
 [`replace`](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#replace-pod-v1-core)
 have some limitations:
 
 - Most of the metadata about a Pod is immutable. For example, you cannot
-  change the `namespace`, `name`, `uid`, or `creationTimestamp` fields;
-  the `generation` field is unique. It only accepts updates that increment the
-  field's current value.
+  change the `namespace`, `name`, `uid`, or `creationTimestamp` fields.
+
 - If the `metadata.deletionTimestamp` is set, no new entry can be added to the
   `metadata.finalizers` list.
 - Pod updates may not change fields other than `spec.containers[*].image`,
-  `spec.initContainers[*].image`, `spec.activeDeadlineSeconds` or
-  `spec.tolerations`. For `spec.tolerations`, you can only add new entries.
+  `spec.initContainers[*].image`, `spec.activeDeadlineSeconds`, `spec.terminationGracePeriodSeconds`,
+  `spec.tolerations` or `spec.schedulingGates`. For `spec.tolerations`, you can only add new entries.
 - When updating the `spec.activeDeadlineSeconds` field, two types of updates
   are allowed:
 
-  1. setting the unassigned field to a positive number; 
+  1. setting the unassigned field to a positive number;
   1. updating the field from a positive number to a smaller, non-negative
      number.
+
+### Pod subresources
+
+The above update rules apply to regular pod updates, but other pod fields can be updated through _subresources_.
+
+- **Resize:** The `resize` subresource allows container resources (`spec.containers[*].resources`) to be updated.
+  See [Resize Container Resources](/docs/tasks/configure-pod-container/resize-container-resources/) for more details.
+- **Ephemeral Containers:** The `ephemeralContainers` subresource allows
+  {{< glossary_tooltip text="ephemeral containers" term_id="ephemeral-container" >}}
+  to be added to a Pod.
+  See [Ephemeral Containers](/docs/concepts/workloads/pods/ephemeral-containers/) for more details.
+- **Status:** The `status` subresource allows the pod status to be updated.
+  This is typically only used by the Kubelet and other system controllers.
+- **Binding:** The `binding` subresource allows setting the pod's `spec.nodeName` via a `Binding` request.
+  This is typically only used by the {{< glossary_tooltip text="scheduler" term_id="kube-scheduler" >}}.
+
+### Pod generation
+
+- The `metadata.generation` field is unique. It will be automatically set by the
+  system such that new pods have a `metadata.generation` of 1, and every update to
+  mutable fields in the pod's spec will increment the `metadata.generation` by 1.
+
+{{< feature-state feature_gate_name="PodObservedGenerationTracking" >}}
+
+- `observedGeneration` is a field that is captured in the `status` section of the Pod
+  object. The Kubelet will set `status.observedGeneration`
+  to track the pod state to the current pod status. The pod's `status.observedGeneration` will reflect the
+  `metadata.generation` of the pod at the point that the pod status is being reported.
+
+{{< note >}}
+The `status.observedGeneration` field is managed by the kubelet and external controllers should **not** modify this field.
+{{< /note >}}
+
+Different status fields may either be associated with the `metadata.generation` of the current sync loop, or with the
+`metadata.generation` of the previous sync loop. The key distinction is whether a change in the `spec` is reflected
+directly in the `status` or is an indirect result of a running process.
+
+#### Direct Status Updates
+
+For status fields where the allocated spec is directly reflected, the `observedGeneration` will
+be associated with the current `metadata.generation` (Generation N).
+
+This behavior applies to:
+
+- **Resize Status**: The status of a resource resize operation.
+- **Allocated Resources**: The resources allocated to the Pod after a resize.
+- **Ephemeral Containers**: When a new ephemeral container is added, and it is in `Waiting` state.
+
+#### Indirect Status Updates
+
+For status fields that are an indirect result of running the spec, the `observedGeneration` will be associated
+with the `metadata.generation` of the previous sync loop (Generation N-1).
+
+This behavior applies to:
+
+- **Container Image**: The `ContainerStatus.ImageID` reflects the image from the previous generation until the new image
+  is pulled and the container is updated.
+- **Actual Resources**: During an in-progress resize, the actual resources in use still belong to the previous generation's
+  request.
+- **Container state**: During an in-progress resize, with require restart policy reflects the previous generation's
+  request.
+- **activeDeadlineSeconds** & **terminationGracePeriodSeconds** & **deletionTimestamp**: The effects of these fields on the
+  Pod's status are a result of the previously observed specification.
 
 ## Resource sharing and communication
 
@@ -284,15 +351,63 @@ Containers within the Pod see the system hostname as being the same as the confi
 `name` for the Pod. There's more about this in the [networking](/docs/concepts/cluster-administration/networking/)
 section.
 
-## Privileged mode for containers
+## Pod security settings {#pod-security}
 
-In Linux, any container in a Pod can enable privileged mode using the `privileged` (Linux) flag on the [security context](/docs/tasks/configure-pod-container/security-context/) of the container spec. This is useful for containers that want to use operating system administrative capabilities such as manipulating the network stack or accessing hardware devices.
+To set security constraints on Pods and containers, you use the
+`securityContext` field in the Pod specification. This field gives you
+granular control over what a Pod or individual containers can do. See [Advanced Pod Configuration](/docs/concepts/workloads/pods/advanced-pod-config/) for more details.
 
-If your cluster has the `WindowsHostProcessContainers` feature enabled, you can create a [Windows HostProcess pod](/docs/tasks/configure-pod-container/create-hostprocess-pod) by setting the `windowsOptions.hostProcess` flag on the security context of the pod spec. All containers in these pods must run as Windows HostProcess containers. HostProcess pods run directly on the host and can also be used to perform administrative tasks as is done with Linux privileged containers.
+For basic security configuration, you should meet the Baseline Pod security standard and run containers as non-root. You can set simple security contexts:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  containers:
+  - name: sec-ctx-demo
+    image: busybox
+    command: ["sh", "-c", "sleep 1h"]
+```
+
+For advanced security context configuration including capabilities, seccomp profiles, and detailed security options, see the [security concepts](/docs/concepts/security/) section.
+
+* To learn about kernel-level security constraints that you can use,
+  see [Linux kernel security constraints for Pods and containers](/docs/concepts/security/linux-kernel-security-constraints).
+* To learn more about the Pod security context, see
+  [Configure a Security Context for a Pod or Container](/docs/tasks/configure-pod-container/security-context/).
+
+## Resource requests and limits
+
+When you specify a Pod, you can optionally specify how much of each resource
+a container needs. The most common resources to specify are CPU and memory (RAM).
+
+When you specify the resource _request_ for containers in a Pod, the
+kube-scheduler uses this information to decide which node to place the Pod on.
+When you specify a resource _limit_ for a container, the kubelet enforces
+those limits so that the running container is not allowed to use more of that
+resource than the limit you set.
+
+CPU limits are enforced by CPU throttling. When a container approaches its
+CPU limit, the kernel restricts its access to CPU. Memory limits are enforced
+by the kernel with out-of-memory (OOM) kills when a container exceeds its limit.
 
 {{< note >}}
-Your {{< glossary_tooltip text="container runtime" term_id="container-runtime" >}} must support the concept of a privileged container for this setting to be relevant.
+Setting CPU limits involves a trade-off. CPU limits help prevent noisy neighbor
+problems where a single workload starves others on the same node. This is
+especially important in multi-tenant environments. However, CPU limits can cause
+throttling even when the node has spare CPU capacity, potentially degrading
+latency-sensitive workload performance. Whether to set CPU limits depends on
+your environment, workload characteristics, and isolation requirements.
 {{< /note >}}
+
+For details on resource units, enforcement behavior, and configuration examples,
+see [Resource Management for Pods and Containers](/docs/concepts/configuration/manage-resources-containers/).
 
 ## Static Pods
 
@@ -305,47 +420,96 @@ Pods, the kubelet directly supervises each static Pod (and restarts it if it fai
 
 Static Pods are always bound to one {{< glossary_tooltip term_id="kubelet" >}} on a specific node.
 The main use for static Pods is to run a self-hosted control plane: in other words,
-using the kubelet to supervise the individual [control plane components](/docs/concepts/overview/components/#control-plane-components).
+using the kubelet to supervise the individual [control plane components](/docs/concepts/architecture/#control-plane-components).
 
-The kubelet automatically tries to create a {{< glossary_tooltip text="mirror Pod" term_id="mirror-pod" >}}
-on the Kubernetes API server for each static Pod.
-This means that the Pods running on a node are visible on the API server,
-but cannot be controlled from there.
+For details, see [Static Pods](/docs/concepts/workloads/pods/static-pods/).
 
-{{< note >}}
-The `spec` of a static Pod cannot refer to other API objects
-(e.g., {{< glossary_tooltip text="ServiceAccount" term_id="service-account" >}},
-{{< glossary_tooltip text="ConfigMap" term_id="configmap" >}},
-{{< glossary_tooltip text="Secret" term_id="secret" >}}, etc).
-{{< /note >}}
+## Pods with multiple containers {#how-pods-manage-multiple-containers}
+
+Pods are designed to support multiple cooperating processes (as containers) that form
+a cohesive unit of service. The containers in a Pod are automatically co-located and
+co-scheduled on the same physical or virtual machine in the cluster. The containers
+can share resources and dependencies, communicate with one another, and coordinate
+when and how they are terminated.
+
+<!--intentionally repeats some text from earlier in the page, with more detail -->
+Pods in a Kubernetes cluster are used in two main ways:
+
+* **Pods that run a single container**. The "one-container-per-Pod" model is the
+  most common Kubernetes use case; in this case, you can think of a Pod as a
+  wrapper around a single container; Kubernetes manages Pods rather than managing
+  the containers directly.
+* **Pods that run multiple containers that need to work together**. A Pod can
+  encapsulate an application composed of
+  multiple co-located containers that are
+  tightly coupled and need to share resources. These co-located containers
+  form a single cohesive unit of service—for example, one container serving data
+  stored in a shared volume to the public, while a separate
+  {{< glossary_tooltip text="sidecar container" term_id="sidecar-container" >}}
+  refreshes or updates those files.
+  The Pod wraps these containers, storage resources, and an ephemeral network
+  identity together as a single unit.
+
+For example, you might have a container that
+acts as a web server for files in a shared volume, and a separate
+[sidecar container](/docs/concepts/workloads/pods/sidecar-containers/)
+that updates those files from a remote source, as in the following diagram:
+
+{{< figure src="/images/docs/pod.svg" alt="Pod creation diagram" class="diagram-medium" >}}
+
+Some Pods have {{< glossary_tooltip text="init containers" term_id="init-container" >}}
+as well as {{< glossary_tooltip text="app containers" term_id="app-container" >}}.
+By default, init containers run and complete before the app containers are started.
+
+You can also have [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)
+that provide auxiliary services to the main application Pod (for example: a service mesh).
+
+{{< feature-state feature_gate_name="SidecarContainers" >}}
+
+Enabled by default, the `SidecarContainers` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
+allows you to specify `restartPolicy: Always` for init containers.
+Setting the `Always` restart policy ensures that the containers where you set it are
+treated as _sidecars_ that are kept running during the entire lifetime of the Pod.
+Containers that you explicitly define as sidecar containers
+start up before the main application Pod and remain running until the Pod is
+shut down.
+
 
 ## Container probes
 
-A _probe_ is a diagnostic performed periodically by the kubelet on a container. To perform a diagnostic, the kubelet can invoke different actions:
+A _probe_ is a diagnostic performed periodically by the kubelet on a container.
+To perform a diagnostic, the kubelet can invoke different actions:
 
 - `ExecAction` (performed with the help of the container runtime)
 - `TCPSocketAction` (checked directly by the kubelet)
 - `HTTPGetAction` (checked directly by the kubelet)
 
-You can read more about [probes](/docs/concepts/workloads/pods/pod-lifecycle/#container-probes) 
+You can read more about [probes](/docs/concepts/workloads/pods/pod-lifecycle/#container-probes)
 in the Pod Lifecycle documentation.
 
 ## {{% heading "whatsnext" %}}
 
 * Learn about the [lifecycle of a Pod](/docs/concepts/workloads/pods/pod-lifecycle/).
-* Learn about [RuntimeClass](/docs/concepts/containers/runtime-class/) and how you can use it to
-  configure different Pods with different container runtime configurations.
-* Read about [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/) and how you can use it to manage application availability during disruptions.
+* Read about [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/)
+  and how you can use it to manage application availability during disruptions.
 * Pod is a top-level resource in the Kubernetes REST API.
-  The {{< api-reference page="workload-resources/pod-v1" >}}
+  The {{< api-reference page="core/pod-v1" >}}
   object definition describes the object in detail.
 * [The Distributed System Toolkit: Patterns for Composite Containers](/blog/2015/06/the-distributed-system-toolkit-patterns/) explains common layouts for Pods with more than one container.
 * Read about [Pod topology spread constraints](/docs/concepts/scheduling-eviction/topology-spread-constraints/)
+* Read [Advanced Pod Configuration](/docs/concepts/workloads/pods/advanced-pod-config/) to learn the topic in detail.
+  That page covers aspects of Pod configuration beyond the essentials, including:
+  * PriorityClasses
+  * RuntimeClasses
+  * advanced ways to configure _scheduling_: the way that Kubernetes decides which node a Pod should run on.
 
-To understand the context for why Kubernetes wraps a common Pod API in other resources (such as {{< glossary_tooltip text="StatefulSets" term_id="statefulset" >}} or {{< glossary_tooltip text="Deployments" term_id="deployment" >}}), you can read about the prior art, including:
+To understand the context for why Kubernetes wraps a common Pod API in other resources
+(such as {{< glossary_tooltip text="StatefulSets" term_id="statefulset" >}} or
+{{< glossary_tooltip text="Deployments" term_id="deployment" >}}),
+you can read about the prior art, including:
 
 * [Aurora](https://aurora.apache.org/documentation/latest/reference/configuration/#job-schema)
-* [Borg](https://research.google.com/pubs/pub43438.html)
-* [Marathon](https://mesosphere.github.io/marathon/docs/rest-api.html)
+* [Borg](https://research.google/pubs/large-scale-cluster-management-at-google-with-borg/)
+* [Marathon](https://github.com/d2iq-archive/marathon)
 * [Omega](https://research.google/pubs/pub41684/)
 * [Tupperware](https://engineering.fb.com/data-center-engineering/tupperware/).

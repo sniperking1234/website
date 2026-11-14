@@ -1,439 +1,283 @@
 ---
-title: CRIのインストール
+title: コンテナランタイム
 content_type: concept
-weight: 10
+weight: 20
 ---
 <!-- overview -->
-{{< feature-state for_k8s_version="v1.6" state="stable" >}}
-Podのコンテナを実行するために、Kubernetesはコンテナランタイムを使用します。
-様々なランタイムのインストール手順は次のとおりです。
 
+{{% dockershim-removal %}}
 
+クラスター内の各ノードがPodを実行できるようにするため、{{< glossary_tooltip text="コンテナランタイム" term_id="container-runtime" >}}をインストールする必要があります。
+このページでは、ノードをセットアップするための概要と関連する作業について説明します。
+
+Kubernetes {{< skew currentVersion >}}においては、{{< glossary_tooltip term_id="cri" text="Container Runtime Interface">}} (CRI)に準拠したランタイムを使用する必要があります。
+
+詳しくは[サポートするCRIのバージョン](#cri-versions)をご覧ください。
+
+このページではいくつかの一般的なコンテナランタイムをKubernetesで使用する方法の概要を説明します。
+
+- [containerd](#containerd)
+- [CRI-O](#cri-o)
+- [Docker Engine](#docker)
+- [Mirantis Container Runtime](#mcr)
+
+{{< note >}}
+v1.24以前のKubernetesリリースでは、 _dockershim_ という名前のコンポーネントを使用したDocker Engineとの直接の統合が含まれていました。
+この特別な直接統合は、もはやKubernetesの一部ではありません(この削除はv1.20リリースの一部として[発表](/blog/2020/12/08/kubernetes-1-20-release-announcement/#dockershim-deprecation)されています)。
+dockershimの廃止がどのような影響を与えるかについては、[dockershim削除の影響範囲を確認する](/ja/docs/tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you/) をご覧ください。
+dockershimからの移行について知りたい場合、[dockershimからの移行](/ja/docs/tasks/administer-cluster/migrating-from-dockershim/)を参照してください。
+
+v{{< skew currentVersion >}}以外のバージョンのKubernetesを実行している場合、そのバージョンのドキュメントを確認してください。
+{{< /note >}}
 
 <!-- body -->
 
+## インストールと設定の必須要件 {#install-and-configure-prerequisites}
+
+### ネットワーク構成 {#network-configuration}
+
+デフォルトでは、Linuxカーネルはインターフェース間でのIPv4パケットのルーティングを許可していません。
+Kubernetesクラスターのネットワーク実装の多くは、必要に応じてこの設定を変更しますが、管理者が設定することを想定しているものもあります。
+(他のsysctlパラメーターの設定やカーネルモジュールの読み込みなども必要になる場合があります。使用しているネットワーク実装のドキュメントを参照してください。)
+
+### IPv4パケットフォワーディングを有効化する {#prerequisite-ipv4-forwarding-optional}
+
+IPv4パケットフォワーディングを手動で有効にするには、以下のコマンドを実行します。
+
+```bash
+# セットアップに必要なsysctlパラメーター。値は再起動後も保持されます
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward = 1
+EOF
+
+# 再起動せずにsysctlパラメーターを適用
+sudo sysctl --system
+```
+
+以下のコマンドを実行して、`net.ipv4.ip_forward`が1に設定されていることを確認します。
+
+```bash
+sysctl net.ipv4.ip_forward
+```
+
+## cgroupドライバー {#cgroup-drivers}
+
+Linuxでは、プロセスに割り当てられるリソースを制約するために{{< glossary_tooltip text="cgroup" term_id="cgroup" >}}が使用されます。
+
+{{< glossary_tooltip text="kubelet" term_id="kubelet" >}}と基盤となるコンテナランタイムは、[コンテナのリソース管理](/ja/docs/concepts/configuration/manage-resources-containers/)を実施し、CPU/メモリーの要求や制限などのリソースを設定するため、cgroupとインターフェースする必要があります。
+cgroupとインターフェースするために、kubeletおよびコンテナランタイムは*cgroupドライバー*を使用する必要があります。
+この際、kubeletとコンテナランタイムが同一のcgroupドライバーを使用し、同一の設定を適用することが不可欠となります。
+
+利用可能なcgroupドライバーは以下の2つです。
+
+* [`cgroupfs`](#cgroupfs-cgroup-driver)
+* [`systemd`](#systemd-cgroup-driver)
+
+### cgroupfsドライバー {#cgroupfs-cgroup-driver}
+
+`cgroupfs`ドライバーは、kubeletのデフォルトのcgroupドライバーです。
+`cgroupfs`ドライバーを使用すると、kubeletとコンテナランタイムはcgroupファイルシステムと直接インターフェースし、cgroupを設定します。
+
+[systemd](https://www.freedesktop.org/wiki/Software/systemd/)がinitシステムである場合、`cgroupfs`ドライバーは推奨**されません**。
+なぜなら、systemdはシステム上のcgroupマネージャーが単一であると想定しているからです。
+また、[cgroup v2](/ja/docs/concepts/architecture/cgroups)を使用している場合は、`cgroupfs`の代わりに`systemd` cgroupドライバーを使用してください。
+
+### systemd cgroupドライバー {#systemd-cgroup-driver}
+
+Linuxディストリビューションのinitシステムに[systemd](https://www.freedesktop.org/wiki/Software/systemd/)が選択されている場合、
+initプロセスはルートcgroupを生成・消費し、cgroupマネージャーとして動作します。
+
+systemdはcgroupと密接に連携しており、systemdユニットごとにcgroupを割り当てます。
+その結果、initシステムに`systemd`を使用した状態で`cgroupfs`ドライバーを使用すると、
+システムには2つの異なるcgroupマネージャーが存在することになります。
+
+2つのcgroupマネージャーが存在することで、システムで利用可能なリソースおよび使用中のリソースに、2つの異なる見え方が与えられることになります。
+特定の場合において、kubeletとコンテナランタイムに`cgroupfs`を、残りのプロセスに`systemd`を使用するように設定されたノードが高負荷時に不安定になることがあります。
+
+このような不安定性を緩和するためのアプローチは、systemdがinitシステムに採用されている場合にkubeletとコンテナランタイムのcgroupドライバーとして`systemd`を使用することです。
+
+cgroupドライバーに`systemd`を設定するには、以下のように[`KubeletConfiguration`](/docs/tasks/administer-cluster/kubelet-config-file/)の`cgroupDriver`オプションを編集して`systemd`を設定します。
+
+```yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+...
+cgroupDriver: systemd
+```
+
+kubelet用のcgroupドライバーとして`systemd`を設定する場合、コンテナランタイムのcgroupドライバーにも`systemd`を設定する必要があります。
+具体的な手順については、以下のリンクなどの、お使いのコンテナランタイムのドキュメントを参照してください。
+
+*  [containerd](#containerd-systemd)
+*  [CRI-O](#cri-o)
 
 {{< caution >}}
-コンテナ実行時にruncがシステムファイルディスクリプターを扱える脆弱性が見つかりました。
-悪意のあるコンテナがこの脆弱性を利用してruncのバイナリを上書きし、
-コンテナホストシステム上で任意のコマンドを実行する可能性があります。
+クラスターに参加したノードのcgroupドライバーを変更するのはデリケートな操作です。
+kubeletが特定のcgroupドライバーのセマンティクスを使用してPodを作成していた場合、
+コンテナランタイムを別のcgroupドライバーに変更すると、そのような既存のPodに対してPodサンドボックスを再作成しようとしたときにエラーが発生することがあります。
+kubeletを再起動してもこのようなエラーは解決しない可能性があります。
 
-この問題の更なる情報は[CVE-2019-5736](https://access.redhat.com/security/cve/cve-2019-5736)を参照してください。
+もしあなたが適切な自動化の手段を持っているのであれば、更新された設定を使用してノードを別のノードに置き換えるか、自動化を使用して再インストールを行ってください。
 {{< /caution >}}
 
-### 適用性
+### kubeadmで管理されたクラスターでの`systemd`ドライバーへの移行 {#migrating-to-the-systemd-driver-in-kubeadm-managed-clusters}
+
+既存のkubeadm管理クラスターで`systemd` cgroupドライバーに移行したい場合は、[cgroupドライバーの設定](/ja/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/)に従ってください。
+
+## サポートするCRIのバージョン {#cri-versions}
+
+コンテナランタイムは、Container Runtime Interfaceのv1alpha2以上をサポートする必要があります。
+
+Kubernetes {{< skew currentVersion >}}は、デフォルトでCRI APIのv1を使用します。
+コンテナランタイムがv1 APIをサポートしていない場合、kubeletは代わりに(非推奨の)v1alpha2 APIにフォールバックします。
+
+## コンテナランタイム {#container-runtimes}
+
+{{% thirdparty-content %}}
+
+### containerd
+
+このセクションでは、CRIランタイムとしてcontainerdを使用するために必要な手順の概要を説明します。
+
+以下のコマンドを使用して、システムにcontainerdをインストールします:
+
+まずは[containerdの使用を開始する](https://github.com/containerd/containerd/blob/main/docs/getting-started.md)の指示に従ってください。有効な`config.toml`設定ファイルを作成したら、このステップに戻ります。
+
+{{< tabs name="Finding your config.toml file" >}}
+{{% tab name="Linux" %}}
+このファイルはパス`/etc/containerd/config.toml`にあります。
+{{% /tab %}}
+{{% tab name="Windows" %}}
+このファイルは`C:\Program Files\containerd\config.toml`にあります。
+{{% /tab %}}
+{{< /tabs >}}
+
+Linuxでは、containerd用のデフォルトのCRIソケットは`/run/containerd/containerd.sock`です。
+Windowsでは、デフォルトのCRIエンドポイントは`npipe://./pipe/containerd-containerd`です。
+
+#### `systemd` cgroupドライバーを構成する {#containerd-systemd}
+
+`/etc/containerd/config.toml`内で`runc`が`systemd` cgroupドライバーを使うようにするには、Containerdのバージョンに基づいて以下の設定を行ってください。
+
+Containerdバージョン1.x:
+
+```
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  ...
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+```
+
+Containerdバージョン2.x:
+
+```
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
+  ...
+  [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+    SystemdCgroup = true
+```
+
+[cgroup v2](/ja/docs/concepts/architecture/cgroups)を使用する場合は`systemd` cgroupドライバーの利用を推奨します。
 
 {{< note >}}
-このドキュメントはLinuxにCRIをインストールするユーザーのために書かれています。
-他のオペレーティングシステムの場合、プラットフォーム固有のドキュメントを見つけてください。
+パッケージ(RPMや`.deb`など)からcontainerdをインストールした場合、
+CRI統合プラグインがデフォルトで無効になっていることがあります。
+
+Kubernetesでcontainerdを使用するには、CRIサポートを有効にする必要があります。
+`/etc/containerd/config.toml`内の`disabled_plugins`リストに`cri`が含まれていないことを確認してください。
+このファイルを変更した場合、`containerd`も再起動してください。
+
+クラスターの初回構築後、またはCNIをインストールした後にコンテナのクラッシュループが発生した場合、
+パッケージと共に提供されるcontainerdの設定に互換性のないパラメーターが含まれている可能性があります。
+[get-started.md](https://github.com/containerd/containerd/blob/main/docs/getting-started.md#advanced-topics)にあるように、
+`containerd config default > /etc/containerd/config.toml`でcontainerdの設定をリセットした上で、
+上記の設定パラメーターを使用することを検討してください。
 {{< /note >}}
 
-このガイドでは全てのコマンドを `root` で実行します。
-例として、コマンドに `sudo` を付けたり、 `root` になってそのユーザーでコマンドを実行します。
-
-### Cgroupドライバー
-
-systemdがLinuxのディストリビューションのinitシステムとして選択されている場合、
-initプロセスが作成され、rootコントロールグループ(`cgroup`)を使い、cgroupマネージャーとして行動します。
-systemdはcgroupと密接に統合されており、プロセスごとにcgroupを割り当てます。
-`cgroupfs` を使うように、あなたのコンテナランライムとkubeletを設定することができます。
-systemdと一緒に `cgroupfs` を使用するということは、2つの異なるcgroupマネージャーがあることを意味します。
-
-コントロールグループはプロセスに割り当てられるリソースを制御するために使用されます。
-単一のcgroupマネージャーは、割り当てられているリソースのビューを単純化し、
-デフォルトでは使用可能なリソースと使用中のリソースについてより一貫性のあるビューになります。
-2つのマネージャーがある場合、それらのリソースについて2つのビューが得られます。
-kubeletとDockerに `cgroupfs` を使用し、ノード上で実行されている残りのプロセスに `systemd` を使用するように設定されたノードが、
-リソース圧迫下で不安定になる場合があります。
-
-コンテナランタイムとkubeletがcgroupドライバーとしてsystemdを使用するように設定を変更することでシステムは安定します。
-以下のDocker設定の `native.cgroupdriver=systemd` オプションに注意してください。
-
-{{< caution >}}
-すでにクラスターに組み込まれているノードのcgroupドライバーを変更することは非常におすすめしません。
-kubeletが一方のcgroupドライバーを使用してPodを作成した場合、コンテナランタイムを別のもう一方のcgroupドライバーに変更すると、そのような既存のPodのPodサンドボックスを再作成しようとするとエラーが発生する可能性があります。
-kubeletを再起動しても問題は解決しないでしょう。
-ワークロードからノードを縮退させ、クラスターから削除して再び組み込むことを推奨します。
-{{< /caution >}}
-
-## Docker
-
-それぞれのマシンに対してDockerをインストールします。
-バージョン19.03.11が推奨されていますが、1.13.1、17.03、17.06、17.09、18.06、18.09についても動作が確認されています。
-Kubernetesのリリースノートにある、Dockerの動作確認済み最新バージョンについてもご確認ください。
-
-システムへDockerをインストールするには、次のコマンドを実行します。
-
-{{< tabs name="tab-cri-docker-installation" >}}
-{{% tab name="Ubuntu 16.04+" %}}
+この変更を適用した場合、必ずcontainerdを再起動してください。
 
 ```shell
-# (Install Docker CE)
-## リポジトリをセットアップ
-### HTTPS越しのリポジトリの使用をaptに許可するために、パッケージをインストール
-apt-get update && apt-get install -y \
-  apt-transport-https ca-certificates curl software-properties-common gnupg2
+sudo systemctl restart containerd
 ```
 
-```shell
-# Docker公式のGPG鍵を追加:
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+kubeadmを使用している場合、手動で[kubelet cgroupドライバーの設定](/ja/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/#configuring-the-kubelet-cgroup-driver)を行ってください。
+
+#### サンドボックス(pause)イメージの上書き {#override-pause-image-containerd}
+
+[containerdの設定](https://github.com/containerd/containerd/blob/main/docs/cri/config.md)で以下の設定をすることで、サンドボックスのイメージを上書きすることができます。
+
+```toml
+[plugins."io.containerd.grpc.v1.cri"]
+  sandbox_image = "registry.k8s.io/pause:3.2"
 ```
 
-```shell
-# Dockerのaptレポジトリを追加:
-add-apt-repository \
-  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
+この場合も、設定ファイルの更新後に`systemctl restart containerd`を実行して`containerd`も再起動する必要があるでしょう。
+
+### CRI-O
+
+本セクションでは、コンテナランタイムとしてCRI-Oをインストールするために必要な手順を説明します。
+
+CRI-Oをインストールするには、[CRI-Oのインストール手順](https://github.com/cri-o/packaging/blob/main/README.md#usage)に従ってください。
+
+#### cgroupドライバー {#cgroup-driver}
+
+CRI-Oはデフォルトでsystemd cgroupドライバーを使用し、おそらく問題なく動作します。
+`cgroupfs` cgroupドライバーに切り替えるには、`/etc/crio/crio.conf` を編集するか、
+`/etc/crio/crio.conf.d/02-cgroup-manager.conf`にドロップイン設定ファイルを置いて、以下のような設定を記述してください。
+
+```toml
+[crio.runtime]
+conmon_cgroup = "pod"
+cgroup_manager = "cgroupfs"
 ```
 
-```shell
-# Docker CEのインストール
-apt-get update && apt-get install -y \
-containerd.io=1.2.13-2 \
-docker-ce=5:19.03.11~3-0~ubuntu-$(lsb_release -cs) \
-docker-ce-cli=5:19.03.11~3-0~ubuntu-$(lsb_release -cs)
+上記で`conmon_cgroup`も変更されていることに注意してください。
+CRI-Oで`cgroupfs`を使用する場合、ここには`pod`という値を設定する必要があります。
+一般に、kubeletのcgroupドライバーの設定(通常はkubeadmによって行われます)とCRI-Oの設定は一致させる必要があります。
+
+CRI-Oの場合、CRIソケットはデフォルトで`/var/run/crio/crio.sock`となります。
+
+#### サンドボックス(pause)イメージの上書き {#override-pause-image-cri-o}
+
+[CRI-Oの設定](https://github.com/cri-o/cri-o/blob/main/docs/crio.conf.5.md)において、以下の値を設定することができます。
+
+```toml
+[crio.image]
+pause_image="registry.k8s.io/pause:3.6"
 ```
 
-```shell
-# デーモンをセットアップ
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
-EOF
-```
+このオプションはライブ設定リロードによる変更の適用に対応しています。
+`systemctl reload crio`または`crio`プロセスに`SIGHUP`を送信することで変更を適用できます。
 
-```shell
-mkdir -p /etc/systemd/system/docker.service.d
-```
-
-```shell
-# dockerを再起動
-systemctl daemon-reload
-systemctl restart docker
-```
-{{% /tab %}}
-{{% tab name="CentOS/RHEL 7.4+" %}}
-
-```shell
-# (Docker CEのインストール)
-## リポジトリをセットアップ
-### 必要なパッケージのインストール
-yum install -y yum-utils device-mapper-persistent-data lvm2
-```
-
-```shell
-## Dockerリポジトリの追加
-yum-config-manager --add-repo \
-  https://download.docker.com/linux/centos/docker-ce.repo
-```
-
-```shell
-## Docker CEのインストール
-yum update -y && yum install -y \
-  containerd.io-1.2.13 \
-  docker-ce-19.03.11 \
-  docker-ce-cli-19.03.11
-```
-
-```shell
-## /etc/docker ディレクトリを作成
-mkdir /etc/docker
-```
-
-```shell
-# デーモンをセットアップ
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2",
-  "storage-opts": [
-    "overlay2.override_kernel_check=true"
-  ]
-}
-EOF
-```
-
-```shell
-mkdir -p /etc/systemd/system/docker.service.d
-```
-
-```shell
-# dockerを再起動
-systemctl daemon-reload
-systemctl restart docker
-```
-{{% /tab %}}
-{{< /tabs >}}
-
-ブート時にDockerサービスを開始させたい場合は、以下のコマンドを入力してください:
-
-```shell
-sudo systemctl enable docker
-```
-
-詳細については、[Dockerの公式インストールガイド](https://docs.docker.com/engine/installation/)を参照してください。
-
-## CRI-O
-
-このセクションでは、CRIランタイムとして`CRI-O`を利用するために必要な手順について説明します。
-
-システムへCRI-Oをインストールするためには以下のコマンドを利用します:
+### Docker Engine {#docker}
 
 {{< note >}}
-CRI-OのメジャーとマイナーバージョンはKubernetesのメジャーとマイナーバージョンと一致しなければなりません。
-詳細は[CRI-O互換性表](https://github.com/cri-o/cri-o)を参照してください。
+この手順では、Docker EngineとKubernetesを統合するために[`cri-dockerd`](https://github.com/Mirantis/cri-dockerd)アダプターを使用することを想定しています。
 {{< /note >}}
 
-### 事前準備
+1. 各ノードに、使用しているLinuxディストリビューション用のDockerを[Docker Engineのインストール](https://docs.docker.com/engine/install/#server)に従ってインストールします。
 
-```shell
-modprobe overlay
-modprobe br_netfilter
+2. [`cri-dockerd`](https://github.com/Mirantis/cri-dockerd)をリポジトリ内の指示に従ってインストールします。
 
-# 必要なカーネルパラメータの設定をします。これらの設定値は再起動後も永続化されます。
-cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
+`cri-dockerd`の場合、CRIソケットはデフォルトで`/run/cri-dockerd.sock`になります。
 
-sysctl --system
-```
+### Mirantis Container Runtime {#mcr}
 
-{{< tabs name="tab-cri-cri-o-installation" >}}
-{{% tab name="Debian" %}}
+[Mirantis Container Runtime](https://docs.mirantis.com/mcr/25.0/overview.html)(MCR)は、
+以前はDocker Enterprise Editionとして知られていた、商業的に利用可能なコンテナランタイムです。
 
- CRI-Oを以下のOSにインストールするには、環境変数$OSを以下の表の適切なフィールドに設定します。
+MCRに含まれるオープンソースの[`cri-dockerd`](https://github.com/Mirantis/cri-dockerd)コンポーネントを使用することで、
+Mirantis Container RuntimeをKubernetesで使用することができます。
 
-| Operating system | $OS               |
-| ---------------- | ----------------- |
-| Debian Unstable  | `Debian_Unstable` |
-| Debian Testing   | `Debian_Testing`  |
+Mirantis Container Runtimeのインストール方法について知るには、[MCRデプロイガイド](https://docs.mirantis.com/mcr/25.0/install.html)を参照してください。
 
-<br />
-そして、`$VERSION`にKubernetesのバージョンに合わせたCRI-Oのバージョンを設定します。例えば、CRI-O 1.18をインストールしたい場合は、`VERSION=1.18` を設定します。インストールを特定のリリースに固定することができます。バージョン 1.18.3をインストールするには、`VERSION=1.18:1.18.3` を設定します。
-<br />
+CRIソケットのパスを見つけるには、systemdの`cri-docker.socket`という名前のユニットを確認してください。
 
-以下を実行します。
-```shell
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
+#### サンドボックス(pause)イメージを上書きする {#override-pause-image-cri-dockerd-mcr}
 
-curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/Release.key | apt-key add -
-curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | apt-key add -
+`cri-dockerd`アダプターは、Podインフラコンテナ("pause image")として使用するコンテナイメージを指定するためのコマンドライン引数を受け付けます。
+使用するコマンドライン引数は `--pod-infra-container-image`です。
 
-apt-get update
-apt-get install cri-o cri-o-runc
-```
+## {{% heading "whatsnext" %}}
 
-{{% /tab %}}
-
-{{% tab name="Ubuntu" %}}
-
- CRI-Oを以下のOSにインストールするには、環境変数$OSを以下の表の適切なフィールドに設定します。
-
-| Operating system | $OS               |
-| ---------------- | ----------------- |
-| Ubuntu 20.04     | `xUbuntu_20.04`   |
-| Ubuntu 19.10     | `xUbuntu_19.10`   |
-| Ubuntu 19.04     | `xUbuntu_19.04`   |
-| Ubuntu 18.04     | `xUbuntu_18.04`   |
-
-<br />
-次に、`$VERSION`をKubernetesのバージョンと一致するCRI-Oのバージョンに設定します。例えば、CRI-O 1.18をインストールしたい場合は、`VERSION=1.18` を設定します。インストールを特定のリリースに固定することができます。バージョン 1.18.3 をインストールするには、`VERSION=1.18:1.18.3` を設定します。
-<br />
-
-以下を実行します。
-```shell
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
-
-curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/Release.key | apt-key add -
-curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | apt-key add -
-
-apt-get update
-apt-get install cri-o cri-o-runc
-```
-{{% /tab %}}
-
-{{% tab name="CentOS" %}}
-
- CRI-Oを以下のOSにインストールするには、環境変数$OSを以下の表の適切なフィールドに設定します。
-
-| Operating system | $OS               |
-| ---------------- | ----------------- |
-| Centos 8         | `CentOS_8`        |
-| Centos 8 Stream  | `CentOS_8_Stream` |
-| Centos 7         | `CentOS_7`        |
-
-<br />
-次に、`$VERSION`をKubernetesのバージョンと一致するCRI-Oのバージョンに設定します。例えば、CRI-O 1.18 をインストールしたい場合は、`VERSION=1.18` を設定します。インストールを特定のリリースに固定することができます。バージョン 1.18.3 をインストールするには、`VERSION=1.18:1.18.3` を設定します。
-<br />
-
-以下を実行します。
-```shell
-curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/devel:kubic:libcontainers:stable.repo
-curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo
-yum install cri-o
-```
-
-{{% /tab %}}
-
-{{% tab name="openSUSE Tumbleweed" %}}
-
-```shell
- sudo zypper install cri-o
-```
-{{% /tab %}}
-{{% tab name="Fedora" %}}
-
-$VERSIONには、Kubernetesのバージョンと一致するCRI-Oのバージョンを設定します。例えば、CRI-O 1.18をインストールしたい場合は、$VERSION=1.18を設定します。
-以下のコマンドで、利用可能なバージョンを見つけることができます。
-```shell
-dnf module list cri-o
-```
-CRI-OはFedoraの特定のリリースにピン留めすることをサポートしていません。
-
-以下を実行します。
-```shell
-dnf module enable cri-o:$VERSION
-dnf install cri-o
-```
-
-{{% /tab %}}
-{{< /tabs >}}
-
-
-### CRI-Oの起動
-
-```shell
-systemctl daemon-reload
-systemctl start crio
-```
-
-詳細については、[CRI-Oインストールガイド](https://github.com/kubernetes-sigs/cri-o#getting-started)を参照してください。
-
-## Containerd
-
-このセクションでは、CRIランタイムとして`containerd`を利用するために必要な手順について説明します。
-
-システムへContainerdをインストールするためには次のコマンドを実行します。
-
-### 必要な設定の追加
-
-```shell
-cat > /etc/modules-load.d/containerd.conf <<EOF
-overlay
-br_netfilter
-EOF
-
-modprobe overlay
-modprobe br_netfilter
-
-# 必要なカーネルパラメータの設定をします。これらの設定値は再起動後も永続化されます。
-cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
-
-sysctl --system
-```
-
-### containerdのインストール
-
-{{< tabs name="tab-cri-containerd-installation" >}}
-{{% tab name="Ubuntu 16.04" %}}
-
-```shell
-# (containerdのインストール)
-## リポジトリの設定
-### HTTPS越しのリポジトリの使用をaptに許可するために、パッケージをインストール
-apt-get update && apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-```
-
-```shell
-## Docker公式のGPG鍵を追加
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-```
-
-```shell
-## Dockerのaptリポジトリの追加
-add-apt-repository \
-    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) \
-    stable"
-```
-
-```shell
-## containerdのインストール
-apt-get update && apt-get install -y containerd.io
-```
-
-```shell
-# containerdの設定
-mkdir -p /etc/containerd
-containerd config default | sudo tee /etc/containerd/config.toml
-```
-
-```shell
-# containerdの再起動
-systemctl restart containerd
-```
-{{% /tab %}}
-{{% tab name="CentOS/RHEL 7.4+" %}}
-
-```shell
-# (containerdのインストール)
-## リポジトリの設定
-### 必要なパッケージのインストール
-yum install -y yum-utils device-mapper-persistent-data lvm2
-```
-
-```shell
-## Dockerのリポジトリの追加
-yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
-```
-
-```shell
-## containerdのインストール
-yum update -y && yum install -y containerd.io
-```
-
-```shell
-## containerdの設定
-mkdir -p /etc/containerd
-containerd config default | sudo tee /etc/containerd/config.toml
-```
-
-```shell
-# containerdの再起動
-systemctl restart containerd
-```
-{{% /tab %}}
-{{< /tabs >}}
-
-### systemd
-
-`systemd`のcgroupドライバーを使うには、`/etc/containerd/config.toml`内で`plugins.cri.systemd_cgroup = true`を設定してください。
-kubeadmを使う場合は[kubeletのためのcgroupドライバー](/ja/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#マスターノードのkubeletによって使用されるcgroupドライバーの設定)を手動で設定してください。
-
-## その他のCRIランタイム: frakti
-
-詳細については[Fraktiのクイックスタートガイド](https://github.com/kubernetes/frakti#quickstart)を参照してください。
-
-
+コンテナランタイムに加えて、クラスターには動作する[ネットワークプラグイン](/ja/docs/concepts/cluster-administration/networking/#how-to-implement-the-kubernetes-network-model)が必要です。

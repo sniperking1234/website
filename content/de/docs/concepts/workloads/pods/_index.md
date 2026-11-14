@@ -76,7 +76,7 @@ Diese Container bilden eine einzelne zusammenhängende
 Serviceeinheit, z. B. ein Container, der Daten in einem gemeinsam genutzten 
 Volume öffentlich verfügbar macht, während ein separater _Sidecar_-Container 
 die Daten aktualisiert. Der Pod fasst die Container, die Speicherressourcen
-und eine kurzlebiges Netzwerk-Identität als eine Einheit zusammen.
+und eine kurzlebige Netzwerk-Identität als eine Einheit zusammen.
 
 {{< note >}}
 Das Gruppieren mehrerer gemeinsam lokalisierter und gemeinsam verwalteter
@@ -363,7 +363,7 @@ andere Ressourcen, wie z. B.
 oder {{< glossary_tooltip text="Deployments" term_id="deployment" >}} einbindet, 
 kannst du Artikel zu früheren Technologien lesen, unter anderem: 
  * [Aurora](https://aurora.apache.org/documentation/latest/reference/configuration/#job-schema)
- * [Borg](https://research.google.com/pubs/pub43438.html)
- * [Marathon](https://mesosphere.github.io/marathon/docs/rest-api.html)
+ * [Borg](https://research.google/pubs/large-scale-cluster-management-at-google-with-borg/)
+ * [Marathon](https://github.com/d2iq-archive/marathon)
  * [Omega](https://research.google/pubs/pub41684/)
  * [Tupperware](https://engineering.fb.com/data-center-engineering/tupperware/).

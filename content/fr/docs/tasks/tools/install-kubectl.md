@@ -13,7 +13,7 @@ card:
 ---
 
 <!-- overview -->
-L'outil en ligne de commande de kubernetes, [kubectl](/docs/user-guide/kubectl/), vous permet d'exécuter des commandes dans les clusters Kubernetes. Vous pouvez utiliser kubectl pour déployer des applications, inspecter et gérer les ressources du cluster et consulter les logs. Pour une liste complète des opérations kubectl, voir [Aperçu de kubectl](/fr/docs/reference/kubectl/overview/).
+L'outil en ligne de commande de kubernetes, [kubectl](/fr/docs/reference/kubectl/), vous permet d'exécuter des commandes dans les clusters Kubernetes. Vous pouvez utiliser kubectl pour déployer des applications, inspecter et gérer les ressources du cluster et consulter les logs. Pour une liste complète des opérations kubectl, voir [Aperçu de kubectl](/fr/docs/reference/kubectl/overview/).
 
 
 ## {{% heading "prerequisites" %}}
@@ -30,15 +30,15 @@ Vous devez utiliser une version de kubectl qui différe seulement d'une version 
 1. Téléchargez la dernière release avec la commande :
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
     ```
 
-    Pour télécharger une version spécifique, remplacez `$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)` avec la version spécifique.
+    Pour télécharger une version spécifique, remplacez `$(curl -s https://dl.k8s.io/release/stable.txt)` avec la version spécifique.
 
-    Par exemple, pour télécharger la version {{< param "fullversion" >}} sur Linux, tapez :
+    Par exemple, pour télécharger la version {{< skew currentPatchVersion >}} sur Linux, tapez :
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/linux/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/linux/amd64/kubectl
     ```
 
 2. Rendez le binaire kubectl exécutable.
@@ -62,20 +62,22 @@ Vous devez utiliser une version de kubectl qui différe seulement d'une version 
 
 {{< tabs name="kubectl_install" >}}
 {{< tab name="Ubuntu, Debian or HypriotOS" codelang="bash" >}}
-sudo apt-get update && sudo apt-get install -y apt-transport-https
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+sudo mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y kubectl
 {{< /tab >}}
-{{< tab name="CentOS, RHEL or Fedora" codelang="bash" >}}sudo cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+{{< tab name="CentOS, RHEL or Fedora" codelang="bash" >}}cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/
 enabled=1
 gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key
 EOF
 sudo yum install -y kubectl
 {{< /tab >}}
@@ -110,15 +112,15 @@ kubectl version --client
 1. Téléchargez la dernière version:
 
     ```		
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl
     ```
 
-    Pour télécharger une version spécifique, remplacez `$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)` avec la version spécifique.
+    Pour télécharger une version spécifique, remplacez `$(curl -Ls https://dl.k8s.io/release/stable.txt)` avec la version spécifique.
 
-    Par exemple, pour télécharger la version {{< param "fullversion" >}} sur macOS, tapez :
+    Par exemple, pour télécharger la version {{< skew currentPatchVersion >}} sur macOS, tapez :
 		
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/darwin/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/darwin/amd64/kubectl
     ```
 
 2. Rendez le binaire kubectl exécutable.
@@ -180,15 +182,15 @@ Si vous êtes sur MacOS et que vous utilisez le gestionnaire de paquets [Macport
 
 ### Installer le binaire kubectl avec curl sur Windows
 
-1. Téléchargez la dernière version {{< param "fullversion" >}} depuis [ce lien](https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/windows/amd64/kubectl.exe).
+1. Téléchargez la dernière version {{< skew currentPatchVersion >}} depuis [ce lien](https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/windows/amd64/kubectl.exe).
 
     Ou si vous avez `curl` installé, utilisez cette commande:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/windows/amd64/kubectl.exe
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/windows/amd64/kubectl.exe
     ```
 
-    Pour connaître la dernière version stable (par exemple, en scripting), jetez un coup d'oeil à [https://storage.googleapis.com/kubernetes-release/release/stable.txt](https://storage.googleapis.com/kubernetes-release/release/stable.txt).
+    Pour connaître la dernière version stable (par exemple, en scripting), jetez un coup d'oeil à [https://dl.k8s.io/release/stable.txt](https://dl.k8s.io/release/stable.txt).
 
 2. Ajoutez le binaire dans votre PATH.
 3. Testez pour vous assurer que la version que vous avez installée est à jour:
@@ -385,7 +387,7 @@ Le script de complétion kubectl pour Bash peut être généré avec la commande
 En revanche, le script de complétion dépend de [**bash-completion**](https://github.com/scop/bash-completion), ce qui implique que vous devez d'abord installer ce logiciel.
 
 {{< warning>}}
-macOS inclut Bash 3.2 par défaut. Le script de complétion kubectl nécessite Bash 4.1+ et ne fonctionne pas avec Bash 3.2. Une des solutions possibles est d'installer une version plus récente de Bash sous macOS (voir instructions [ici](https://itnext.io/upgrading-bash-on-macos-7138bd1066ba)). Les instructions ci-dessous ne fonctionnent que si vous utilisez Bash 4.1+.
+macOS inclut Bash 3.2 par défaut. Le script de complétion kubectl nécessite Bash 4.1+ et ne fonctionne pas avec Bash 3.2. Une des solutions possibles est d'installer une version plus récente de Bash sous macOS (voir instructions [ici](https://apple.stackexchange.com/a/292760)). Les instructions ci-dessous ne fonctionnent que si vous utilisez Bash 4.1+.
 {{< /warning >}}
 
 

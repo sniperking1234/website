@@ -1,24 +1,26 @@
 ---
 title: 注解
 content_type: concept
-weight: 50
+weight: 60
 ---
-
 <!--
 title: Annotations
 content_type: concept
-weight: 50
+weight: 60
 -->
 
 <!-- overview -->
 
 <!--
 You can use Kubernetes annotations to attach arbitrary non-identifying metadata
-to objects. Clients such as tools and libraries can retrieve this metadata.
+to {{< glossary_tooltip text="objects" term_id="object" >}}.
+Clients such as tools and libraries can retrieve this metadata.
 -->
-你可以使用 Kubernetes 注解为对象附加任意的非标识的元数据。客户端程序（例如工具和库）能够获取这些元数据信息。
+你可以使用 Kubernetes 注解为{{< glossary_tooltip text="对象" term_id="object" >}}附加任意的非标识的元数据。
+客户端程序（例如工具和库）能够获取这些元数据信息。
 
 <!-- body -->
+
 <!--
 ## Attaching metadata to objects
 
@@ -27,7 +29,8 @@ objects. Labels can be used to select objects and to find
 collections of objects that satisfy certain conditions. In contrast, annotations
 are not used to identify and select objects. The metadata
 in an annotation can be small or large, structured or unstructured, and can
-include characters not permitted by labels.
+include characters not permitted by labels. It is possible to use labels as 
+well as annotations in the metadata of the same object.
 
 Annotations, like labels, are key/value maps:
 -->
@@ -36,6 +39,7 @@ Annotations, like labels, are key/value maps:
 你可以使用标签或注解将元数据附加到 Kubernetes 对象。
 标签可以用来选择对象和查找满足某些条件的对象集合。 相反，注解不用于标识和选择对象。
 注解中的元数据，可以很小，也可以很大，可以是结构化的，也可以是非结构化的，能够包含标签不允许的字符。
+可以在同一对象的元数据中同时使用标签和注解。
 
 注解和标签一样，是键/值对：
 
@@ -67,19 +71,20 @@ Here are some examples of information that could be recorded in annotations:
   as annotations distinguishes them from default values set by clients or
   servers, and from auto-generated fields and fields set by
   auto-sizing or auto-scaling systems.
+-->
+* 由声明性配置所管理的字段。
+  将这些字段附加为注解，能够将它们与客户端或服务端设置的默认值、
+  自动生成的字段以及通过自动调整大小或自动伸缩系统设置的字段区分开来。
 
+<!--
 * Build, release, or image information like timestamps, release IDs, git branch,
   PR numbers, image hashes, and registry address.
 
 * Pointers to logging, monitoring, analytics, or audit repositories.
 -->
-
-* 由声明性配置所管理的字段。
-  将这些字段附加为注解，能够将它们与客户端或服务端设置的默认值、
-  自动生成的字段以及通过自动调整大小或自动伸缩系统设置的字段区分开来。
 * 构建、发布或镜像信息（如时间戳、发布 ID、Git 分支、PR 数量、镜像哈希、仓库地址）。
-* 指向日志记录、监控、分析或审计仓库的指针。
 
+* 指向日志记录、监控、分析或审计仓库的指针。
 
 <!--
 * Client library or tool information that can be used for debugging purposes:
@@ -89,19 +94,20 @@ Here are some examples of information that could be recorded in annotations:
   from other ecosystem components.
 
 * Lightweight rollout tool metadata: for example, config or checkpoints.
+-->
+* 可用于调试目的的客户端库或工具信息：例如，名称、版本和构建信息。
 
+* 用户或者工具/系统的来源信息，例如来自其他生态系统组件的相关对象的 URL。
+  
+* 轻量级上线工具的元数据信息：例如，配置或检查点。
+
+<!--
 * Phone or pager numbers of persons responsible, or directory entries that
   specify where that information can be found, such as a team web site.
 
 * Directives from the end-user to the implementations to modify behavior or
   engage non-standard features.
 -->
-* 可用于调试目的的客户端库或工具信息：例如，名称、版本和构建信息。
-
-* 用户或者工具/系统的来源信息，例如来自其他生态系统组件的相关对象的 URL。
-
-* 轻量级上线工具的元数据信息：例如，配置或检查点。
-
 * 负责人员的电话或呼机号码，或指定在何处可以找到该信息的目录条目，如团队网站。
 
 * 从用户到最终运行的指令，以修改行为或使用非标准功能。
@@ -124,24 +130,38 @@ If the prefix is omitted, the annotation Key is presumed to be private to the us
 -->
 ## 语法和字符集
 
-_注解（Annotations）_ 存储的形式是键/值对。有效的注解键分为两部分：
+**注解（annotations）** 存储的形式是键/值对。有效的注解键分为两部分：
 可选的前缀和名称，以斜杠（`/`）分隔。 
 名称段是必需项，并且必须在 63 个字符以内，以字母数字字符（`[a-z0-9A-Z]`）开头和结尾，
 并允许使用破折号（`-`），下划线（`_`），点（`.`）和字母数字。 
 前缀是可选的。如果指定，则前缀必须是 DNS 子域：一系列由点（`.`）分隔的 DNS 标签，
 总计不超过 253 个字符，后跟斜杠（`/`）。
+  
 如果省略前缀，则假定注解键对用户是私有的。 由系统组件添加的注解
-（例如，`kube-scheduler`，`kube-controller-manager`，`kube-apiserver`，`kubectl`
+（例如 `kube-scheduler`、`kube-controller-manager`、`kube-apiserver`、`kubectl`
 或其他第三方组件），必须为终端用户添加注解前缀。
 
 <!--
 The `kubernetes.io/` and `k8s.io/` prefixes are reserved for Kubernetes core components.
-
-For example, here's the configuration file for a Pod that has the annotation `imageregistry: https://hub.docker.com/` :
 -->
 `kubernetes.io/` 和 `k8s.io/` 前缀是为 Kubernetes 核心组件保留的。
 
-例如，下面是一个 Pod 的配置文件，其注解中包含 `imageregistry: https://hub.docker.com/`：
+<!--
+Valid annotation values have no character set restrictions — unlike label values, annotation values may contain any string, including special characters, whitespace, and structured data such as JSON or YAML.
+If you plan to store binary data (such as [CBOR](https://cbor.io/)),
+the Kubernetes project recommends that you base64 encode it.
+However, the total size of **all** annotations on a single object (keys and values combined) must not exceed 256 KiB.
+-->
+有效的注解值没有字符集限制 — 与标签值不同，注解值可以包含任何字符串，包括特殊字符、空格以及如
+JSON 或 YAML 的结构化数据。如果你计划存储二进制数据（例如 [CBOR](https://cbor.io/)），
+Kubernetes 项目建议你使用 base64 编码。
+然而，单个对象上的**所有**注解的总大小（键和值合计）不得超过 256 KiB。
+
+<!--
+For example, here's a manifest for a Pod that has the annotation `imageregistry: https://hub.docker.com/` :
+-->
+例如，下面是一个 Pod 的清单，其注解中包含
+`imageregistry: https://hub.docker.com/`：
 
 ```yaml
 apiVersion: v1
@@ -153,7 +173,7 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: nginx:1.7.9
+    image: nginx:1.14.2
     ports:
     - containerPort: 80
 ```
@@ -161,7 +181,8 @@ spec:
 ## {{% heading "whatsnext" %}}
 
 <!--
-* Learn more about [Labels and Selectors](/docs/concepts/overview/working-with-objects/labels/).
+- Learn more about [Labels and Selectors](/docs/concepts/overview/working-with-objects/labels/).
+- Find [Well-known labels, Annotations and Taints](/docs/reference/labels-annotations-taints/)
 -->
-* 进一步了解[标签和选择算符](/zh-cn/docs/concepts/overview/working-with-objects/labels/)。
-
+- 进一步了解[标签和选择算符](/zh-cn/docs/concepts/overview/working-with-objects/labels/)。
+- 查找[众所周知的标签、注解和污点](/zh-cn/docs/reference/labels-annotations-taints/)。

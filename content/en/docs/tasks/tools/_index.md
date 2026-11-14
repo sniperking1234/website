@@ -3,7 +3,17 @@ title: "Install Tools"
 description: Set up Kubernetes tools on your computer.
 weight: 10
 no_list: true
+card:
+  name: tasks
+  weight: 20
+  anchors:
+  - anchor: "#kubectl"
+    title: Install kubectl
 ---
+
+{{< note >}}
+See the [Learning environment](/docs/setup/learning-environment/) page to set up a practice environment.
+{{< /note >}}
 
 ## kubectl
 
@@ -14,7 +24,7 @@ You can use kubectl to deploy applications, inspect and manage cluster resources
 and view logs. For more information including a complete list of kubectl operations, see the
 [`kubectl` reference documentation](/docs/reference/kubectl/).
 
-kubectl is installable on a variety of Linux platforms, macOS and Windows. 
+kubectl is installable on a variety of Linux platforms, macOS and Windows.
 Find your preferred operating system below.
 
 - [Install kubectl on Linux](/docs/tasks/tools/install-kubectl-linux)
@@ -23,9 +33,9 @@ Find your preferred operating system below.
 
 ## kind
 
-[`kind`](https://kind.sigs.k8s.io/docs/) lets you run Kubernetes on
-your local computer. This tool requires that you have
-[Docker](https://docs.docker.com/get-docker/) installed and configured.
+[`kind`](https://kind.sigs.k8s.io/) lets you run Kubernetes on
+your local computer. This tool requires that you have either
+[Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed.
 
 The kind [Quick Start](https://kind.sigs.k8s.io/docs/user/quick-start/) page
 shows you what you need to do to get up and running with kind.
@@ -35,7 +45,7 @@ shows you what you need to do to get up and running with kind.
 ## minikube
 
 Like `kind`, [`minikube`](https://minikube.sigs.k8s.io/) is a tool that lets you run Kubernetes
-locally. `minikube` runs a single-node Kubernetes cluster on your personal
+locally. `minikube` runs an all-in-one or a multi-node local Kubernetes cluster on your personal
 computer (including Windows, macOS and Linux PCs) so that you can try out
 Kubernetes, or for daily development work.
 

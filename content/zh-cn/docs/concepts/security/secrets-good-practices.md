@@ -15,20 +15,17 @@ weight: 70
 
 <!-- overview -->
 
-<!--
-{{<glossary_definition prepend="In Kubernetes, a Secret is an object that"
+{{<glossary_definition prepend="在 Kubernetes 中，Secret 是这样一个对象："
 term_id="secret" length="all">}}
 
+<!--
 The following good practices are intended for both cluster administrators and
 application developers. Use these guidelines to improve the security of your
 sensitive information in Secret objects, as well as to more effectively manage
 your Secrets.
 -->
-{{<glossary_definition prepend="在 Kubernetes 中，Secret 是这样一个对象："
-term_id="secret" length="all">}}
-
-以下良好实践适用于集群管理员和应用开发者。遵从这些指导方针有助于提高 Secret 对象中敏感信息的安全性，
-还可以更有效地管理你的 Secret。
+以下良好实践适用于集群管理员和应用开发者。遵从这些指导方针有助于提高 Secret
+对象中敏感信息的安全性，还可以更有效地管理你的 Secret。
 
 <!-- body -->
 
@@ -77,7 +74,7 @@ also follow the other guidelines in
   privileged, system-level components. Only grant `get` access for Secrets if
   the component's normal behavior requires it.
 - **Humans**: Restrict `get`, `watch`, or `list` access to Secrets. Only allow
-  cluster admistrators to access `etcd`. This includes read-only access. For
+  cluster administrators to access `etcd`. This includes read-only access. For
   more complex access control, such as restricting access to Secrets with
   specific annotations, consider using third-party authorization mechanisms.
 -->
@@ -114,6 +111,14 @@ recommendations include:
 -->
 * 使用生命期短暂的 Secret
 * 实现对特定事件发出警报的审计规则，例如同一用户并发读取多个 Secret 时发出警报
+
+<!--
+#### Restrict Access for Secrets
+Use separate namespaces to isolate access to mounted secrets.
+-->
+#### 限制 Secret 的访问
+
+使用单独的命名空间来隔离对挂载 Secret 的访问。
 
 <!--
 ### Improve etcd management policies
@@ -155,6 +160,17 @@ For a list of supported providers, refer to
 -->
 有关支持的提供商列表，请参阅
 [Secret 存储 CSI 驱动的提供商](https://secrets-store-csi-driver.sigs.k8s.io/concepts.html#provider-for-the-secrets-store-csi-driver)。
+
+<!--
+## Good practices for using swap memory
+
+For best practices for setting swap memory for Linux nodes, please refer to
+[swap memory management](/docs/concepts/cluster-administration/swap-memory-management/#good-practice-for-using-swap-in-a-kubernetes-cluster).
+-->
+## 使用交换内存的良好实践     {#good-practices-for-using-swap-memory}
+
+对于为 Linux 节点设置交换内存的最佳实践，
+请参阅[交换内存管理](/zh-cn/docs/concepts/cluster-administration/swap-memory-management/#good-practice-for-using-swap-in-a-kubernetes-cluster)。
 
 <!--
 ## Developers
@@ -206,10 +222,10 @@ repository means the secret is available to everyone who can read the manifest.
 同时将该 Secret 数据编码为 base64，
 那么共享此文件或将其检入一个源代码仓库就意味着有权读取该清单的所有人都能使用该 Secret。
 
-{{<caution>}}
+{{< caution >}}
 <!--
 Base64 encoding is _not_ an encryption method, it provides no additional
 confidentiality over plain text.
 -->
-Base64 编码 **不是** 一种加密方法，它没有为纯文本提供额外的保密机制。
-{{</caution>}}
+Base64 编码**不是**一种加密方法，它没有为纯文本提供额外的保密机制。
+{{< /caution >}}

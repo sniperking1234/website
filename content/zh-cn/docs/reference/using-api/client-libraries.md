@@ -17,8 +17,7 @@ weight: 30
 This page contains an overview of the client libraries for using the Kubernetes
 API from various programming languages.
 -->
-本页面包含基于各种编程语言使用 Kubernetes API 的客户端库概述。
-
+本页面概要介绍了基于各种编程语言使用 Kubernetes API 的客户端库。
 
 <!-- body -->
 <!--
@@ -38,7 +37,7 @@ understand the [kubeconfig file](/docs/tasks/access-application-cluster/configur
 format to read the credentials and the API Server address.
 -->
 客户端库通常为你处理诸如身份验证之类的常见任务。
-如果 API 客户端在 Kubernetes 集群中运行，大多数客户端库可以发现并使用 Kubernetes 服务帐户进行身份验证，
+如果 API 客户端在 Kubernetes 集群中运行，大多数客户端库可以发现并使用 Kubernetes 服务账号进行身份验证，
 或者能够理解 [kubeconfig 文件](/zh-cn/docs/tasks/access-application-cluster/configure-access-multiple-clusters/)
 格式来读取凭据和 API 服务器地址。
 
@@ -49,30 +48,31 @@ format to read the credentials and the API Server address.
 
 <!--
 The following client libraries are officially maintained by
-[Kubernetes SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery).
+[Kubernetes SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery).
 -->
-以下客户端库由 [Kubernetes SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery) 正式维护。
+以下客户端库由 [Kubernetes SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery)
+正式维护。
 
 <!--
-| Language | Client Library | Sample Programs |
-|----------|----------------|-----------------|
+| Language   | Client Library | Sample Programs |
+|------------|----------------|-----------------|
 | C          | [github.com/kubernetes-client/c](https://github.com/kubernetes-client/c/) | [browse](https://github.com/kubernetes-client/c/tree/master/examples)
-| dotnet   | [github.com/kubernetes-client/csharp](https://github.com/kubernetes-client/csharp) | [browse](https://github.com/kubernetes-client/csharp/tree/master/examples/simple)
-| Go       | [github.com/kubernetes/client-go/](https://github.com/kubernetes/client-go/) | [browse](https://github.com/kubernetes/client-go/tree/master/examples)
-| Haskell  | [github.com/kubernetes-client/haskell](https://github.com/kubernetes-client/haskell) | [browse](https://github.com/kubernetes-client/haskell/tree/master/kubernetes-client/example)
-| Java     | [github.com/kubernetes-client/java](https://github.com/kubernetes-client/java/) | [browse](https://github.com/kubernetes-client/java#installation)
-| JavaScript   | [github.com/kubernetes-client/javascript](https://github.com/kubernetes-client/javascript) | [browse](https://github.com/kubernetes-client/javascript/tree/master/examples)
+| dotnet     | [github.com/kubernetes-client/csharp](https://github.com/kubernetes-client/csharp) | [browse](https://github.com/kubernetes-client/csharp/tree/master/examples)
+| Go         | [github.com/kubernetes/client-go/](https://github.com/kubernetes/client-go/) | [browse](https://github.com/kubernetes/client-go/tree/master/examples)
+| Haskell    | [github.com/kubernetes-client/haskell](https://github.com/kubernetes-client/haskell) | [browse](https://github.com/kubernetes-client/haskell/tree/master/kubernetes-client/example)
+| Java       | [github.com/kubernetes-client/java](https://github.com/kubernetes-client/java/) | [browse](https://github.com/kubernetes-client/java/tree/master/examples)
+| JavaScript | [github.com/kubernetes-client/javascript](https://github.com/kubernetes-client/javascript) | [browse](https://github.com/kubernetes-client/javascript/tree/master/examples)
 | Perl       | [github.com/kubernetes-client/perl/](https://github.com/kubernetes-client/perl/) | [browse](https://github.com/kubernetes-client/perl/tree/master/examples)
-| Python   | [github.com/kubernetes-client/python/](https://github.com/kubernetes-client/python/) | [browse](https://github.com/kubernetes-client/python/tree/master/examples)
+| Python     | [github.com/kubernetes-client/python/](https://github.com/kubernetes-client/python/) | [browse](https://github.com/kubernetes-client/python/tree/master/examples)
 | Ruby       | [github.com/kubernetes-client/ruby/](https://github.com/kubernetes-client/ruby/) | [browse](https://github.com/kubernetes-client/ruby/tree/master/examples)
 -->
 |   语言  |     客户端库    |     样例程序    |
 |---------|-----------------|-----------------|
 | C       | [github.com/kubernetes-client/c](https://github.com/kubernetes-client/c/) | [浏览](https://github.com/kubernetes-client/c/tree/master/examples)
-| dotnet   | [github.com/kubernetes-client/csharp](https://github.com/kubernetes-client/csharp) | [浏览](https://github.com/kubernetes-client/csharp/tree/master/examples/simple)
+| dotnet   | [github.com/kubernetes-client/csharp](https://github.com/kubernetes-client/csharp) | [浏览](https://github.com/kubernetes-client/csharp/tree/master/examples)
 | Go       | [github.com/kubernetes/client-go/](https://github.com/kubernetes/client-go/) | [浏览](https://github.com/kubernetes/client-go/tree/master/examples)
 | Haskell  | [github.com/kubernetes-client/haskell](https://github.com/kubernetes-client/haskell) | [浏览](https://github.com/kubernetes-client/haskell/tree/master/kubernetes-client/example)
-| Java     | [github.com/kubernetes-client/java](https://github.com/kubernetes-client/java/) | [浏览](https://github.com/kubernetes-client/java#installation)
+| Java     | [github.com/kubernetes-client/java](https://github.com/kubernetes-client/java/) | [浏览](https://github.com/kubernetes-client/java/tree/master/examples)
 | JavaScript   | [github.com/kubernetes-client/javascript](https://github.com/kubernetes-client/javascript) | [浏览](https://github.com/kubernetes-client/javascript/tree/master/examples)
 | Perl       | [github.com/kubernetes-client/perl/](https://github.com/kubernetes-client/perl/) | [浏览](https://github.com/kubernetes-client/perl/tree/master/examples)
 | Python   | [github.com/kubernetes-client/python/](https://github.com/kubernetes-client/python/) | [浏览](https://github.com/kubernetes-client/python/tree/master/examples)
@@ -99,7 +99,6 @@ their authors, not the Kubernetes team.
 | DotNet (RestSharp)   | [github.com/masroorhasan/Kubernetes.DotNet](https://github.com/masroorhasan/Kubernetes.DotNet) |
 | Elixir               | [github.com/obmarg/kazan](https://github.com/obmarg/kazan/) |
 | Elixir               | [github.com/coryodaniel/k8s](https://github.com/coryodaniel/k8s) |
-| Go                   | [github.com/ericchiang/k8s](https://github.com/ericchiang/k8s) |
 | Java (OSGi)          | [bitbucket.org/amdatulabs/amdatu-kubernetes](https://bitbucket.org/amdatulabs/amdatu-kubernetes) |
 | Java (Fabric8, OSGi) | [github.com/fabric8io/kubernetes-client](https://github.com/fabric8io/kubernetes-client) |
 | Java                 | [github.com/manusa/yakc](https://github.com/manusa/yakc) |
@@ -114,18 +113,23 @@ their authors, not the Kubernetes team.
 | PHP                  | [github.com/maclof/kubernetes-client](https://github.com/maclof/kubernetes-client) |
 | PHP                  | [github.com/travisghansen/kubernetes-client-php](https://github.com/travisghansen/kubernetes-client-php) |
 | PHP                  | [github.com/renoki-co/php-k8s](https://github.com/renoki-co/php-k8s) |
+| Python               | [github.com/cloudcoil/cloudcoil](https://github.com/cloudcoil/cloudcoil) |
 | Python               | [github.com/fiaas/k8s](https://github.com/fiaas/k8s) |
 | Python               | [github.com/gtsystem/lightkube](https://github.com/gtsystem/lightkube) |
+| Python               | [github.com/kr8s-org/kr8s](https://github.com/kr8s-org/kr8s) |
 | Python               | [github.com/mnubo/kubernetes-py](https://github.com/mnubo/kubernetes-py) |
+| Python               | [github.com/puzl-cloud/kubesdk](https://github.com/puzl-cloud/kubesdk) |
 | Python               | [github.com/tomplus/kubernetes_asyncio](https://github.com/tomplus/kubernetes_asyncio) |
 | Python               | [github.com/Frankkkkk/pykorm](https://github.com/Frankkkkk/pykorm) |
 | Ruby                 | [github.com/abonas/kubeclient](https://github.com/abonas/kubeclient) |
 | Ruby                 | [github.com/k8s-ruby/k8s-ruby](https://github.com/k8s-ruby/k8s-ruby) |
 | Ruby                 | [github.com/kontena/k8s-client](https://github.com/kontena/k8s-client) |
-| Rust                 | [github.com/clux/kube-rs](https://github.com/clux/kube-rs) |
+| Rust                 | [github.com/kube-rs/kube](https://github.com/kube-rs/kube) |
 | Rust                 | [github.com/ynqa/kubernetes-rust](https://github.com/ynqa/kubernetes-rust) |
 | Scala                | [github.com/hagay3/skuber](https://github.com/hagay3/skuber) |
+| Scala                | [github.com/hnaderi/scala-k8s](https://github.com/hnaderi/scala-k8s) |
 | Scala                | [github.com/joan38/kubernetes-client](https://github.com/joan38/kubernetes-client) |
+| Swift                | [github.com/swiftkube/client](https://github.com/swiftkube/client) |
 -->
 | 语言                   | 客户端库                                  |
 |----------------------| ---------------------------------------- |
@@ -134,7 +138,6 @@ their authors, not the Kubernetes team.
 | DotNet (RestSharp)   | [github.com/masroorhasan/Kubernetes.DotNet](https://github.com/masroorhasan/Kubernetes.DotNet) |
 | Elixir               | [github.com/obmarg/kazan](https://github.com/obmarg/kazan/) |
 | Elixir               | [github.com/coryodaniel/k8s](https://github.com/coryodaniel/k8s) |
-| Go                   | [github.com/ericchiang/k8s](https://github.com/ericchiang/k8s) |
 | Java (OSGi)          | [bitbucket.org/amdatulabs/amdatu-kubernetes](https://bitbucket.org/amdatulabs/amdatu-kubernetes) |
 | Java (Fabric8, OSGi) | [github.com/fabric8io/kubernetes-client](https://github.com/fabric8io/kubernetes-client) |
 | Java                 | [github.com/manusa/yakc](https://github.com/manusa/yakc) |
@@ -149,17 +152,20 @@ their authors, not the Kubernetes team.
 | PHP                  | [github.com/maclof/kubernetes-client](https://github.com/maclof/kubernetes-client) |
 | PHP                  | [github.com/travisghansen/kubernetes-client-php](https://github.com/travisghansen/kubernetes-client-php) |
 | PHP                  | [github.com/renoki-co/php-k8s](https://github.com/renoki-co/php-k8s) |
+| Python               | [github.com/cloudcoil/cloudcoil](https://github.com/cloudcoil/cloudcoil) |
 | Python               | [github.com/fiaas/k8s](https://github.com/fiaas/k8s) |
 | Python               | [github.com/gtsystem/lightkube](https://github.com/gtsystem/lightkube) |
+| Python               | [github.com/kr8s-org/kr8s](https://github.com/kr8s-org/kr8s) |
 | Python               | [github.com/mnubo/kubernetes-py](https://github.com/mnubo/kubernetes-py) |
+| Python               | [github.com/puzl-cloud/kubesdk](https://github.com/puzl-cloud/kubesdk) |
 | Python               | [github.com/tomplus/kubernetes_asyncio](https://github.com/tomplus/kubernetes_asyncio) |
 | Python               | [github.com/Frankkkkk/pykorm](https://github.com/Frankkkkk/pykorm) |
 | Ruby                 | [github.com/abonas/kubeclient](https://github.com/abonas/kubeclient) |
 | Ruby                 | [github.com/k8s-ruby/k8s-ruby](https://github.com/k8s-ruby/k8s-ruby) |
 | Ruby                 | [github.com/kontena/k8s-client](https://github.com/kontena/k8s-client) |
-| Rust                 | [github.com/clux/kube-rs](https://github.com/clux/kube-rs) |
+| Rust                 | [github.com/kube-rs/kube](https://github.com/kube-rs/kube) |
 | Rust                 | [github.com/ynqa/kubernetes-rust](https://github.com/ynqa/kubernetes-rust) |
 | Scala                | [github.com/hagay3/skuber](https://github.com/hagay3/skuber) |
+| Scala                | [github.com/hnaderi/scala-k8s](https://github.com/hnaderi/scala-k8s) |
 | Scala                | [github.com/joan38/kubernetes-client](https://github.com/joan38/kubernetes-client) |
 | Swift                | [github.com/swiftkube/client](https://github.com/swiftkube/client) |
-

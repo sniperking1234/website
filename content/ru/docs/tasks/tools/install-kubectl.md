@@ -11,7 +11,7 @@ card:
 ---
 
 <!-- overview -->
-Инструмент командной строки Kubernetes [kubectl](/docs/user-guide/kubectl/) позволяет запускать команды для кластеров Kubernetes. Вы можете использовать kubectl для развертывания приложений, проверки и управления ресурсов кластера, а также для просмотра логов. Полный список операций kubectl смотрите в [Overview of kubectl](/docs/reference/kubectl/overview/).
+Инструмент командной строки Kubernetes [kubectl](/ru/docs/reference/kubectl/kubectl/) позволяет запускать команды для кластеров Kubernetes. Вы можете использовать kubectl для развертывания приложений, проверки и управления ресурсов кластера, а также для просмотра логов. Полный список возможных операций для kubectl смотрите в [Обзоре kubectl](/ru/docs/reference/kubectl/overview/).
 
 
 ## {{% heading "prerequisites" %}}
@@ -23,34 +23,34 @@ card:
 
 ## Установка kubectl в Linux
 
-### Установка двоичного файла kubectl с помощью curl в Linux
+### Установка бинарного файла kubectl с помощью curl в Linux
 
 1. Загрузите последнюю версию с помощью команды:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/`curl -LS https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl
     ```
 
-    Чтобы загрузить определенную версию, вставьте в фрагмент команды `$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)` нужную версию.
+    Чтобы загрузить определенную версию, вставьте в фрагмент команды `$(curl -LS https://dl.k8s.io/release/stable.txt)` нужную версию.
 
-    Например, команда загрузки версии {{< param "fullversion" >}} для Linux будет выглядеть следующим образом:
+    Например, команда загрузки версии {{< skew currentPatchVersion >}} для Linux будет выглядеть следующим образом:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/linux/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/linux/amd64/kubectl
     ```
 
-2. Сделайте двоичный файл kubectl исполняемым:
+1. Сделайте бинарный файл kubectl исполняемым:
 
     ```
     chmod +x ./kubectl
     ```
 
-3. Переместите двоичный файл в директорию из переменной окружения PATH:
+1. Переместите бинарный файл в директорию из переменной окружения PATH:
 
     ```
     sudo mv ./kubectl /usr/local/bin/kubectl
     ```
-4. Убедитесь, что установлена последняя версия:
+1. Убедитесь, что установлена последняя версия:
 
     ```
     kubectl version --client
@@ -59,20 +59,23 @@ card:
 ### Установка с помощью встроенного пакетного менеджера
 
 {{< tabs name="kubectl_install" >}}
-{{< tab name="Ubuntu, Debian или HypriotOS" codelang="bash" >}}sudo apt-get update && sudo apt-get install -y apt-transport-https
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+{{< tab name="Ubuntu, Debian или HypriotOS" codelang="bash" >}}
+sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+sudo mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y kubectl
 {{< /tab >}}
-{{< tab name="CentOS, RHEL или Fedora" codelang="bash" >}}sudo cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+{{< tab name="CentOS, RHEL или Fedora" codelang="bash" >}}cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/
 enabled=1
 gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key
 EOF
 sudo yum install -y kubectl
 {{< /tab >}}
@@ -82,7 +85,7 @@ sudo yum install -y kubectl
 
 {{< tabs name="other_kubectl_install" >}}
 {{% tab name="Snap" %}}
-Если вы используйте Ubuntu или другой Linux-дистрибутив, в котором есть пакетный менеджер [snap](https://snapcraft.io/docs/core/install), kubectl доступен в виде приложения [snap](https://snapcraft.io/).
+Если вы используете Ubuntu или другой Linux-дистрибутив, в котором есть пакетный менеджер [snap](https://snapcraft.io/docs/core/install), kubectl доступен в виде приложения [snap](https://snapcraft.io/).
 
 ```shell
 snap install kubectl --classic
@@ -103,29 +106,29 @@ kubectl version
 
 ## Установка kubectl в macOS
 
-### Установка двоичного файла kubectl с помощью curl в macOS
+### Установка бинарного файла kubectl с помощью curl в macOS
 
 1. Загрузите последнюю версию:
 
     ```
-    curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl"
+    curl -LO "https://dl.k8s.io/release/$(curl -LS https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
     ```
 
-    Чтобы загрузить определенную версию, вставьте в фрагмент команды `$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)` нужную версию.
+    Чтобы загрузить определенную версию, вставьте в фрагмент команды `$(curl -LS https://dl.k8s.io/release/stable.txt)` нужную версию.
 
-    Например, команда загрузки версии {{< param "fullversion" >}} для macOS будет выглядеть следующим образом:
+    Например, команда загрузки версии {{< skew currentPatchVersion >}} для macOS будет выглядеть следующим образом:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/darwin/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/darwin/amd64/kubectl
     ```
 
-2. Сделайте двоичный файл kubectl исполняемым:
+2. Сделайте бинарный файл kubectl исполняемым:
 
     ```
     chmod +x ./kubectl
     ```
 
-3. Переместите двоичный файл в директорию из переменной окружения PATH:
+3. Переместите бинарный файл в директорию из переменной окружения PATH:
 
     ```
     sudo mv ./kubectl /usr/local/bin/kubectl
@@ -178,20 +181,20 @@ kubectl version
 
 ## Установка kubectl в Windows
 
-### Установка двоичного файла kubectl с помощью curl в Windows
+### Установка бинарного файла kubectl с помощью curl в Windows
 
-1. Загрузите последнюю версию {{< param "fullversion" >}} по [этой ссылке](https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/windows/amd64/kubectl.exe).
+1. Загрузите последнюю версию {{< skew currentPatchVersion >}} по [этой ссылке](https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/windows/amd64/kubectl.exe).
 
     Либо, если у вас установлен `curl`, выполните команду ниже:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/windows/amd64/kubectl.exe
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/windows/amd64/kubectl.exe
     ```
 
-    Последнюю стабильную версию (например, при написании скриптов) вы можете узнать из файла по ссылке [https://storage.googleapis.com/kubernetes-release/release/stable.txt](https://storage.googleapis.com/kubernetes-release/release/stable.txt).
+    Последнюю стабильную версию (например, при написании скриптов) вы можете узнать из файла по ссылке [https://dl.k8s.io/release/stable.txt](https://dl.k8s.io/release/stable.txt).
 
-2. Переместите двоичный файл в директорию из переменной окружения PATH:
-3. Убедитесь, что версия `kubectl` совпадает загружённой:
+2. Переместите бинарный файл в директорию из переменной окружения PATH:
+3. Убедитесь, что версия `kubectl` соответствует загружённой:
 
     ```
     kubectl version --client
@@ -199,7 +202,7 @@ kubectl version
 {{< note >}}
 
 [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/#kubernetes) добавляет собственную версию `kubectl` в переменную окружения `PATH`.
-Если у вас установлен Docker Desktop, вам придётся поместить путь к установленному двоичному файлу перед записью, добавленной установщиком Docker Desktop, либо же удалить вовсе `kubectl`, поставляемый вместе с Docker Desktop.
+Если у вас установлен Docker Desktop, вам придётся поместить путь к установленному бинарному файлу перед записью, добавленной установщиком Docker Desktop, либо же удалить вовсе `kubectl`, поставляемый вместе с Docker Desktop.
 {{< /note >}}
 
 ### Установка с помощью Powershell из PSGallery
@@ -227,7 +230,7 @@ kubectl version
 
 ### Установка в Windows с помощью Chocolatey или Scoop
 
-Для установки kubectl в Windows вы можете использовать либо менеджер пакетов [Chocolatey](https://chocolatey.org) , либо установщик в командной строке [Scoop](https://scoop.sh).
+Для установки kubectl в Windows вы можете использовать либо менеджер пакетов [Chocolatey](https://chocolatey.org), либо установщик в командной строке [Scoop](https://scoop.sh).
 
 {{< tabs name="kubectl_win_install" >}}
 {{% tab name="choco" %}}
@@ -241,31 +244,32 @@ kubectl version
 
 {{% /tab %}}
 {{< /tabs >}}
-2. Убедитесь, что установлена последняя версия:
+
+1. Убедитесь, что установлена последняя версия:
 
     ```
     kubectl version --client
     ```
 
-3. Перейдите в домашнюю директорию:
+1. Перейдите в домашнюю директорию:
 
     ```
     cd %USERPROFILE%
     ```
 
-4. Создайте директорию `.kube`:
+1. Создайте директорию `.kube`:
 
     ```
     mkdir .kube
     ```
 
-5. Перейдите в созданную только что директорию `.kube`:
+1. Перейдите в созданную только что директорию `.kube`:
 
     ```
     cd .kube
     ```
 
-6. Настройте kubectl, чтобы возможно было использовать удаленный кластер Kubernetes:
+1. Настройте kubectl, чтобы было возможно использовать удаленный кластер Kubernetes:
 
     ```
     New-Item config -type file
@@ -300,7 +304,7 @@ kubectl version
 kubectl cluster-info
 ```
 
-Если вы видите URL-ответ, значит kubectl корректно настроен для работы с вашим кластером.
+Если вы видите URL в ответ, значит kubectl корректно настроен для работы с вашим кластером.
 
 Если вы видите сообщение следующего содержания, то значит kubectl настроен некорректно или не может подключиться к кластеру Kubernetes:
 
@@ -310,7 +314,7 @@ The connection to the server <server-name:port> was refused - did you specify th
 
 Например, если вы собираетесь запустить кластер Kubernetes на своем ноутбуке (локально), вам потребуется сначала установить специальный для этого инструмент, например Minikube, а затем снова выполнить указанные выше команды.
 
-Если команда `kubectl cluster-info` возвращает URL-ответ, но вы не можете подключиться к своему кластеру, чтобы убедиться, что он правильно настроен, воспользуйтесь этой командой:
+Если команда `kubectl cluster-info` возвращает URL в ответ, но вы не можете подключиться к своему кластеру, чтобы убедиться, что он правильно настроен, воспользуйтесь этой командой:
 
 ```shell
 kubectl cluster-info dump
@@ -338,15 +342,15 @@ kubectl поддерживает автодополнение (автозапо�
 
 bash-completion можно установить через многие менеджеры пакеты (см. [здесь](https://github.com/scop/bash-completion#installation)). Вы можете установить его с помощью `apt-get install bash-completion` или `yum install bash-completion` и т.д.
 
-Приведенные выше команды создадут файл `/usr/share/bash-completion/bash_completion`, который является основным скриптом bash-completion. В зависимости от используемого менеджера пакетов, вы можете подключить этот файл в файле  `~/.bashrc`.
+Приведенные выше команды создадут файл `/usr/share/bash-completion/bash_completion`, который является основным скриптом bash-completion. Возможно, вам потребуется вручную подключить этот файл в `~/.bashrc` (необходимость выполнять эту операцию зависит от используемого менеджера пакетов).
 
-Чтобы убедиться, что этот скрипт выполняется, перезагрузите оболочку и выполните команду `type _init_completion`. Если команда отработала успешно, установка сделана правильно, в противном случае добавьте следующее содержимое в файл `~/.bashrc`:
+Чтобы убедиться, что всё работает, перезагрузите оболочку и выполните команду `type _init_completion`. Если команда отработала успешно, установка сделана правильно, в противном случае добавьте следующее содержимое в файл `~/.bashrc`:
 
 ```shell
 source /usr/share/bash-completion/bash_completion
 ```
 
-Перезагрузите вашу оболочку и убедитесь, что bash-completion правильно установлен, напечатав в терминале `type _init_completion`.
+Перезагрузите вашу оболочку и убедитесь, что bash-completion правильно установлен, выполнив команду `type _init_completion`.
 
 ### Включение автодополнения ввода kubectl
 
@@ -375,7 +379,7 @@ source /usr/share/bash-completion/bash_completion
 Все скрипты дополнения ввода bash-completion находятся в `/etc/bash_completion.d`.
 {{< /note >}}
 
-Оба подхода эквивалентны. После перезагрузки вашей оболочки, должны появляться дополнения ввода kubectl.
+Оба подхода эквивалентны. После перезагрузки вашей оболочки автодополнение ввода для kubectl должно работать.
 
 {{% /tab %}}
 
@@ -390,7 +394,7 @@ source /usr/share/bash-completion/bash_completion
 Однако скрипт дополнения ввода kubectl зависит от пакета [**bash-completion**](https://github.com/scop/bash-completion), который первым делом нужно установить.
 
 {{< warning>}}
-Есть две версии bash-completion: первая (v1) и вторая (v2). Первая предназначена для Bash 3.2 (который используется по умолчанию в macOS), а вторая — для Bash 4.1+. Скрипт дополнения ввода kubectl **не работает** корректно с bash-completion v1 и Bash 3.2. Требуется **bash-completion v2** и **Bash 4.1+**. Таким образом, чтобы правильно использовать дополнение kubectl в macOS, вам нужно установить и использовать Bash 4.1+ ([*инструкции по обновлению*](https://itnext.io/upgrading-bash-on-macos-7138bd1066ba)). Последующие шаги предполагают, что вы используете Bash 4.1+ (то есть любую версию Bash 4.1 или более новую).
+Есть две версии bash-completion: первая (v1) и вторая (v2). Первая предназначена для Bash 3.2 (который используется по умолчанию в macOS), а вторая — для Bash 4.1+. Скрипт дополнения ввода kubectl **не работает** корректно с bash-completion v1 и Bash 3.2. Требуется **bash-completion v2** и **Bash 4.1+**. Таким образом, чтобы правильно использовать дополнение kubectl в macOS, вам нужно установить и использовать Bash 4.1+ ([*инструкции по обновлению*](https://apple.stackexchange.com/a/292760)). Последующие шаги предполагают, что вы используете Bash 4.1+ (то есть любую версию Bash 4.1 или более новую).
 {{< /warning >}}
 
 
@@ -413,7 +417,7 @@ export BASH_COMPLETION_COMPAT_DIR="/usr/local/etc/bash_completion.d"
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 ```
 
-Перезагрузите вашу командную оболочку и убедитесь, что bash-completion v2 корректно установлен, напечатав в терминале `type _init_completion`.
+Перезагрузите вашу командную оболочку и убедитесь, что bash-completion v2 корректно установлен, выполнив команду `type _init_completion`.
 
 ### Включение автодополнения ввода kubectl
 
@@ -444,12 +448,12 @@ export BASH_COMPLETION_COMPAT_DIR="/usr/local/etc/bash_completion.d"
 Homebrew устанавливает bash-completion v2 в директорию `BASH_COMPLETION_COMPAT_DIR`, что делает рабочими два метода.
 {{< /note >}}
 
-Какой вариант бы вы не выбрали, после перезагрузки командной оболочки, дополнение ввода kubectl должно заработать.
+Какой бы вариант вы ни выбрали, после перезагрузки командной оболочки автодополнение ввода для kubectl должно заработать.
 {{% /tab %}}
 
 {{% tab name="Zsh" %}}
 
-Скрипт дополнения ввода kubectl для Zsh может быть сгенерирован с помощью команды `kubectl completion zsh`. Подключение скрипта дополнения ввода в вашу оболочку включает поддержку автозаполнения ввода для kubectl.
+Скрипт дополнения ввода kubectl для Zsh может быть сгенерирован с помощью команды `kubectl completion zsh`. Подключение скрипта дополнения ввода в вашу оболочку включает поддержку автодополнения ввода для kubectl.
 
 Чтобы подключить его во все сессии командной оболочки, добавьте следующую строчку в файл `~/.zshrc`:
 
@@ -466,7 +470,7 @@ echo 'compdef __start_kubectl k' >>~/.zshrc
 
 После перезагрузки командной оболочки должны появляться дополнения ввода kubectl.
 
-Если появляется такая ошибка как `complete:13: command not found: compdef`, то добавьте следующее содержимое в начало вашего файла `~/.zshrc`:
+Если появляется ошибка `complete:13: command not found: compdef`, то добавьте следующее содержимое в начало вашего файла `~/.zshrc`:
 
 ```shell
 autoload -Uz compinit
@@ -479,9 +483,9 @@ compinit
 
 ## {{% heading "whatsnext" %}}
 
-* [Установка Minikube](/ru/docs/tasks/tools/install-minikube/)
-* Смотрите [руководства по установке](/docs/setup/), чтобы узнать больше про создание кластеров.
-* [Learn how to launch and expose your application.](/docs/tasks/access-application-cluster/service-access-application-cluster/)
-* Если у вас нет доступа к кластеру, который не создавали, посмотрите страницу [Совместный доступ к кластеру](/docs/tasks/access-application-cluster/configure-access-multiple-clusters/).
-* Read the [kubectl reference docs](/docs/reference/kubectl/kubectl/)
+* [Установка Minikube](/ru/docs/tasks/tools/install-minikube/).
+* Смотрите [руководства по установке](/ru/docs/setup/), чтобы узнать больше про создание кластеров.
+* [Научитесь запускать и делать доступным приложение](/docs/tasks/access-application-cluster/service-access-application-cluster/).
+* Если вам нужен доступ к кластеру, созданный не вами, посмотрите страницу [Configure Access to Multiple Clusters](/docs/tasks/access-application-cluster/configure-access-multiple-clusters/).
+* Читайте [референсную документацию kubectl](/docs/reference/kubectl/kubectl/).
 

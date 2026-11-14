@@ -16,7 +16,7 @@ Cette page montre comment mettre à jour les documents de référence générés
 Vous devez avoir ces outils installés:
 
 * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-* [Golang](https://golang.org/doc/install) version 1.9.1 ou ultérieur
+* [Golang](https://go.dev/doc/install) version 1.9.1 ou ultérieur
 * [Docker](https://docs.docker.com/engine/installation/)
 * [etcd](https://github.com/coreos/etcd/)
 
@@ -317,7 +317,7 @@ Dans cet exemple, un seul fichier a été modifié.
 Rappelez-vous que vous avez généré les deux `index.html` et `navData.js`.
 Mais apparemment le généré `navata.js` n'est pas différent du `navData.js` c'était déjà dans le dépôt `kubernetes/website`.
 
-Dans `<web-base>` executez `git add` et `git commit` pour enregistrer le commit du changement.
+Dans `<web-base>` exécutez `git add` et `git commit` pour enregistrer le commit du changement.
 
 Soumettez vos modifications en tant que [pull request](/docs/home/contribute/create-pull-request/) au dépôt [kubernetes/website](https://github.com/kubernetes/website).
 Surveillez votre pull request, et répondez aux commentaires des relecteurs au besoin.
@@ -332,6 +332,5 @@ Quelques minutes après que votre pull request soit fusionnée, vos modification
 
 * [Génération de documents de référence pour les composants et les outils Kubernetes](/docs/home/contribute/generated-reference/kubernetes-components/)
 * [Génération de documentation de référence pour les commandes kubectl](/docs/home/contribute/generated-reference/kubectl/)
-* [Génération de documentation de référence pour l'API de fédération Kubernetes](/docs/home/contribute/generated-reference/federation-api/)
 
 

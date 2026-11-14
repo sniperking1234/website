@@ -2,8 +2,11 @@
 reviewers:
 - freehan
 title: EndpointSlices
+api_metadata:
+- apiVersion: "discovery.k8s.io/v1"
+  kind: "EndpointSlice"
 content_type: concept
-weight: 45
+weight: 60
 description: >-
   The EndpointSlice API is the mechanism that Kubernetes uses to let your Service
   scale to handle large numbers of backends, and allows the cluster to update its
@@ -15,44 +18,23 @@ description: >-
 
 {{< feature-state for_k8s_version="v1.21" state="stable" >}}
 
-_EndpointSlices_ provide a simple way to track network endpoints within a
-Kubernetes cluster. They offer a more scalable and extensible alternative to
-Endpoints.
-
-
+{{< glossary_definition term_id="endpoint-slice" length="short" >}}
 
 <!-- body -->
 
-## Motivation
-
-The Endpoints API has provided a simple and straightforward way of
-tracking network endpoints in Kubernetes. Unfortunately as Kubernetes clusters
-and {{< glossary_tooltip text="Services" term_id="service" >}} have grown to handle and
-send more traffic to more backend Pods, limitations of that original API became
-more visible.
-Most notably, those included challenges with scaling to larger numbers of
-network endpoints.
-
-Since all network endpoints for a Service were stored in a single Endpoints
-resource, those resources could get quite large. That affected the performance
-of Kubernetes components (notably the master control plane) and resulted in
-significant amounts of network traffic and processing when Endpoints changed.
-EndpointSlices help you mitigate those issues as well as provide an extensible
-platform for additional features such as topological routing.
-
-## EndpointSlice resources {#endpointslice-resource}
+## EndpointSlice API {#endpointslice-resource}
 
 In Kubernetes, an EndpointSlice contains references to a set of network
 endpoints. The control plane automatically creates EndpointSlices
 for any Kubernetes Service that has a {{< glossary_tooltip text="selector"
 term_id="selector" >}} specified. These EndpointSlices include
 references to all the Pods that match the Service selector. EndpointSlices group
-network endpoints together by unique combinations of protocol, port number, and
-Service name.
+network endpoints together by unique combinations of IP family, protocol,
+port number, and Service name.
 The name of a EndpointSlice object must be a valid
 [DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
 
-As an example, here's a sample EndpointSlice resource for the `example`
+As an example, here's a sample EndpointSlice object, that's owned by the `example`
 Kubernetes Service.
 
 ```yaml
@@ -83,58 +65,55 @@ more than 100 endpoints each. You can configure this with the
 {{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager" >}}
 flag, up to a maximum of 1000.
 
-EndpointSlices can act as the source of truth for
+EndpointSlices act as the source of truth for
 {{< glossary_tooltip term_id="kube-proxy" text="kube-proxy" >}} when it comes to
-how to route internal traffic. When enabled, they should provide a performance
-improvement for services with large numbers of endpoints.
+how to route internal traffic.
 
 ### Address types
 
-EndpointSlices support three address types:
+EndpointSlices support two address types:
 
 * IPv4
 * IPv6
-* FQDN (Fully Qualified Domain Name)
+
+Each `EndpointSlice` object represents a specific IP address type. If you have
+a Service that is available via IPv4 and IPv6, there will be at least two
+`EndpointSlice` objects (one for IPv4, and one for IPv6).
 
 ### Conditions
 
 The EndpointSlice API stores conditions about endpoints that may be useful for consumers.
-The three conditions are `ready`, `serving`, and `terminating`.
-
-#### Ready
-
-`ready` is a condition that maps to a Pod's `Ready` condition. A running Pod with the `Ready`
-condition set to `True` should have this EndpointSlice condition also set to `true`. For
-compatibility reasons, `ready` is NEVER `true` when a Pod is terminating. Consumers should refer
-to the `serving` condition to inspect the readiness of terminating Pods. The only exception to
-this rule is for Services with `spec.publishNotReadyAddresses` set to `true`. Endpoints for these
-Services will always have the `ready` condition set to `true`.
+The three conditions are `serving`, `terminating`, and `ready`.
 
 #### Serving
 
-{{< feature-state for_k8s_version="v1.22" state="beta" >}}
+{{< feature-state for_k8s_version="v1.26" state="stable" >}}
 
-`serving` is identical to the `ready` condition, except it does not account for terminating states.
-Consumers of the EndpointSlice API should check this condition if they care about pod readiness while
-the pod is also terminating.
-
-{{< note >}}
-
-Although `serving` is almost identical to `ready`, it was added to prevent break the existing meaning
-of `ready`. It may be unexpected for existing clients if `ready` could be `true` for terminating
-endpoints, since historically terminating endpoints were never included in the Endpoints or
-EndpointSlice API to begin with. For this reason, `ready` is _always_ `false` for terminating
-endpoints, and a new condition `serving` was added in v1.20 so that clients can track readiness
-for terminating pods independent of the existing semantics for `ready`.
-
-{{< /note >}}
+The `serving` condition indicates that the endpoint is currently serving responses, and
+so it should be used as a target for Service traffic. For endpoints backed by a Pod, this
+maps to the Pod's `Ready` condition.
 
 #### Terminating
 
-{{< feature-state for_k8s_version="v1.22" state="beta" >}}
+{{< feature-state for_k8s_version="v1.26" state="stable" >}}
 
-`Terminating` is a condition that indicates whether an endpoint is terminating.
-For pods, this is any pod that has a deletion timestamp set.
+The `terminating` condition indicates that the endpoint is
+terminating. For endpoints backed by a Pod, this condition is set when
+the Pod is first deleted (that is, when it receives a deletion
+timestamp, but most likely before the Pod's containers exit).
+
+Service proxies will normally ignore endpoints that are `terminating`,
+but they may route traffic to endpoints that are both `serving` and
+`terminating` if all available endpoints are `terminating`. (This
+helps to ensure that no Service traffic is lost during rolling updates
+of the underlying Pods.)
+
+#### Ready
+
+The `ready` condition is essentially a shortcut for checking
+"`serving` and not `terminating`" (though it will also always be
+`true` for Services with `spec.publishNotReadyAddresses` set to
+`true`).
 
 ### Topology information {#topology}
 
@@ -145,18 +124,6 @@ per endpoint fields on EndpointSlices:
 
 * `nodeName` - The name of the Node this endpoint is on.
 * `zone` - The zone this endpoint is in.
-
-{{< note >}}
-In the v1 API, the per endpoint `topology` was effectively removed in favor of
-the dedicated fields `nodeName` and `zone`.
-
-Setting arbitrary topology fields on the `endpoint` field of an `EndpointSlice`
-resource has been deprecated and is not supported in the v1 API.
-Instead, the v1 API supports setting individual `nodeName` and `zone` fields.
-These fields are automatically translated between API versions. For example, the
-value of the `"topology.kubernetes.io/zone"` key in the `topology` field in
-the v1beta1 API is accessible as the `zone` field in the v1 API.
-{{< /note >}}
 
 ### Management
 
@@ -182,34 +149,12 @@ slice object tracks endpoints for. This ownership is indicated by an owner
 reference on each EndpointSlice as well as a `kubernetes.io/service-name`
 label that enables simple lookups of all EndpointSlices belonging to a Service.
 
-### EndpointSlice mirroring
-
-In some cases, applications create custom Endpoints resources. To ensure that
-these applications do not need to concurrently write to both Endpoints and
-EndpointSlice resources, the cluster's control plane mirrors most Endpoints
-resources to corresponding EndpointSlices.
-
-The control plane mirrors Endpoints resources unless:
-
-* the Endpoints resource has a `endpointslice.kubernetes.io/skip-mirror` label
-  set to `true`.
-* the Endpoints resource has a `control-plane.alpha.kubernetes.io/leader`
-  annotation.
-* the corresponding Service resource does not exist.
-* the corresponding Service resource has a non-nil selector.
-
-Individual Endpoints resources may translate into multiple EndpointSlices. This
-will occur if an Endpoints resource has multiple subsets or includes endpoints
-with multiple IP families (IPv4 and IPv6). A maximum of 1000 addresses per
-subset will be mirrored to EndpointSlices.
-
 ### Distribution of EndpointSlices
 
 Each EndpointSlice has a set of ports that applies to all endpoints within the
 resource. When named ports are used for a Service, Pods may end up with
 different target port numbers for the same named port, requiring different
-EndpointSlices. This is similar to the logic behind how subsets are grouped
-with Endpoints.
+EndpointSlices.
 
 The control plane tries to fill EndpointSlices as full as possible, but does not
 actively rebalance them. The logic is fairly straightforward:
@@ -226,7 +171,7 @@ perfectly full distribution of EndpointSlices. As an example, if there are 10
 new endpoints to add and 2 EndpointSlices with room for 5 more endpoints each,
 this approach will create a new EndpointSlice instead of filling up the 2
 existing EndpointSlices. In other words, a single EndpointSlice creation is
-preferrable to multiple EndpointSlice updates.
+preferable to multiple EndpointSlice updates.
 
 With kube-proxy running on each Node and watching EndpointSlices, every change
 to an EndpointSlice becomes relatively expensive since it will be transmitted to
@@ -245,12 +190,51 @@ getting replaced.
 
 Due to the nature of EndpointSlice changes, endpoints may be represented in more
 than one EndpointSlice at the same time. This naturally occurs as changes to
-different EndpointSlice objects can arrive at the Kubernetes client watch/cache
-at different times. Implementations using EndpointSlice must be able to have the
-endpoint appear in more than one slice. A reference implementation of how to
-perform endpoint deduplication can be found in the `EndpointSliceCache`
-implementation in `kube-proxy`.
+different EndpointSlice objects can arrive at the Kubernetes client watch / cache
+at different times.
+
+{{< note >}}
+Clients of the EndpointSlice API must iterate through all the existing EndpointSlices
+associated to a Service and build a complete list of unique network endpoints. It is
+important to mention that endpoints may be duplicated in different EndpointSlices.
+
+You can find a reference implementation for how to perform this endpoint aggregation
+and deduplication as part of the `EndpointSliceCache` code within `kube-proxy`.
+{{< /note >}}
+
+### EndpointSlice mirroring
+
+{{< feature-state for_k8s_version="v1.33" state="deprecated" >}}
+
+The EndpointSlice API is a replacement for the older Endpoints API. To
+preserve compatibility with older controllers and user workloads that
+expect {{<glossary_tooltip term_id="kube-proxy" text="kube-proxy">}}
+to route traffic based on Endpoints resources, the cluster's control
+plane mirrors most user-created Endpoints resources to corresponding
+EndpointSlices.
+
+(However, this feature, like the rest of the Endpoints API, is
+deprecated. Users who manually specify endpoints for selectorless
+Services should do so by creating EndpointSlice resources directly,
+rather than by creating Endpoints resources and allowing them to be
+mirrored.)
+
+The control plane mirrors Endpoints resources unless:
+
+* the Endpoints resource has a `endpointslice.kubernetes.io/skip-mirror` label
+  set to `true`.
+* the Endpoints resource has a `control-plane.alpha.kubernetes.io/leader`
+  annotation.
+* the corresponding Service resource does not exist.
+* the corresponding Service resource has a non-nil selector.
+
+Individual Endpoints resources may translate into multiple EndpointSlices. This
+will occur if an Endpoints resource has multiple subsets or includes endpoints
+with multiple IP families (IPv4 and IPv6). A maximum of 1000 addresses per
+subset will be mirrored to EndpointSlices.
 
 ## {{% heading "whatsnext" %}}
 
-* Read [Connecting Applications with Services](/docs/concepts/services-networking/connect-applications-service/)
+* Follow the [Connecting Applications with Services](/docs/tutorials/services/connect-applications-service/) tutorial
+* Read the [API reference](/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/) for the EndpointSlice API
+* Read the [API reference](/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for the Endpoints API

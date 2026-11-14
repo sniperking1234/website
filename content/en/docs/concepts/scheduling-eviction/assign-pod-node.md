@@ -1,23 +1,24 @@
 ---
 reviewers:
 - davidopp
+- dom4ha
 - kevin-wangzefeng
-- bsalamat
+- macsko
+- sanposhiho
 title: Assigning Pods to Nodes
 content_type: concept
 weight: 20
 ---
 
-
 <!-- overview -->
 
-You can constrain a {{< glossary_tooltip text="Pod" term_id="pod" >}} so that it is 
+You can constrain a {{< glossary_tooltip text="Pod" term_id="pod" >}} so that it is
 _restricted_ to run on particular {{< glossary_tooltip text="node(s)" term_id="node" >}},
 or to _prefer_ to run on particular nodes.
 There are several ways to do this and the recommended approaches all use
 [label selectors](/docs/concepts/overview/working-with-objects/labels/) to facilitate the selection.
 Often, you do not need to set any such constraints; the
-{{< glossary_tooltip text="scheduler" term_id="kube-scheduler" >}}  will automatically do a reasonable placement
+{{< glossary_tooltip text="scheduler" term_id="kube-scheduler" >}} will automatically do a reasonable placement
 (for example, spreading your Pods across nodes so as not place Pods on a node with insufficient free resources).
 However, there are some circumstances where you may want to control which node
 the Pod deploys to, for example, to ensure that a Pod ends up on a node with an SSD attached to it,
@@ -28,17 +29,18 @@ or to co-locate Pods from two different services that communicate a lot into the
 You can use any of the following methods to choose where Kubernetes schedules
 specific Pods:
 
-  * [nodeSelector](#nodeselector) field matching against [node labels](#built-in-node-labels)
-  * [Affinity and anti-affinity](#affinity-and-anti-affinity)
-  * [nodeName](#nodename) field
-  * [Pod topology spread constraints](#pod-topology-spread-constraints)
+- [nodeSelector](#nodeselector) field matching against [node labels](#built-in-node-labels)
+- [Affinity and anti-affinity](#affinity-and-anti-affinity)
+- [nodeName](#nodename) field
+- [Pod topology spread constraints](#pod-topology-spread-constraints)
 
 ## Node labels {#built-in-node-labels}
 
 Like many other Kubernetes objects, nodes have
-[labels](/docs/concepts/overview/working-with-objects/labels/). You can [attach labels manually](/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node).
-Kubernetes also populates a standard set of labels on all nodes in a cluster. See [Well-Known Labels, Annotations and Taints](/docs/reference/labels-annotations-taints/)
-for a list of common node labels.
+[labels](/docs/concepts/overview/working-with-objects/labels/). You can
+[attach labels manually](/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node).
+Kubernetes also populates a [standard set of labels](/docs/reference/node/node-labels/)
+on all nodes in a cluster.
 
 {{<note>}}
 The value of these labels is cloud provider specific and is not guaranteed to be reliable.
@@ -51,7 +53,7 @@ and a different value in other environments.
 Adding labels to nodes allows you to target Pods for scheduling on specific
 nodes or groups of nodes. You can use this functionality to ensure that specific
 Pods only run on nodes with certain isolation, security, or regulatory
-properties. 
+properties.
 
 If you use labels for node isolation, choose label keys that the {{<glossary_tooltip text="kubelet" term_id="kubelet">}}
 cannot modify. This prevents a compromised node from setting those labels on
@@ -59,7 +61,7 @@ itself so that the scheduler schedules workloads onto the compromised node.
 
 The [`NodeRestriction` admission plugin](/docs/reference/access-authn-authz/admission-controllers/#noderestriction)
 prevents the kubelet from setting or modifying labels with a
-`node-restriction.kubernetes.io/` prefix. 
+`node-restriction.kubernetes.io/` prefix.
 
 To make use of that label prefix for node isolation:
 
@@ -73,7 +75,7 @@ To make use of that label prefix for node isolation:
 You can add the `nodeSelector` field to your Pod specification and specify the
 [node labels](#built-in-node-labels) you want the target node to have.
 Kubernetes only schedules the Pod onto nodes that have each of the labels you
-specify. 
+specify.
 
 See [Assign Pods to Nodes](/docs/tasks/configure-pod-container/assign-pods-nodes) for more
 information.
@@ -81,23 +83,23 @@ information.
 ## Affinity and anti-affinity
 
 `nodeSelector` is the simplest way to constrain Pods to nodes with specific
-labels. Affinity and anti-affinity expands the types of constraints you can
+labels. Affinity and anti-affinity expand the types of constraints you can
 define. Some of the benefits of affinity and anti-affinity include:
 
-* The affinity/anti-affinity language is more expressive. `nodeSelector` only
+- The affinity/anti-affinity language is more expressive. `nodeSelector` only
   selects nodes with all the specified labels. Affinity/anti-affinity gives you
   more control over the selection logic.
-* You can indicate that a rule is *soft* or *preferred*, so that the scheduler
+- You can indicate that a rule is *soft* or *preferred*, so that the scheduler
   still schedules the Pod even if it can't find a matching node.
-* You can constrain a Pod using labels on other Pods running on the node (or other topological domain),
+- You can constrain a Pod using labels on other Pods running on the node (or other topological domain),
   instead of just node labels, which allows you to define rules for which Pods
   can be co-located on a node.
 
 The affinity feature consists of two types of affinity:
 
-* *Node affinity* functions like the `nodeSelector` field but is more expressive and
-  allows you to specify soft rules. 
-* *Inter-pod affinity/anti-affinity* allows you to constrain Pods against labels
+- *Node affinity* functions like the `nodeSelector` field but is more expressive and
+  allows you to specify soft rules.
+- *Inter-pod affinity/anti-affinity* allows you to constrain Pods against labels
   on other Pods.
 
 ### Node affinity
@@ -106,12 +108,12 @@ Node affinity is conceptually similar to `nodeSelector`, allowing you to constra
 Pod can be scheduled on based on node labels. There are two types of node
 affinity:
 
-  * `requiredDuringSchedulingIgnoredDuringExecution`: The scheduler can't
-    schedule the Pod unless the rule is met. This functions like `nodeSelector`,
-    but with a more expressive syntax.
-  * `preferredDuringSchedulingIgnoredDuringExecution`: The scheduler tries to
-    find a node that meets the rule. If a matching node is not available, the
-    scheduler still schedules the Pod.
+- `requiredDuringSchedulingIgnoredDuringExecution`: The scheduler can't
+  schedule the Pod unless the rule is met. This functions like `nodeSelector`,
+  but with a more expressive syntax.
+- `preferredDuringSchedulingIgnoredDuringExecution`: The scheduler tries to
+  find a node that meets the rule. If a matching node is not available, the
+  scheduler still schedules the Pod.
 
 {{<note>}}
 In the preceding types, `IgnoredDuringExecution` means that if the node labels
@@ -123,34 +125,37 @@ your Pod spec.
 
 For example, consider the following Pod spec:
 
-{{< codenew file="pods/pod-with-node-affinity.yaml" >}}
+{{% code_sample file="pods/pod-with-node-affinity.yaml" %}}
 
 In this example, the following rules apply:
 
-  * The node *must* have a label with the key `topology.kubernetes.io/zone` and
-    the value of that label *must* be either `antarctica-east1` or `antarctica-west1`.
-  * The node *preferably* has a label with the key `another-node-label-key` and
-    the value `another-node-label-value`.
+- The node *must* have a label with the key `topology.kubernetes.io/zone` and
+  the value of that label *must* be either `antarctica-east1` or `antarctica-west1`.
+- The node *preferably* has a label with the key `another-node-label-key` and
+  the value `another-node-label-value`.
 
 You can use the `operator` field to specify a logical operator for Kubernetes to use when
 interpreting the rules. You can use `In`, `NotIn`, `Exists`, `DoesNotExist`,
 `Gt` and `Lt`.
 
+Read [Operators](#operators)
+to learn more about how these work.
+
 `NotIn` and `DoesNotExist` allow you to define node anti-affinity behavior.
-Alternatively, you can use [node taints](/docs/concepts/scheduling-eviction/taint-and-toleration/) 
+Alternatively, you can use [node taints](/docs/concepts/scheduling-eviction/taint-and-toleration/)
 to repel Pods from specific nodes.
 
 {{<note>}}
 If you specify both `nodeSelector` and `nodeAffinity`, *both* must be satisfied
 for the Pod to be scheduled onto a node.
 
-If you specify multiple `nodeSelectorTerms` associated with `nodeAffinity`
-types, then the Pod can be scheduled onto a node if one of the specified `nodeSelectorTerms` can be
-satisfied.
+If you specify multiple terms in `nodeSelectorTerms` associated with `nodeAffinity`
+types, then the Pod can be scheduled onto a node if one of the specified terms
+can be satisfied (terms are ORed).
 
-If you specify multiple `matchExpressions` associated with a single `nodeSelectorTerms`,
-then the Pod can be scheduled onto a node only if all the `matchExpressions` are
-satisfied. 
+If you specify multiple expressions in a single `matchExpressions` field associated with a
+term in `nodeSelectorTerms`, then the Pod can be scheduled onto a node only
+if all the expressions are satisfied (expressions are ANDed).
 {{</note>}}
 
 See [Assign Pods to Nodes using Node Affinity](/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/)
@@ -168,9 +173,9 @@ The final sum is added to the score of other priority functions for the node.
 Nodes with the highest total score are prioritized when the scheduler makes a
 scheduling decision for the Pod.
 
-For example, consider the following Pod spec: 
+For example, consider the following Pod spec:
 
-{{< codenew file="pods/pod-with-affinity-anti-affinity.yaml" >}}
+{{% code_sample file="pods/pod-with-affinity-preferred-weight.yaml" %}}
 
 If there are two possible nodes that match the
 `preferredDuringSchedulingIgnoredDuringExecution` rule, one with the
@@ -193,7 +198,7 @@ To do so, add an `addedAffinity` to the `args` field of the [`NodeAffinity` plug
 in the [scheduler configuration](/docs/reference/scheduling/config/). For example:
 
 ```yaml
-apiVersion: kubescheduler.config.k8s.io/v1beta3
+apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
 
 profiles:
@@ -222,7 +227,7 @@ unexpected to them. Use node labels that have a clear correlation to the
 scheduler profile name.
 
 {{< note >}}
-The DaemonSet controller, which [creates Pods for DaemonSets](/docs/concepts/workloads/controllers/daemonset/#scheduled-by-default-scheduler),
+The DaemonSet controller, which [creates Pods for DaemonSets](/docs/concepts/workloads/controllers/daemonset/#how-daemon-pods-are-scheduled),
 does not support scheduling profiles. When the DaemonSet controller creates
 Pods, the default Kubernetes scheduler places those Pods and honors any
 `nodeAffinity` rules in the DaemonSet controller.
@@ -231,10 +236,12 @@ Pods, the default Kubernetes scheduler places those Pods and honors any
 ### Inter-pod affinity and anti-affinity
 
 Inter-pod affinity and anti-affinity allow you to constrain which nodes your
-Pods can be scheduled on based on the labels of **Pods** already running on that
+Pods can be scheduled on based on the labels of Pods already running on that
 node, instead of the node labels.
 
-Inter-pod affinity and anti-affinity rules take the form "this
+#### Types of Inter-pod Affinity and Anti-affinity
+
+Inter-pod affinity and anti-affinity take the form "this
 Pod should (or, in the case of anti-affinity, should not) run in an X if that X
 is already running one or more Pods that meet rule Y", where X is a topology
 domain like node, rack, cloud provider zone or region, or similar and Y is the
@@ -251,25 +258,23 @@ the node label that the system uses to denote the domain. For examples, see
 [Well-Known Labels, Annotations and Taints](/docs/reference/labels-annotations-taints/).
 
 {{< note >}}
-Inter-pod affinity and anti-affinity require substantial amount of
+Inter-pod affinity and anti-affinity require substantial amounts of
 processing which can slow down scheduling in large clusters significantly. We do
 not recommend using them in clusters larger than several hundred nodes.
-{{< /note >}}
+{{</note>}}
 
 {{< note >}}
-Pod anti-affinity requires nodes to be consistently labelled, in other words,
+Pod anti-affinity requires nodes to be consistently labeled, in other words,
 every node in the cluster must have an appropriate label matching `topologyKey`.
 If some or all nodes are missing the specified `topologyKey` label, it can lead
 to unintended behavior.
-{{< /note >}}
-
-#### Types of inter-pod affinity and anti-affinity
+{{</note>}}
 
 Similar to [node affinity](#node-affinity) are two types of Pod affinity and
 anti-affinity as follows:
 
-  * `requiredDuringSchedulingIgnoredDuringExecution`
-  * `preferredDuringSchedulingIgnoredDuringExecution`
+- `requiredDuringSchedulingIgnoredDuringExecution`
+- `preferredDuringSchedulingIgnoredDuringExecution`
 
 For example, you could use
 `requiredDuringSchedulingIgnoredDuringExecution` affinity to tell the scheduler to
@@ -282,28 +287,61 @@ To use inter-pod affinity, use the `affinity.podAffinity` field in the Pod spec.
 For inter-pod anti-affinity, use the `affinity.podAntiAffinity` field in the Pod
 spec.
 
-#### Pod affinity example {#an-example-of-a-pod-that-uses-pod-affinity}
+#### Scheduling Behavior
+
+When scheduling a new Pod, the Kubernetes scheduler evaluates the Pod's affinity/anti-affinity rules in the context of the current cluster state:
+
+1. Hard Constraints (Node Filtering):
+   - `podAffinity.requiredDuringSchedulingIgnoredDuringExecution` and `podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution`:
+     - The scheduler ensures the new Pod is assigned to nodes that satisfy these required affinity and anti-affinity rules based on existing Pods.
+
+2. Soft Constraints (Scoring):
+   - `podAffinity.preferredDuringSchedulingIgnoredDuringExecution` and `podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution`:
+     - The scheduler scores nodes based on how well they meet these preferred affinity and anti-affinity rules to optimize Pod placement.
+
+3. Ignored Fields:
+   - Existing Pods' `podAffinity.preferredDuringSchedulingIgnoredDuringExecution`:
+     - These preferred affinity rules are not considered during the scheduling decision for new Pods.
+   - Existing Pods' `podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution`:
+     - Similarly, preferred anti-affinity rules of existing Pods are ignored during scheduling.
+
+#### Scheduling a Group of Pods with Inter-pod Affinity to Themselves
+
+If the current Pod being scheduled is the first in a series that have affinity to themselves,
+it is allowed to be scheduled if it passes all other affinity checks. This is determined by
+verifying that no other Pod in the cluster matches the namespace and selector of this Pod,
+that the Pod matches its own terms, and the chosen node matches all requested topologies.
+This ensures that there will not be a deadlock even if all the Pods have inter-pod affinity
+specified.
+
+#### Pod Affinity Example {#an-example-of-a-pod-that-uses-pod-affinity}
 
 Consider the following Pod spec:
 
-{{< codenew file="pods/pod-with-pod-affinity.yaml" >}}
+{{% code_sample file="pods/pod-with-pod-affinity.yaml" %}}
 
 This example defines one Pod affinity rule and one Pod anti-affinity rule. The
 Pod affinity rule uses the "hard"
 `requiredDuringSchedulingIgnoredDuringExecution`, while the anti-affinity rule
 uses the "soft" `preferredDuringSchedulingIgnoredDuringExecution`.
 
-The affinity rule says that the scheduler can only schedule a Pod onto a node if
-the node is in the same zone as one or more existing Pods with the label
-`security=S1`. More precisely, the scheduler must place the Pod on a node that has the
-`topology.kubernetes.io/zone=V` label, as long as there is at least one node in
-that zone that currently has one or more Pods with the Pod label `security=S1`. 
+The affinity rule specifies that the scheduler is allowed to place the example Pod
+on a node only if that node belongs to a specific [zone](/docs/concepts/scheduling-eviction/topology-spread-constraints/)
+where other Pods have been labeled with `security=S1`.
+For instance, if we have a cluster with a designated zone, let's call it "Zone V,"
+consisting of nodes labeled with `topology.kubernetes.io/zone=V`, the scheduler can
+assign the Pod to any node within Zone V, as long as there is at least one Pod within
+Zone V already labeled with `security=S1`. Conversely, if there are no Pods with `security=S1`
+labels in Zone V, the scheduler will not assign the example Pod to any node in that zone.
 
-The anti-affinity rule says that the scheduler should try to avoid scheduling
-the Pod onto a node that is in the same zone as one or more Pods with the label
-`security=S2`. More precisely, the scheduler should try to avoid placing the Pod on a node that has the
-`topology.kubernetes.io/zone=R` label if there are other nodes in the
-same zone currently running Pods with the `Security=S2` Pod label.
+The anti-affinity rule specifies that the scheduler should try to avoid scheduling the Pod
+on a node if that node belongs to a specific [zone](/docs/concepts/scheduling-eviction/topology-spread-constraints/)
+where other Pods have been labeled with `security=S2`.
+For instance, if we have a cluster with a designated zone, let's call it "Zone R,"
+consisting of nodes labeled with `topology.kubernetes.io/zone=R`, the scheduler should avoid
+assigning the Pod to any node within Zone R, as long as there is at least one Pod within
+Zone R already labeled with `security=S2`. Conversely, the anti-affinity rule does not impact
+scheduling into Zone R if there are no Pods with `security=S2` labels.
 
 To get yourself more familiar with the examples of Pod affinity and anti-affinity,
 refer to the [design proposal](https://git.k8s.io/design-proposals-archive/scheduling/podaffinity.md).
@@ -311,12 +349,16 @@ refer to the [design proposal](https://git.k8s.io/design-proposals-archive/sched
 You can use the `In`, `NotIn`, `Exists` and `DoesNotExist` values in the
 `operator` field for Pod affinity and anti-affinity.
 
+Read [Operators](#operators)
+to learn more about how these work.
+
 In principle, the `topologyKey` can be any allowed label key with the following
 exceptions for performance and security reasons:
 
-* For Pod affinity and anti-affinity, an empty `topologyKey` field is not allowed in both `requiredDuringSchedulingIgnoredDuringExecution`
+- For Pod affinity and anti-affinity, an empty `topologyKey` field is not allowed in both
+  `requiredDuringSchedulingIgnoredDuringExecution`
   and `preferredDuringSchedulingIgnoredDuringExecution`.
-* For `requiredDuringSchedulingIgnoredDuringExecution` Pod anti-affinity rules,
+- For `requiredDuringSchedulingIgnoredDuringExecution` Pod anti-affinity rules,
   the admission controller `LimitPodHardAntiAffinityTopology` limits
   `topologyKey` to `kubernetes.io/hostname`. You can modify or disable the
   admission controller if you want to allow custom topologies.
@@ -327,18 +369,135 @@ of namespaces which the `labelSelector` should match against using the
 If omitted or empty, `namespaces` defaults to the namespace of the Pod where the
 affinity/anti-affinity definition appears.
 
-#### Namespace selector
+#### Namespace Selector
+
 {{< feature-state for_k8s_version="v1.24" state="stable" >}}
 
 You can also select matching namespaces using `namespaceSelector`, which is a label query over the set of namespaces.
 The affinity term is applied to namespaces selected by both `namespaceSelector` and the `namespaces` field.
-Note that an empty `namespaceSelector` ({}) matches all namespaces, while a null or empty `namespaces` list and 
+Note that an empty `namespaceSelector` ({}) matches all namespaces, while a null or empty `namespaces` list and
 null `namespaceSelector` matches the namespace of the Pod where the rule is defined.
+
+#### matchLabelKeys
+
+{{< feature-state feature_gate_name="MatchLabelKeysInPodAffinity" >}}
+
+{{< note >}}
+<!-- UPDATE THIS WHEN PROMOTING TO STABLE -->
+The `matchLabelKeys` field is a beta-level field and is enabled by default in
+Kubernetes {{< skew currentVersion >}}.
+When you want to disable it, you have to disable it explicitly via the
+`MatchLabelKeysInPodAffinity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/).
+{{< /note >}}
+
+Kubernetes includes an optional `matchLabelKeys` field for Pod affinity
+or anti-affinity. The field specifies keys for the labels that should match with the incoming Pod's labels,
+when satisfying the Pod (anti)affinity.
+
+The keys are used to look up values from the Pod labels; those key-value labels are combined
+(using `AND`) with the match restrictions defined using the `labelSelector` field. The combined
+filtering selects the set of existing Pods that will be taken into Pod (anti)affinity calculation.
+
+{{< caution >}}
+It's not recommended to use `matchLabelKeys` with labels that might be updated directly on pods.
+Even if you edit the pod's label that is specified at `matchLabelKeys` **directly**, (that is, not via a deployment),
+kube-apiserver doesn't reflect the label update onto the merged `labelSelector`.
+{{< /caution >}}
+
+A common use case is to use `matchLabelKeys` with `pod-template-hash` (set on Pods
+managed as part of a Deployment, where the value is unique for each revision).
+Using `pod-template-hash` in `matchLabelKeys` allows you to target the Pods that belong
+to the same revision as the incoming Pod, so that a rolling upgrade won't break affinity.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: application-server
+...
+spec:
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - database
+            topologyKey: topology.kubernetes.io/zone
+            # Only Pods from a given rollout are taken into consideration when calculating pod affinity.
+            # If you update the Deployment, the replacement Pods follow their own affinity rules
+            # (if there are any defined in the new Pod template)
+            matchLabelKeys:
+            - pod-template-hash
+```
+
+#### mismatchLabelKeys
+
+{{< feature-state feature_gate_name="MatchLabelKeysInPodAffinity" >}}
+
+{{< note >}}
+<!-- UPDATE THIS WHEN PROMOTING TO STABLE -->
+The `mismatchLabelKeys` field is a beta-level field and is enabled by default in
+Kubernetes {{< skew currentVersion >}}.
+When you want to disable it, you have to disable it explicitly via the
+`MatchLabelKeysInPodAffinity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/).
+{{< /note >}}
+
+Kubernetes includes an optional `mismatchLabelKeys` field for Pod affinity
+or anti-affinity. The field specifies keys for the labels that should not match with the incoming Pod's labels,
+when satisfying the Pod (anti)affinity.
+
+{{< caution >}}
+It's not recommended to use `mismatchLabelKeys` with labels that might be updated directly on pods.
+Even if you edit the pod's label that is specified at `mismatchLabelKeys` **directly**, (that is, not via a deployment),
+kube-apiserver doesn't reflect the label update onto the merged `labelSelector`.
+{{< /caution >}}
+
+One example use case is to ensure Pods go to the topology domain (node, zone, etc) where only Pods from the same tenant or team are scheduled in.
+In other words, you want to avoid running Pods from two different tenants on the same topology domain at the same time.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    # Assume that all relevant Pods have a "tenant" label set
+    tenant: tenant-a
+...
+spec:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      # ensure that Pods associated with this tenant land on the correct node pool
+      - matchLabelKeys:
+          - tenant
+        labelSelector: {}
+        topologyKey: node-pool
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      # ensure that Pods associated with this tenant can't schedule to nodes used for another tenant
+      - mismatchLabelKeys:
+        - tenant # whatever the value of the "tenant" label for this Pod, prevent
+                 # scheduling to nodes in any pool where any Pod from a different
+                 # tenant is running.
+        labelSelector:
+          # We have to have the labelSelector which selects only Pods with the tenant label,
+          # otherwise this Pod would have anti-affinity against Pods from daemonsets as well, for example,
+          # which aren't supposed to have the tenant label.
+          matchExpressions:
+          - key: tenant
+            operator: Exists
+        topologyKey: node-pool
+```
 
 #### More practical use-cases
 
 Inter-pod affinity and anti-affinity can be even more useful when they are used with higher
-level collections such as ReplicaSets, StatefulSets, Deployments, etc.  These
+level collections such as ReplicaSets, StatefulSets, Deployments, etc. These
 rules allow you to configure that a set of workloads should
 be co-located in the same defined topology; for example, preferring to place two related
 Pods onto the same node.
@@ -430,12 +589,12 @@ spec:
 Creating the two preceding Deployments results in the following cluster layout,
 where each web server is co-located with a cache, on three separate nodes.
 
-|       node-1         |       node-2        |       node-3       |
-|:--------------------:|:-------------------:|:------------------:|
-| *webserver-1*        |   *webserver-2*     |    *webserver-3*   |
-|  *cache-1*           |     *cache-2*       |     *cache-3*      |
+|    node-1     |    node-2     |    node-3     |
+| :-----------: | :-----------: | :-----------: |
+| *webserver-1* | *webserver-2* | *webserver-3* |
+|   *cache-1*   |   *cache-2*   |   *cache-3*   |
 
-The overall effect is that each cache instance is likely to be accessed by a single client, that
+The overall effect is that each cache instance is likely to be accessed by a single client that
 is running on the same node. This approach aims to minimize both skew (imbalanced load) and latency.
 
 You might have other reasons to use Pod anti-affinity.
@@ -453,13 +612,19 @@ tries to place the Pod on that node. Using `nodeName` overrules using
 
 Some of the limitations of using `nodeName` to select nodes are:
 
--   If the named node does not exist, the Pod will not run, and in
-    some cases may be automatically deleted.
--   If the named node does not have the resources to accommodate the
-    Pod, the Pod will fail and its reason will indicate why,
-    for example OutOfmemory or OutOfcpu.
--   Node names in cloud environments are not always predictable or
-    stable.
+- If the named node does not exist, the Pod will not run, and in
+  some cases may be automatically deleted.
+- If the named node does not have the resources to accommodate the
+  Pod, the Pod will fail and its reason will indicate why,
+  for example OutOfmemory or OutOfcpu.
+- Node names in cloud environments are not always predictable or stable.
+
+{{< warning >}}
+`nodeName` is intended for use by custom schedulers or advanced use cases where
+you need to bypass any configured schedulers. Bypassing the schedulers might lead to
+failed Pods if the assigned Nodes get oversubscribed. You can use [node affinity](#node-affinity)
+or the [`nodeSelector` field](#nodeselector) to assign a Pod to a specific Node without bypassing the schedulers.
+{{</ warning >}}
 
 Here is an example of a Pod spec using the `nodeName` field:
 
@@ -477,6 +642,30 @@ spec:
 
 The above Pod will only run on the node `kube-01`.
 
+## nominatedNodeName
+
+{{< feature-state feature_gate_name="NominatedNodeNameForExpectation" >}}
+
+`nominatedNodeName` can be used for external components to nominate node for a pending pod.
+This nomination is best effort: it might be ignored if the scheduler determines the pod cannot go to a nominated node.
+
+Also, this field can be (over)written by the scheduler:
+- If the scheduler finds a node to nominate via the preemption.
+- If the scheduler decides where the pod is going, and move it to the binding cycle.
+  - Note that, in this case, `nominatedNodeName` is put only when the pod has to go through `WaitOnPermit` or `PreBind` extension points.
+
+Here is an example of a Pod status using the `nominatedNodeName` field:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+...
+status:
+  nominatedNodeName: kube-01
+```
+
 ## Pod topology spread constraints
 
 You can use _topology spread constraints_ to control how {{< glossary_tooltip text="Pods" term_id="Pod" >}}
@@ -487,14 +676,65 @@ overall utilization.
 Read [Pod topology spread constraints](/docs/concepts/scheduling-eviction/topology-spread-constraints/)
 to learn more about how these work.
 
+## Pod topology labels
+
+{{< feature-state feature_gate_name="PodTopologyLabelsAdmission" >}}
+
+Pods inherit the topology labels (`topology.kubernetes.io/zone` and `topology.kubernetes.io/region`) from their assigned Node if those labels are present. These labels can then be utilized via the Downward API to provide the workload with node topology awareness.
+
+Here is an example of a Pod using downward API for it's zone and region:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-topology-labels
+spec:
+  containers:
+    - name: app
+      image: alpine
+      command: ["sh", "-c", "env"]
+      env:
+        - name: MY_ZONE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['topology.kubernetes.io/zone']
+        - name: MY_REGION
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['topology.kubernetes.io/region']
+```
+
+## Operators
+
+The following are all the logical operators that you can use in the `operator` field for `nodeAffinity` and `podAffinity` mentioned above.
+
+|    Operator    |    Behavior     |
+| :------------: | :-------------: |
+| `In` | The label value is present in the supplied set of strings |
+|   `NotIn`   | The label value is not contained in the supplied set of strings |
+| `Exists` | A label with this key exists on the object |
+| `DoesNotExist` | No label with this key exists on the object |
+
+The following operators can only be used with `nodeAffinity`.
+
+|    Operator    |    Behavior    |
+| :------------: | :-------------: |
+| `Gt` | The field value will be parsed as an integer, and the integer that results from parsing the value of a label named by this selector is greater than this integer |
+| `Lt` | The field value will be parsed as an integer, and the integer that results from parsing the value of a label named by this selector is less than this integer |
+
+{{<note>}}
+
+`Gt` and `Lt` operators will not work with non-integer values. If the given value
+doesn't parse as an integer, the Pod will fail to get scheduled. Also, `Gt` and `Lt`
+are not available for `podAffinity`.
+{{</note>}}
+
 ## {{% heading "whatsnext" %}}
 
-* Read more about [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration/) .
-* Read the design docs for [node affinity](https://git.k8s.io/design-proposals-archive/scheduling/nodeaffinity.md)
+- Read more about [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration/).
+- Read the design docs for [node affinity](https://git.k8s.io/design-proposals-archive/scheduling/nodeaffinity.md)
   and for [inter-pod affinity/anti-affinity](https://git.k8s.io/design-proposals-archive/scheduling/podaffinity.md).
-* Learn about how the [topology manager](/docs/tasks/administer-cluster/topology-manager/) takes part in node-level
-  resource allocation decisions. 
-* Learn how to use [nodeSelector](/docs/tasks/configure-pod-container/assign-pods-nodes/).
-* Learn how to use [affinity and anti-affinity](/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/).
-
-
+- Learn about how the [topology manager](/docs/tasks/administer-cluster/topology-manager/) takes part in node-level
+  resource allocation decisions.
+- Learn how to use [nodeSelector](/docs/tasks/configure-pod-container/assign-pods-nodes/).
+- Learn how to use [affinity and anti-affinity](/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/).

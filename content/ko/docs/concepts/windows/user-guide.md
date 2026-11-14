@@ -158,14 +158,13 @@ GMSA로 구성한 컨테이너는 GMSA로 구성된 신원을 들고 있는 동�
 아래는 권장되는 방식의 개요인데,
 이것의 주요 목표 중에 하나는 이 방식이 기존 리눅스 워크로드와 호환되어야 한다는 것이다.
 
-`IdentifyPodOS` [기능 게이트](/ko/docs/reference/command-line-tools-reference/feature-gates/)가 활성화되어 있으면, 
-파드의 컨테이너가 어떤 운영 체제용인지를 파드의 `.spec.os.name`에 설정할 수 있다(그리고 설정해야 한다). 
+1.25부터, 파드의 컨테이너가 어떤 운영체제 용인지를 파드의 `.spec.os.name`에 설정할 수 있다(그리고 설정해야 한다). 
 리눅스 컨테이너를 실행하는 파드에는 `.spec.os.name`을 `linux`로 설정한다. 
 윈도우 컨테이너를 실행하는 파드에는 `.spec.os.name`을 
 `windows`로 설정한다.
 
 {{< note >}}
-1.24부터, `IdentifyPodOS` 기능은 베타 단계이며 기본적으로 활성화되어 있다.
+1.25부터, `IdentifyPodOS` 기능은 GA 단계이며 기본적으로 활성화되어 있다.
 {{< /note >}}
 
 스케줄러는 파드를 노드에 할당할 때 
@@ -206,7 +205,7 @@ GMSA로 구성한 컨테이너는 GMSA로 구성된 신원을 들고 있는 동�
 ```yaml
 nodeSelector:
     kubernetes.io/os: windows
-    node.kubernetes.io/windows-build: '10.0.17763'
+    node.kubernetes.io/windows-build: '10.0.20348'
 tolerations:
     - key: "os"
       operator: "Equal"
@@ -225,11 +224,12 @@ tolerations:
 이 레이블은 호환성을 위해 일치시켜야 하는 윈도우 메이저, 마이너 및 빌드 번호를 나타낸다.
 각 윈도우 서버 버전에 대해 현재 사용하고 있는 빌드 번호는 다음과 같다.
 
-| 제품 이름                            |   빌드 번호            |
-|--------------------------------------|------------------------|
-| Windows Server 2019                  | 10.0.17763             |
-| Windows Server, 버전 20H2         | 10.0.19042             |
-| Windows Server 2022                  | 10.0.20348             |
+| 제품 이름                   |   빌드 번호            |
+|-------------------------|------------------------|
+| Windows Server 2019     | 10.0.17763             |
+| Windows Server, 버전 20H2 | 10.0.19042             |
+| Windows Server 2022     | 10.0.20348             |
+| Windows Server 2025     | 10.0.26100             |
 
 ### RuntimeClass로 단순화
 
@@ -249,7 +249,7 @@ scheduling:
   nodeSelector:
     kubernetes.io/os: 'windows'
     kubernetes.io/arch: 'amd64'
-    node.kubernetes.io/windows-build: '10.0.17763'
+    node.kubernetes.io/windows-build: '10.0.20348'
   tolerations:
   - effect: NoSchedule
     key: os

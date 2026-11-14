@@ -6,9 +6,8 @@ api_metadata:
 content_type: "api_reference"
 description: "PodTemplate 描述一种模板，用来为预定义的 Pod 生成副本。"
 title: "PodTemplate"
-weight: 2
+weight: 3
 ---
-
 <!--
 api_metadata:
   apiVersion: "v1"
@@ -17,7 +16,7 @@ api_metadata:
 content_type: "api_reference"
 description: "PodTemplate describes a template for creating copies of a predefined pod."
 title: "PodTemplate"
-weight: 2
+weight: 3
 auto_generated: true
 -->
 
@@ -51,7 +50,8 @@ PodTemplate 描述一种模板，用来为预定义的 Pod 生成副本。
   <!--
   Template defines the pods that will be created from this pod template. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
   -->
-  template 定义将基于此 Pod 模板所创建的 Pod。
+  
+  `template` 定义将基于此 Pod 模板所创建的 Pod。
   https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 
 ## PodTemplateSpec {#PodTemplateSpec}
@@ -68,6 +68,7 @@ PodTemplateSpec 描述基于某模板所创建的 Pod 所应具有的数据。
   <!--
   Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
   -->
+  
   标准的对象元数据。更多信息：
   https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 
@@ -76,6 +77,7 @@ PodTemplateSpec 描述基于某模板所创建的 Pod 所应具有的数据。
   <!--
   Specification of the desired behavior of the pod. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
   -->
+  
   Pod 预期行为的规约。更多信息：
   https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 
@@ -97,6 +99,7 @@ PodTemplateList 是 PodTemplate 对象的列表。
   <!--
   Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
   -->
+  
   标准的列表元数据。更多信息：
   https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
 
@@ -108,6 +111,7 @@ PodTemplateList 是 PodTemplate 对象的列表。
   <!--
   List of pod templates
   -->
+  
   PodTemplate 对象列表。
 
 <!--
@@ -140,21 +144,21 @@ GET /api/v1/namespaces/{namespace}/podtemplates/{name}
 
   name of the PodTemplate
 -->
-- **name** （**路径参数**）：string，必需
+- **name**（**路径参数**）：string，必需
 
-  PodTemplate 的名称
+  PodTemplate 的名称。
 
 <!--
 - **namespace** (*in path*): string, required
 -->
-- **namespace** （**路径参数**）：string，必需
+- **namespace**（**路径参数**）：string，必需
 
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
 
 <!--
 - **pretty** (*in query*): string
 -->
-- **pretty** （**查询参数**）：string
+- **pretty**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
@@ -186,77 +190,95 @@ GET /api/v1/namespaces/{namespace}/podtemplates
 <!--
 - **namespace** (*in path*): string, required
 -->
-- **namespace** （**路径参数**）：string，必需
+- **namespace**（**路径参数**）：string，必需
 
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
 
 <!--
 - **allowWatchBookmarks** (*in query*): boolean
 -->
-- **allowWatchBookmarks** （**查询参数**）：boolean
+- **allowWatchBookmarks**（**查询参数**）：boolean
 
   <a href="{{< ref "../common-parameters/common-parameters#allowWatchBookmarks" >}}">allowWatchBookmarks</a>
 
 <!--
 - **continue** (*in query*): string
 -->
-- **continue** （**查询参数**）：string
+- **continue**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#continue" >}}">continue</a>
 
 <!--
 - **fieldSelector** (*in query*): string
 -->
-- **fieldSelector** （**查询参数**）：string
+- **fieldSelector**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#fieldSelector" >}}">fieldSelector</a>
 
 <!--
 - **labelSelector** (*in query*): string
 -->
-- **labelSelector** （**查询参数**）：string
+- **labelSelector**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#labelSelector" >}}">labelSelector</a>
 
 <!--
 - **limit** (*in query*): integer
 -->
-- **limit** （**查询参数**）：integer
+- **limit**（**查询参数**）：integer
 
   <a href="{{< ref "../common-parameters/common-parameters#limit" >}}">limit</a>
 
 <!--
 - **pretty** (*in query*): string
 -->
-- **pretty** （**查询参数**）：string
+- **pretty**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 <!--
 - **resourceVersion** (*in query*): string
 -->
-- **resourceVersion** （**查询参数**）：string
+- **resourceVersion**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersion" >}}">resourceVersion</a>
 
 <!--
 - **resourceVersion** (*in query*): string
 -->
-- **resourceVersion** （**查询参数**）：string
+- **resourceVersion**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersionMatch" >}}">resourceVersionMatch</a>
 
 <!--
+- **sendInitialEvents** (*in query*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+-->
+- **sendInitialEvents**（**查询参数**）: boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+
+<!--
+- **shardSelector** (*in query*): string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+-->
+- **shardSelector**（**查询参数**）: string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+
+<!--
 - **timeoutSeconds** (*in query*): integer
 -->
-- **timeoutSeconds** （**查询参数**）：integer
+- **timeoutSeconds**（**查询参数**）：integer
 
   <a href="{{< ref "../common-parameters/common-parameters#timeoutSeconds" >}}">timeoutSeconds</a>
 
 <!--
 - **watch** (*in query*): boolean
 -->
-- **watch** （**查询参数**）：boolean
+- **watch**（**查询参数**）：boolean
 
   <a href="{{< ref "../common-parameters/common-parameters#watch" >}}">watch</a>
 
@@ -288,14 +310,14 @@ GET /api/v1/podtemplates
 <!--
 - **allowWatchBookmarks** (*in query*): boolean
 -->
-- **allowWatchBookmarks** （**查询参数**）：boolean
+- **allowWatchBookmarks**（**查询参数**）：boolean
 
   <a href="{{< ref "../common-parameters/common-parameters#allowWatchBookmarks" >}}">allowWatchBookmarks</a>
 
 <!--
 - **continue** (*in query*): string
 -->
-- **continue** （**查询参数**）：string
+- **continue**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#continue" >}}">continue</a>
 
@@ -340,6 +362,24 @@ GET /api/v1/podtemplates
 - **resourceVersionMatch** （**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersionMatch" >}}">resourceVersionMatch</a>
+
+<!--
+- **sendInitialEvents** (*in query*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+-->
+- **sendInitialEvents**（**查询参数**）: boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+
+<!--
+- **shardSelector** (*in query*): string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+-->
+- **shardSelector**（**查询参数**）: string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
 
 <!--
 - **timeoutSeconds** (*in query*): integer
@@ -456,7 +496,7 @@ PUT /api/v1/namespaces/{namespace}/podtemplates/{name}
 -->
 - **name** （**路径参数**）：string，必需
 
-  PodTemplate 的名称
+  PodTemplate 的名称。
 
 <!--
 - **namespace** (*in path*): string, required
@@ -532,7 +572,7 @@ PATCH /api/v1/namespaces/{namespace}/podtemplates/{name}
 -->
 - **name** （**路径参数**）：string，必需
 
-  PodTemplate 的名称
+  PodTemplate 的名称。
 
 <!--
 - **namespace** (*in path*): string, required
@@ -615,7 +655,7 @@ DELETE /api/v1/namespaces/{namespace}/podtemplates/{name}
 -->
 - **name** （**路径参数**）：string，必需
 
-  PodTemplate 的名称
+  PodTemplate 的名称。
 
 <!--
 - **namespace** (*in path*): string, required
@@ -623,7 +663,6 @@ DELETE /api/v1/namespaces/{namespace}/podtemplates/{name}
 - **namespace** （**路径参数**）：string，必需
 
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
-
 
 - **body**: <a href="{{< ref "../common-definitions/delete-options#DeleteOptions" >}}">DeleteOptions</a>
 
@@ -642,16 +681,25 @@ DELETE /api/v1/namespaces/{namespace}/podtemplates/{name}
   <a href="{{< ref "../common-parameters/common-parameters#gracePeriodSeconds" >}}">gracePeriodSeconds</a>
 
 <!--
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (*in query*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#ignoreStoreReadErrorWithClusterBreakingPotential" >}}">ignoreStoreReadErrorWithClusterBreakingPotential</a>
+-->
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (**查询参数**): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#ignoreStoreReadErrorWithClusterBreakingPotential" >}}">ignoreStoreReadErrorWithClusterBreakingPotential</a>
+
+<!--
 - **pretty** (*in query*): string
 -->
-- **pretty** （**查询参数**）：string
+- **pretty**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 <!--
 - **propagationPolicy** (*in query*): string
 -->
-- **propagationPolicy** （**查询参数**）：string
+- **propagationPolicy**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#propagationPolicy" >}}">propagationPolicy</a>
 
@@ -685,7 +733,7 @@ DELETE /api/v1/namespaces/{namespace}/podtemplates
 <!--
 - **namespace** (*in path*): string, required
 -->
-- **namespace** （**路径参数**）：string，必需
+- **namespace**（**路径参数**）：string，必需
 
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
 
@@ -694,77 +742,104 @@ DELETE /api/v1/namespaces/{namespace}/podtemplates
 <!--
 - **continue** (*in query*): string
 -->
-- **continue** （**查询参数**）：string
+- **continue**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#continue" >}}">continue</a>
 
 <!--
 - **dryRun** (*in query*): string
 -->
-- **dryRun** （**查询参数**）：string
+- **dryRun**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#dryRun" >}}">dryRun</a>
 
 <!--
 - **fieldSelector** (*in query*): string
 -->
-- **fieldSelector** （**查询参数**）：string
+- **fieldSelector**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#fieldSelector" >}}">fieldSelector</a>
 
 <!--
 - **gracePeriodSeconds** (*in query*): integer
 -->
-- **gracePeriodSeconds** （**查询参数**）：integer
+- **gracePeriodSeconds**（**查询参数**）：integer
 
   <a href="{{< ref "../common-parameters/common-parameters#gracePeriodSeconds" >}}">gracePeriodSeconds</a>
 
 <!--
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (*in query*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#ignoreStoreReadErrorWithClusterBreakingPotential" >}}">ignoreStoreReadErrorWithClusterBreakingPotential</a>
+-->
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (**查询参数**): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#ignoreStoreReadErrorWithClusterBreakingPotential" >}}">ignoreStoreReadErrorWithClusterBreakingPotential</a>
+
+<!--
 - **labelSelector** (*in query*): string
 -->
-- **labelSelector** （**查询参数**）：string
+- **labelSelector**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#labelSelector" >}}">labelSelector</a>
 
 <!--
 - **limit** (*in query*): integer
 -->
-- **limit** （**查询参数**）：integer
+- **limit**（**查询参数**）：integer
 
   <a href="{{< ref "../common-parameters/common-parameters#limit" >}}">limit</a>
 
 <!--
 - **pretty** (*in query*): string
 -->
-- **pretty** （**查询参数**）：string
+- **pretty**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 <!--
 - **propagationPolicy** (*in query*): string
 -->
-- **propagationPolicy** （**查询参数**）：string
+- **propagationPolicy**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#propagationPolicy" >}}">propagationPolicy</a>
 
 <!--
 - **resourceVersion** (*in query*): string
 -->
-- **resourceVersion** （**查询参数**）：string
+- **resourceVersion**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersion" >}}">resourceVersion</a>
 
 <!--
 - **resourceVersionMatch** (*in query*): string
 -->
-- **resourceVersionMatch** （**查询参数**）：string
+- **resourceVersionMatch**（**查询参数**）：string
 
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersionMatch" >}}">resourceVersionMatch</a>
 
 <!--
+- **sendInitialEvents** (*in query*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+-->
+- **sendInitialEvents**（**查询参数**）: boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+
+<!--
+- **shardSelector** (*in query*): string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+-->
+- **shardSelector**（**查询参数**）: string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+
+<!--
 - **timeoutSeconds** (*in query*): integer
 -->
-- **timeoutSeconds** （**查询参数**）：integer
+- **timeoutSeconds**（**查询参数**）：integer
 
   <a href="{{< ref "../common-parameters/common-parameters#timeoutSeconds" >}}">timeoutSeconds</a>
 
@@ -776,4 +851,3 @@ DELETE /api/v1/namespaces/{namespace}/podtemplates
 200 (<a href="{{< ref "../common-definitions/status#Status" >}}">Status</a>): OK
 
 401: Unauthorized
-

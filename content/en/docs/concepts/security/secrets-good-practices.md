@@ -42,7 +42,7 @@ also follow the other guidelines in
   privileged, system-level components. Only grant `get` access for Secrets if
   the component's normal behavior requires it.
 - **Humans**: Restrict `get`, `watch`, or `list` access to Secrets. Only allow
-  cluster admistrators to access `etcd`. This includes read-only access. For
+  cluster administrators to access `etcd`. This includes read-only access. For
   more complex access control, such as restricting access to Secrets with
   specific annotations, consider using third-party authorization mechanisms.
 
@@ -61,6 +61,9 @@ recommendations include:
 *  Use short-lived Secrets
 *  Implement audit rules that alert on specific events, such as concurrent
    reading of multiple Secrets by a single user
+
+#### Restrict Access for Secrets
+Use separate namespaces to isolate access to mounted secrets.
 
 ### Improve etcd management policies
 
@@ -83,6 +86,11 @@ the data.
 
 For a list of supported providers, refer to
 [Providers for the Secret Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/concepts.html#provider-for-the-secrets-store-csi-driver).
+
+## Good practices for using swap memory
+
+For best practices for setting swap memory for Linux nodes, please refer to
+[swap memory management](/docs/concepts/cluster-administration/swap-memory-management/#good-practice-for-using-swap-in-a-kubernetes-cluster).
 
 ## Developers
 
@@ -110,7 +118,7 @@ If you configure a Secret through a
 data encoded as base64, sharing this file or checking it in to a source
 repository means the secret is available to everyone who can read the manifest.
 
-{{<caution>}}
+{{< caution >}}
 Base64 encoding is _not_ an encryption method, it provides no additional
 confidentiality over plain text.
-{{</caution>}}
+{{< /caution >}}

@@ -3,14 +3,15 @@ title: Kubernetes Release Cycle
 type: docs
 auto_generated: true
 ---
+<!-- THIS CONTENT IS AUTO-GENERATED via https://github.com/kubernetes/website/blob/main/scripts/releng/update-release-info.sh -->
 
-<!-- THIS CONTENT IS AUTO-GENERATED via ./scripts/releng/update-release-info.sh in k/website -->
+{{% pageinfo color="light" %}}
+This content is auto-generated and links may not function. The source of the document is located
+[here](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-release/release.md).
+{{% /pageinfo %}}
+<!-- Localization note: omit the pageinfo block when localizing -->
 
-{{< warning >}}
-This content is auto-generated and links may not function. The source of the document is located [here](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-release/release.md).
-{{< /warning >}}
-
-# Targeting enhancements, Issues and PRs to Release Milestones
+## Targeting enhancements, Issues and PRs to Release Milestones
 
 This document is focused on Kubernetes developers and contributors who need to
 create an enhancement, issue, or pull request which targets a specific release
@@ -124,7 +125,7 @@ The general labeling process should be consistent across artifact types.
   referring to a release MAJOR.MINOR `vX.Y` version.
 
   See also
-  [release versioning](https://git.k8s.io/sig-release/release-engineering/versioning.md).
+  [release versioning](https://git.k8s.io/sig-release/release-engineering/reference/versioning.md#kubernetes-release-versioning).
 
 - *release branch*: Git branch `release-X.Y` created for the `vX.Y` milestone.
 
@@ -257,6 +258,8 @@ milestone on GitHub artifacts.
 
 This group is [maintained](https://git.k8s.io/sig-release/release-team/README.md#milestone-maintainers)
 by SIG Release and has representation from the various SIGs' leadership.
+
+Adding the in-progress release milestone to pull requests after the Code Freeze is strictly prohibited, as it can compromise the stability of the release. Prior to making such changes, approval must be obtained from both the Release Team Lead and the Emeritus Advisor(s).
 
 ### Feature additions
 

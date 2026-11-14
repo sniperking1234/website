@@ -143,7 +143,7 @@ apiVersion: v1
 kind: Secret
   name: secret-dockercfg
 type: kubernetes.io/dockercfg
- data:
+data:
   .dockercfg: |
     "<base64 encoded ~/.dockercfg file>"
 ```
@@ -303,7 +303,7 @@ Bootstrap type Secretには、`data`で指定された次のキーがありま�
 - `token_id`：トークン識別子としてのランダムな6文字の文字列。必須。
 - `token-secret`：実際のtoken secretとしてのランダムな16文字の文字列。必須。
 - `description`：トークンの使用目的を説明する人間が読める文字列。オプション。
-- `expiration`：トークンの有効期限を指定するRFC3339を使用した絶対UTC時間。オプション。
+- `expiration`：トークンの有効期限を指定する[RFC3339](https://datatracker.ietf.org/doc/html/rfc3339)を使用した絶対UTC時間。オプション。
 - `usage-bootstrap-<usage>`：Bootstrap tokenの追加の使用法を示すブールフラグ。
 - `auth-extra-groups`：`system：bootstrappers`グループに加えて認証されるグループ名のコンマ区切りのリスト。
 
@@ -582,7 +582,7 @@ cat /etc/foo/password
 ボリュームとして使用されているSecretが更新されると、やがて割り当てられたキーも同様に更新されます。
 kubeletは定期的な同期のたびにマウントされたSecretが新しいかどうかを確認します。
 しかしながら、kubeletはSecretの現在の値の取得にローカルキャッシュを使用します。
-このキャッシュは[KubeletConfiguration struct](https://github.com/kubernetes/kubernetes/blob/{{< param "docsbranch" >}}/staging/src/k8s.io/kubelet/config/v1beta1/types.go)内の`ConfigMapAndSecretChangeDetectionStrategy`フィールドによって設定可能です。
+このキャッシュは[KubeletConfiguration struct](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubelet/config/v1beta1/types.go)内の`ConfigMapAndSecretChangeDetectionStrategy`フィールドによって設定可能です。
 Secretはwatch（デフォルト）、TTLベース、単に全てのリクエストをAPIサーバーへリダイレクトすることのいずれかによって伝搬します。
 結果として、Secretが更新された時点からPodに新しいキーが反映されるまでの遅延時間の合計は、kubeletの同期間隔 + キャッシュの伝搬遅延となります。
 キャッシュの遅延は、キャッシュの種別により、それぞれwatchの伝搬遅延、キャッシュのTTL、0になります。
@@ -779,7 +779,7 @@ metadata:
 spec:
   containers:
     - name: test-container
-      image: k8s.gcr.io/busybox
+      image: registry.k8s.io/busybox
       command: [ "/bin/sh", "-c", "env" ]
       envFrom:
       - secretRef:
@@ -838,7 +838,7 @@ spec:
 /etc/secret-volume/ssh-privatekey
 ```
 
-コンテナーはSecretのデータをSSH接続を確立するために使用することができます。
+コンテナはSecretのデータをSSH接続を確立するために使用することができます。
 
 ### ユースケース: 本番、テスト用の認証情報を持つPod
 
@@ -994,7 +994,7 @@ spec:
       secretName: dotfile-secret
   containers:
   - name: dotfile-test-container
-    image: k8s.gcr.io/busybox
+    image: registry.k8s.io/busybox
     command:
     - ls
     - "-l"
@@ -1037,7 +1037,7 @@ Secretは様々な種類の重要な値を保持することが多く、サー�
 
 Secret APIへのアクセスが必要なアプリケーションは、必要なSecretに対する`get`リクエストを発行すべきです。管理者は全てのSecretに対するアクセスは制限しつつ、アプリケーションが必要とする[個々のインスタンスに対するアクセス許可](/docs/reference/access-authn-authz/rbac/#referring-to-resources)を与えることができます。
 
-`get`リクエストの繰り返しに対するパフォーマンスを向上するために、クライアントはSecretを参照するリソースを設計し、それを`watch`して、参照が変更されたときにSecretを再度リクエストすることができます。加えて、個々のリソースを`watch`することのできる["bulk watch" API](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/bulk_watch.md)が提案されており、将来のKubernetesリリースにて利用可能になる可能性があります。
+`get`リクエストの繰り返しに対するパフォーマンスを向上するために、クライアントはSecretを参照するリソースを設計し、それを`watch`して、参照が変更されたときにSecretを再度リクエストすることができます。加えて、個々のリソースを`watch`することのできる["bulk watch" API](https://github.com/kubernetes/community/blob/main/contributors/design-proposals/api-machinery/bulk_watch.md)が提案されており、将来のKubernetesリリースにて利用可能になる可能性があります。
 
 ## セキュリティ特性
 
@@ -1070,7 +1070,7 @@ Podに複数のコンテナが含まれることもあります。しかし、Po
  - APIサーバーでは、機密情報は{{< glossary_tooltip term_id="etcd" >}}に保存されます。
    そのため、
    - 管理者はクラスターデータの保存データの暗号化を有効にすべきです（v1.13以降が必要）。
-   - 管理者はetcdへのアクセスを管理ユーザに限定すべきです。
+   - 管理者はetcdへのアクセスを管理ユーザーに限定すべきです。
    - 管理者はetcdで使用していたディスクを使用しなくなったときにはそれをワイプするか完全消去したくなるでしょう。
    - クラスターの中でetcdが動いている場合、管理者はetcdのピアツーピア通信がSSL/TLSを利用していることを確認すべきです。
  - Secretをマニフェストファイル（JSONまたはYAML）を介して設定する場合、それはBase64エンコードされた機密情報を含んでいるので、ファイルを共有したりソースリポジトリに入れることは秘密が侵害されることを意味します。Base64エンコーディングは暗号化手段では _なく_ 、平文と同様であると判断すべきです。

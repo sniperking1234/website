@@ -26,15 +26,15 @@ Kamu harus menggunakan kubectl dengan perbedaan maksimal satu versi minor dengan
 1. Unduh versi terbarunya dengan perintah:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/`curl -LS https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl
     ```
 
-    Untuk mengunduh versi spesifik, ganti bagian `curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt` dengan versi yang diinginkan.
+    Untuk mengunduh versi spesifik, ganti bagian `curl -LS https://dl.k8s.io/release/stable.txt` dengan versi yang diinginkan.
 
-    Misalnya, untuk mengunduh versi {{< param "fullversion" >}} di Linux, ketik:
+    Misalnya, untuk mengunduh versi {{< skew currentPatchVersion >}} di Linux, ketik:
     
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/linux/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/linux/amd64/kubectl
     ```
 
 2. Jadikan program `kubectl` dapat dieksekusi.
@@ -58,22 +58,24 @@ Kamu harus menggunakan kubectl dengan perbedaan maksimal satu versi minor dengan
 
 {{< tabs name="kubectl_install" >}}
 {{< tab name="Ubuntu, Debian or HypriotOS" codelang="bash" >}}
-sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+sudo mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y kubectl
 {{< /tab >}}
-{{< tab name="CentOS, RHEL or Fedora" codelang="bash" >}}cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+{{< tab name="CentOS, RHEL or Fedora" codelang="bash" >}}cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/
 enabled=1
 gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key
 EOF
-yum install -y kubectl
+sudo yum install -y kubectl
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -106,15 +108,15 @@ kubectl version --client
 1. Unduh versi terbarunya dengan perintah:
 
     ```		 
-    curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl"
+    curl -LO "https://dl.k8s.io/release/$(curl -LS https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
     ```
 
-    Untuk mengunduh versi spesifik, ganti bagian `curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt` dengan versi yang diinginkan.
+    Untuk mengunduh versi spesifik, ganti bagian `curl -LS https://dl.k8s.io/release/stable.txt` dengan versi yang diinginkan.
 
-    Misalnya, untuk mengunduh versi {{< param "fullversion" >}} pada macOS, ketik:
+    Misalnya, untuk mengunduh versi {{< skew currentPatchVersion >}} pada macOS, ketik:
 		  
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/darwin/amd64/kubectl
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/darwin/amd64/kubectl
     ```
 
 2. Buat agar program `kubectl` dapat dijalankan.
@@ -176,15 +178,15 @@ Jika kamu menggunakan macOS dan manajer paket [Macports](https://macports.org/),
 
 ### Menginstal program kubectl dengan curl pada Windows
 
-1. Unduh versi terbarunya {{< param "fullversion" >}} dari [tautan ini](https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/windows/amd64/kubectl.exe).
+1. Unduh versi terbarunya {{< skew currentPatchVersion >}} dari [tautan ini](https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/windows/amd64/kubectl.exe).
 
     Atau jika sudah ada `curl` pada mesin kamu, jalankan perintah ini:
 
     ```
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/{{< param "fullversion" >}}/bin/windows/amd64/kubectl.exe
+    curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/windows/amd64/kubectl.exe
     ```
 
-    Untuk mendapatkan versi stabil terakhir (misalnya untuk _scripting_), lihat di [https://storage.googleapis.com/kubernetes-release/release/stable.txt](https://storage.googleapis.com/kubernetes-release/release/stable.txt).
+    Untuk mendapatkan versi stabil terakhir (misalnya untuk _scripting_), lihat di [https://dl.k8s.io/release/stable.txt](https://dl.k8s.io/release/stable.txt).
 
 2. Tambahkan program yang sudah diunduh tersebut ke PATH kamu.
 3. Pastikan instalasinya sudah berhasil dengan melakukan pengecekan versi:
@@ -381,7 +383,7 @@ Skrip penyelesaian (_completion script_) `kubectl` untuk Bash dapat dibuat denga
 Namun, skrip penyelesaian tersebut bergantung pada [**bash-completion**](https://github.com/scop/bash-completion), yang artinya kamu harus menginstal program tersebut terlebih dahulu.
 
 {{< warning>}}
-Terdapat dua versi bash-completion, v1 dan v2. V1 untuk Bash 3.2 (bawaan dari macOs), dan v2 untuk Bash 4.1+. Skrip penyelesaian `kubectl` **tidak kompatibel** dengan bash-completion v1 dan Bash 3.2. Dibutuhkan **bash-completion v2** dan **Bash 4.1+** agar skrip penyelesaian `kubectl` dapat bekerja dengan baik. Maka dari itu, kamu harus menginstal dan menggunakan Bash 4.1+ ([*panduan*](https://itnext.io/upgrading-bash-on-macos-7138bd1066ba)) untuk dapat menggunakan fitur penyelesaian otomatis dari `kubectl`. Ikuti panduan di bawah setelah kamu menginstal Bash 4.1+ (yaitu, Bash versi 4.1 atau lebih baru).
+Terdapat dua versi bash-completion, v1 dan v2. V1 untuk Bash 3.2 (bawaan dari macOs), dan v2 untuk Bash 4.1+. Skrip penyelesaian `kubectl` **tidak kompatibel** dengan bash-completion v1 dan Bash 3.2. Dibutuhkan **bash-completion v2** dan **Bash 4.1+** agar skrip penyelesaian `kubectl` dapat bekerja dengan baik. Maka dari itu, kamu harus menginstal dan menggunakan Bash 4.1+ ([*panduan*](https://apple.stackexchange.com/a/292760)) untuk dapat menggunakan fitur penyelesaian otomatis dari `kubectl`. Ikuti panduan di bawah setelah kamu menginstal Bash 4.1+ (yaitu, Bash versi 4.1 atau lebih baru).
 {{< /warning >}}
 
 ### Pemutakhiran Bash

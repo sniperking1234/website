@@ -6,7 +6,7 @@ api_metadata:
 content_type: "api_reference"
 description: "ReplicationController 表示一个副本控制器的配置。"
 title: "ReplicationController"
-weight: 3
+weight: 5
 ---
 <!--
 api_metadata:
@@ -16,7 +16,7 @@ api_metadata:
 content_type: "api_reference"
 description: "ReplicationController represents the configuration of a replication controller."
 title: "ReplicationController"
-weight: 3
+weight: 5
 auto_generated: true
 -->
 
@@ -54,7 +54,7 @@ ReplicationController 表示一个副本控制器的配置。
 
 - **spec** (<a href="{{< ref "../workload-resources/replication-controller-v1#ReplicationControllerSpec" >}}">ReplicationControllerSpec</a>)
   
-  spec 定义副本控制器预期行为的规约。更多信息：
+  `spec` 定义副本控制器预期行为的规约。更多信息：
   https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 
 <!--
@@ -64,7 +64,7 @@ ReplicationController 表示一个副本控制器的配置。
 -->
 - **status** (<a href="{{< ref "../workload-resources/replication-controller-v1#ReplicationControllerStatus" >}}">ReplicationControllerStatus</a>)
   
-  status 是最近观测到的副本控制器的状态。此数据可能在某个时间窗之后过期。
+  `status` 是最近观测到的副本控制器的状态。此数据可能在某个时间窗之后过期。
   该值由系统填充，只读。更多信息：
   https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 
@@ -84,20 +84,21 @@ ReplicationControllerSpec 表示一个副本控制器的规约。
 
 - **template** (<a href="{{< ref "../workload-resources/pod-template-v1#PodTemplateSpec" >}}">PodTemplateSpec</a>)
 
-  Template is the object that describes the pod that will be created if insufficient replicas are detected. This takes precedence over a TemplateRef. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template
+  Template is the object that describes the pod that will be created if insufficient replicas are detected. This takes precedence over a TemplateRef. The only allowed template.spec.restartPolicy value is "Always". More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template
 -->
 - **selector** (map[string]string)
   
-  selector 是针对 Pod 的标签查询，符合条件的 Pod 个数应与 replicas 匹配。
-  如果 selector 为空，则默认为出现在 Pod 模板中的标签。
+  `selector` 是针对 Pod 的标签查询，符合条件的 Pod 个数应与 `replicas` 匹配。
+  如果 `selector` 为空，则默认为出现在 Pod 模板中的标签。
   如果置空以表示默认使用 Pod 模板中的标签，则标签的主键和取值必须匹配，以便由这个副本控制器进行控制。
+  `template.spec.restartPolicy` 唯一被允许的值是 `Always`。
   更多信息：
   https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/#label-selectors
 
 - **template** (<a href="{{< ref "../workload-resources/pod-template-v1#PodTemplateSpec" >}}">PodTemplateSpec</a>)
   
-  template 是描述 Pod 的一个对象，将在检测到副本不足时创建此对象。
-  此字段优先于 templateRef。更多信息：
+  `template` 是描述 Pod 的一个对象，将在检测到副本不足时创建此对象。
+  此字段优先于 `templateRef`。更多信息：
   https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicationcontroller#pod-template
 
 <!--
@@ -111,7 +112,7 @@ ReplicationControllerSpec 表示一个副本控制器的规约。
 -->
 - **replicas** (int32)
   
-  replicas 是预期副本的数量。这是一个指针，用于辨别显式零和未指定的值。默认为 1。更多信息：
+  `replicas` 是预期副本的数量。这是一个指针，用于辨别显式零和未指定的值。默认为 1。更多信息：
   https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicationcontroller#what-is-a-replicationcontroller
 
 - **minReadySeconds** (int32)
@@ -131,7 +132,7 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
 <!--
 - **replicas** (int32), required
 
-  Replicas is the most recently oberved number of replicas. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#what-is-a-replicationcontroller
+  Replicas is the most recently observed number of replicas. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#what-is-a-replicationcontroller
 
 - **availableReplicas** (int32)
 
@@ -139,12 +140,12 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
 -->
 - **replicas** (int32)，必需
   
-  replicas 是最近观测到的副本数量。更多信息：
+  `replicas` 是最近观测到的副本数量。更多信息：
   https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicationcontroller#what-is-a-replicationcontroller
 
 - **availableReplicas** (int32)
   
-  这个副本控制器可用副本（至少 minReadySeconds 才能就绪）的数量。
+  这个副本控制器可用副本（至少 `minReadySeconds` 才能就绪）的数量。
 
 <!--
 - **readyReplicas** (int32)
@@ -167,7 +168,9 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
 - **conditions** ([]ReplicationControllerCondition)
 
   *Patch strategy: merge on key `type`*
-  
+
+  *Map: unique values on key type will be kept during a merge*
+
   Represents the latest available observations of a replication controller's current state.
 
   <a name="ReplicationControllerCondition"></a>
@@ -176,7 +179,9 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
 - **conditions** ([]ReplicationControllerCondition)
   
   **补丁策略：按照键 `type` 合并**
-  
+
+  **Map：键 `type` 的唯一值将在合并期间保留**
+ 
   表示副本控制器当前状态的最新可用观测值。
   
   <a name="ReplicationControllerCondition"></a>
@@ -193,11 +198,11 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
   -->
 
   - **conditions.status** (string)，必需
-    
+
     状况的状态，取值为 True、False 或 Unknown 之一。
   
   - **conditions.type** (string)，必需
-    
+
     副本控制器状况的类型。
   
   <!--
@@ -210,9 +215,9 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
   -->
 
   - **conditions.lastTransitionTime** (Time)
-    
+
     状况上次从一个状态转换为另一个状态的时间。
-    
+
     <a name="Time"></a>
     **Time 是对 time.Time 的封装。Time 支持对 YAML 和 JSON 进行正确封包。
     为 time 包的许多函数方法提供了封装器。**
@@ -226,12 +231,13 @@ ReplicationControllerStatus 表示一个副本控制器的当前状态。
 
     The reason for the condition's last transition.
   -->
+
   - **conditions.message** (string)
-    
+
     这是一条人类可读的消息，指示有关上次转换的详细信息。
   
   - **conditions.reason** (string)
-    
+
     状况上次转换的原因。
 
 <!--
@@ -245,7 +251,7 @@ ReplicationControllerList is a collection of replication controllers.
 -->
 - **observedGeneration** (int64)
   
-  observedGeneration 反映了最近观测到的副本控制器的生成情况。
+  `observedGeneration` 反映了最近观测到的副本控制器的生成情况。
 
 ## ReplicationControllerList {#ReplicationControllerList}
 
@@ -278,14 +284,15 @@ ReplicationControllerList 是副本控制器的集合。
 
 <!--
 ## Operations {#Operations}
-<hr>
-### `get` read the specified ReplicationController
-#### HTTP Request
 -->
 ## 操作 {#Operations}
 
 <hr>
 
+<!--
+### `get` read the specified ReplicationController
+#### HTTP Request
+-->
 ### `get` 读取指定的 ReplicationController
 
 #### HTTP 请求
@@ -303,7 +310,7 @@ GET /api/v1/namespaces/{namespace}/replicationcontrollers/{name}
 
 - **name** (**路径参数**): string，必需
   
-  ReplicationController 的名称
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
   
@@ -343,7 +350,7 @@ GET /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status
 
 - **name** (**路径参数**): string，必需
   
-  ReplicationController 的名称
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
   
@@ -366,7 +373,7 @@ GET /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status
 ### `list` list or watch objects of kind ReplicationController
 #### HTTP Request
 -->
-### `list` 列出或监视 ReplicationController 类别的对象
+### `list` 列举或监视 ReplicationController 类别的对象
 
 #### HTTP 请求
 
@@ -383,6 +390,8 @@ GET /api/v1/namespaces/{namespace}/replicationcontrollers
 - **pretty** (*in query*): string
 - **resourceVersion** (*in query*): string
 - **resourceVersionMatch** (*in query*): string
+- **sendInitialEvents** (*in query*): boolean
+- **shardSelector** (*in query*): string
 - **timeoutSeconds** (*in query*): integer
 - **watch** (*in query*): boolean
 -->
@@ -424,6 +433,14 @@ GET /api/v1/namespaces/{namespace}/replicationcontrollers
   
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersionMatch" >}}">resourceVersionMatch</a>
 
+- **sendInitialEvents** (*查询参数*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+
+- **shardSelector** (**查询参数**): string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+
 - **timeoutSeconds** (**查询参数**): integer
   
   <a href="{{< ref "../common-parameters/common-parameters#timeoutSeconds" >}}">timeoutSeconds</a>
@@ -445,7 +462,7 @@ GET /api/v1/namespaces/{namespace}/replicationcontrollers
 ### `list` list or watch objects of kind ReplicationController
 #### HTTP Request
 -->
-### `list` 列出或监视 ReplicationController 类别的对象
+### `list` 列举或监视 ReplicationController 类别的对象
 
 #### HTTP 请求
 
@@ -461,6 +478,7 @@ GET /api/v1/replicationcontrollers
 - **pretty** (*in query*): string
 - **resourceVersion** (*in query*): string
 - **resourceVersionMatch** (*in query*): string
+- **shardSelector** (*in query*): string
 - **timeoutSeconds** (*in query*): integer
 - **watch** (*in query*): boolean
 -->
@@ -497,6 +515,14 @@ GET /api/v1/replicationcontrollers
 - **resourceVersionMatch** (**查询参数**): string
   
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersionMatch" >}}">resourceVersionMatch</a>
+
+- **sendInitialEvents** (*查询参数*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+
+- **shardSelector** (**查询参数**): string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
 
 - **timeoutSeconds** (**查询参数**): integer
   
@@ -596,7 +622,7 @@ PUT /api/v1/namespaces/{namespace}/replicationcontrollers/{name}
 
 - **name** (**路径参数**): string，必需
   
-  ReplicationController 的名称
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
   
@@ -656,7 +682,7 @@ PUT /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status
 
 - **name** (**路径参数**): string，必需
   
-  ReplicationController 的名称
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
   
@@ -717,7 +743,7 @@ PATCH /api/v1/namespaces/{namespace}/replicationcontrollers/{name}
 
 - **name** (**路径参数**): string，必需
   
-  ReplicationController 的名称
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
   
@@ -742,7 +768,7 @@ PATCH /api/v1/namespaces/{namespace}/replicationcontrollers/{name}
   <a href="{{< ref "../common-parameters/common-parameters#force" >}}">force</a>
 
 - **pretty** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 <!--
@@ -781,33 +807,33 @@ PATCH /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status
 #### 参数
 
 - **name** (**路径参数**): string，必需
-  
-  ReplicationController 的名称
+
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
 
 - **body**: <a href="{{< ref "../common-definitions/patch#Patch" >}}">Patch</a>，必需
 
 - **dryRun** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#dryRun" >}}">dryRun</a>
 
 - **fieldManager** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#fieldManager" >}}">fieldManager</a>
 
 - **fieldValidation** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#fieldValidation" >}}">fieldValidation</a>
 
 - **force** (**查询参数**): boolean
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#force" >}}">force</a>
 
 - **pretty** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 <!--
@@ -839,35 +865,40 @@ DELETE /api/v1/namespaces/{namespace}/replicationcontrollers/{name}
 - **body**: <a href="{{< ref "../common-definitions/delete-options#DeleteOptions" >}}">DeleteOptions</a>
 - **dryRun** (*in query*): string
 - **gracePeriodSeconds** (*in query*): integer
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (*in query*): boolean
 - **pretty** (*in query*): string
 - **propagationPolicy** (*in query*): string
 -->
 #### 参数
 
 - **name** (**路径参数**): string，必需
-  
-  ReplicationController 的名称
+
+  ReplicationController 的名称。
 
 - **namespace** (**路径参数**): string，必需
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
 
 - **body**: <a href="{{< ref "../common-definitions/delete-options#DeleteOptions" >}}">DeleteOptions</a>
 
 - **dryRun** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#dryRun" >}}">dryRun</a>
 
 - **gracePeriodSeconds** (**查询参数**): integer
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#gracePeriodSeconds" >}}">gracePeriodSeconds</a>
 
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (**查询参数**): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#ignoreStoreReadErrorWithClusterBreakingPotential" >}}">ignoreStoreReadErrorWithClusterBreakingPotential</a>
+
 - **pretty** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 - **propagationPolicy** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#propagationPolicy" >}}">propagationPolicy</a>
 
 <!--
@@ -899,64 +930,79 @@ DELETE /api/v1/namespaces/{namespace}/replicationcontrollers
 - **dryRun** (*in query*): string
 - **fieldSelector** (*in query*): string
 - **gracePeriodSeconds** (*in query*): integer
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (*in query*): boolean
 - **labelSelector** (*in query*): string
 - **limit** (*in query*): integer
 - **pretty** (*in query*): string
 - **propagationPolicy** (*in query*): string
 - **resourceVersion** (*in query*): string
 - **resourceVersionMatch** (*in query*): string
+- **sendInitialEvents** (*in query*): boolean
+- **shardSelector** (*in query*): string
 - **timeoutSeconds** (*in query*): integer
 -->
 #### 参数
 
 - **namespace** (**路径参数**): string，必需
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#namespace" >}}">namespace</a>
 
 - **body**: <a href="{{< ref "../common-definitions/delete-options#DeleteOptions" >}}">DeleteOptions</a>
 
 - **continue** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#continue" >}}">continue</a>
 
 - **dryRun** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#dryRun" >}}">dryRun</a>
 
 - **fieldSelector** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#fieldSelector" >}}">fieldSelector</a>
 
 - **gracePeriodSeconds** (**查询参数**): integer
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#gracePeriodSeconds" >}}">gracePeriodSeconds</a>
 
+- **ignoreStoreReadErrorWithClusterBreakingPotential** (**查询参数**): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#ignoreStoreReadErrorWithClusterBreakingPotential" >}}">ignoreStoreReadErrorWithClusterBreakingPotential</a>
+
 - **labelSelector** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#labelSelector" >}}">labelSelector</a>
 
 - **limit** (**查询参数**): integer
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#limit" >}}">limit</a>
 
 - **pretty** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#pretty" >}}">pretty</a>
 
 - **propagationPolicy** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#propagationPolicy" >}}">propagationPolicy</a>
 
 - **resourceVersion** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersion" >}}">resourceVersion</a>
 
 - **resourceVersionMatch** (**查询参数**): string
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#resourceVersionMatch" >}}">resourceVersionMatch</a>
 
+- **sendInitialEvents** (*查询参数*): boolean
+
+  <a href="{{< ref "../common-parameters/common-parameters#sendInitialEvents" >}}">sendInitialEvents</a>
+
+- **shardSelector** (**查询参数**): string
+
+  <a href="{{< ref "../common-parameters/common-parameters#shardSelector" >}}">shardSelector</a>
+
 - **timeoutSeconds** (**查询参数**): integer
-  
+
   <a href="{{< ref "../common-parameters/common-parameters#timeoutSeconds" >}}">timeoutSeconds</a>
 
 <!--

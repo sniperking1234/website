@@ -1,162 +1,141 @@
+# Use "schedule-builder" to maintain this file:
+# https://github.com/kubernetes/release/tree/master/cmd/schedule-builder
+# For example by running:
+# schedule-builder -uc data/releases/schedule.yaml -e data/releases/eol.yaml
+---
 schedules:
-- release: 1.25
-  releaseDate: 2022-08-23
-  maintenanceModeStartDate: 2023-08-28
-  endOfLifeDate: 2023-10-27
+- endOfLifeDate: "2027-10-28"
+  maintenanceModeStartDate: "2027-08-28"
   next:
-    release: 1.25.3
-    cherryPickDeadline: 2022-10-07
-    targetDate: 2022-10-12
+    cherryPickDeadline: "2026-10-09"
+    release: 1.37.2
+    targetDate: "2026-10-13"
   previousPatches:
-    - release: 1.25.2
-      cherryPickDeadline: 2022-09-20
-      targetDate: 2022-09-21
-      note: >-
-        [Out-of-Band release to fix the regression introduced in 1.25.1](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.25.1
-      cherryPickDeadline: 2022-09-09
-      targetDate: 2022-09-14
-      note: >-
-        [Regression](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-- release: 1.24
-  releaseDate: 2022-05-03
-  maintenanceModeStartDate: 2023-05-28
-  endOfLifeDate: 2023-07-28
+  - cherryPickDeadline: "2026-09-11"
+    release: 1.37.1
+    targetDate: "2026-09-15"
+  release: "1.37"
+  releaseDate: "2026-08-26"
+- endOfLifeDate: "2027-06-28"
+  maintenanceModeStartDate: "2027-04-28"
   next:
-    release: 1.24.7
-    cherryPickDeadline: 2022-10-07
-    targetDate: 2022-10-12
+    cherryPickDeadline: "2026-10-09"
+    release: 1.36.6
+    targetDate: "2026-10-13"
   previousPatches:
-    - release: 1.24.6
-      cherryPickDeadline: 2022-09-20
-      targetDate: 2022-09-21
-      note: >-
-        [Out-of-Band release to fix the regression introduced in 1.24.5](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.24.5
-      cherryPickDeadline: 2022-09-09
-      targetDate: 2022-09-14
-      note: >-
-        [Regression](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.24.4
-      cherryPickDeadline: 2022-08-12
-      targetDate: 2022-08-17
-    - release: 1.24.3
-      cherryPickDeadline: 2022-07-08
-      targetDate: 2022-07-13
-    - release: 1.24.2
-      cherryPickDeadline: 2022-06-10
-      targetDate: 2022-06-15
-    - release: 1.24.1
-      cherryPickDeadline: 2022-05-20
-      targetDate: 2022-05-24
-- release: 1.23
-  releaseDate: 2021-12-07
-  maintenanceModeStartDate: 2022-12-28
-  endOfLifeDate: 2023-02-28
+  - cherryPickDeadline: "2026-09-11"
+    release: 1.36.5
+    targetDate: "2026-09-15"
+  - cherryPickDeadline: "2026-08-07"
+    release: 1.36.4
+    targetDate: "2026-08-11"
+  - cherryPickDeadline: "2026-07-10"
+    release: 1.36.3
+    targetDate: "2026-07-14"
+  - cherryPickDeadline: "2026-06-05"
+    release: 1.36.2
+    targetDate: "2026-06-09"
+  - cherryPickDeadline: "2026-05-08"
+    release: 1.36.1
+    targetDate: "2026-05-13"
+  release: "1.36"
+  releaseDate: "2026-04-22"
+- endOfLifeDate: "2027-02-28"
+  maintenanceModeStartDate: "2026-12-28"
   next:
-    release: 1.23.13
-    cherryPickDeadline: 2022-10-07
-    targetDate: 2022-10-12
+    cherryPickDeadline: "2026-10-09"
+    release: 1.35.10
+    targetDate: "2026-10-13"
   previousPatches:
-    - release: 1.23.12
-      cherryPickDeadline: 2022-09-20
-      targetDate: 2022-09-21
-      note: >-
-        [Out-of-Band release to fix the regression introduced in 1.23.11](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.23.11
-      cherryPickDeadline: 2022-09-09
-      targetDate: 2022-09-14
-      note: >-
-        [Regression](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.23.10
-      cherryPickDeadline: 2022-08-12
-      targetDate: 2022-08-17
-    - release: 1.23.9
-      cherryPickDeadline: 2022-07-08
-      targetDate: 2022-07-13
-    - release: 1.23.8
-      cherryPickDeadline: 2022-06-10
-      targetDate: 2022-06-15
-    - release: 1.23.7
-      cherryPickDeadline: 2022-05-20
-      targetDate: 2022-05-24
-    - release: 1.23.6
-      cherryPickDeadline: 2022-04-08
-      targetDate: 2022-04-13
-    - release: 1.23.5
-      cherryPickDeadline: 2022-03-11
-      targetDate: 2022-03-16
-    - release: 1.23.4
-      cherryPickDeadline: 2022-02-11
-      targetDate: 2022-02-16
-    - release: 1.23.3
-      cherryPickDeadline: 2022-01-24
-      targetDate: 2022-01-25
-      note: >-
-        [Out-of-Band Release](https://groups.google.com/a/kubernetes.io/g/dev/c/Xl1sm-CItaY)
-    - release: 1.23.2
-      cherryPickDeadline: 2022-01-14
-      targetDate: 2022-01-19
-    - release: 1.23.1
-      cherryPickDeadline: 2021-12-14
-      targetDate: 2021-12-16
-- release: 1.22
-  releaseDate: 2021-08-04
-  maintenanceModeStartDate: 2022-08-28
-  endOfLifeDate: 2022-10-28
+  - cherryPickDeadline: "2026-09-11"
+    release: 1.35.9
+    targetDate: "2026-09-15"
+  - cherryPickDeadline: "2026-08-07"
+    release: 1.35.8
+    targetDate: "2026-08-11"
+  - cherryPickDeadline: "2026-07-10"
+    release: 1.35.7
+    targetDate: "2026-07-14"
+  - cherryPickDeadline: "2026-06-05"
+    release: 1.35.6
+    targetDate: "2026-06-09"
+  - cherryPickDeadline: "2026-05-08"
+    release: 1.35.5
+    targetDate: "2026-05-12"
+  - cherryPickDeadline: "2026-04-10"
+    release: 1.35.4
+    targetDate: "2026-04-14"
+  - cherryPickDeadline: "2026-03-13"
+    release: 1.35.3
+    targetDate: "2026-03-19"
+  - cherryPickDeadline: "2026-02-26"
+    note: Out of band patch release to pick up a new version of Go to [address several
+      Go CVEs](https://groups.google.com/g/golang-dev/c/ytMTMwK7QBk/m/hpcstrxADwAJ).
+      No other changes.
+    release: 1.35.2
+    targetDate: "2026-02-26"
+  - cherryPickDeadline: "2026-02-06"
+    note: January 2026 patches consolidated with February
+    release: 1.35.1
+    targetDate: "2026-02-10"
+  release: "1.35"
+  releaseDate: "2025-12-17"
+- endOfLifeDate: "2026-10-27"
+  maintenanceModeStartDate: "2026-08-27"
   next:
-    release: 1.22.16
-    cherryPickDeadline: 2022-10-07
-    targetDate: 2022-10-12
-    note: >-
-      The 1.22 release is in maintenance mode. As per the support policy, 1.22.16 will be released **only** if there are critical and/or security issues.
+    cherryPickDeadline: "2026-10-09"
+    release: 1.34.13
+    targetDate: "2026-10-13"
   previousPatches:
-    - release: 1.22.15
-      cherryPickDeadline: 2022-09-20
-      targetDate: 2022-09-21
-      note: >-
-        [Out-of-Band release to fix the regression introduced in 1.22.14](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.22.14
-      cherryPickDeadline: 2022-09-09
-      targetDate: 2022-09-14
-      note: >-
-        [Regression](https://groups.google.com/a/kubernetes.io/g/dev/c/tA6LNOQTR4Q/m/zL73maPTAQAJ)
-    - release: 1.22.13
-      cherryPickDeadline: 2022-08-12
-      targetDate: 2022-08-17
-    - release: 1.22.12
-      cherryPickDeadline: 2022-07-08
-      targetDate: 2022-07-13
-    - release: 1.22.11
-      cherryPickDeadline: 2022-06-10
-      targetDate: 2022-06-15
-    - release: 1.22.10
-      cherryPickDeadline: 2022-05-20
-      targetDate: 2022-05-24
-    - release: 1.22.9
-      cherryPickDeadline: 2022-04-08
-      targetDate: 2022-04-13
-    - release: 1.22.8
-      cherryPickDeadline: 2022-03-11
-      targetDate: 2022-03-16
-    - release: 1.22.7
-      cherryPickDeadline: 2022-02-11
-      targetDate: 2022-02-16
-    - release: 1.22.6
-      cherryPickDeadline: 2022-01-14
-      targetDate: 2022-01-19
-    - release: 1.22.5
-      cherryPickDeadline: 2021-12-10
-      targetDate: 2021-12-15
-    - release: 1.22.4
-      cherryPickDeadline: 2021-11-12
-      targetDate: 2021-11-17
-    - release: 1.22.3
-      cherryPickDeadline: 2021-10-22
-      targetDate: 2021-10-27
-    - release: 1.22.2
-      cherryPickDeadline: 2021-09-10
-      targetDate: 2021-09-15
-    - release: 1.22.1
-      cherryPickDeadline: 2021-08-16
-      targetDate: 2021-08-19
+  - cherryPickDeadline: "2026-09-11"
+    release: 1.34.12
+    targetDate: "2026-09-15"
+  - cherryPickDeadline: "2026-08-07"
+    release: 1.34.11
+    targetDate: "2026-08-11"
+  - cherryPickDeadline: "2026-07-10"
+    release: 1.34.10
+    targetDate: "2026-07-14"
+  - cherryPickDeadline: "2026-06-05"
+    release: 1.34.9
+    targetDate: "2026-06-09"
+  - cherryPickDeadline: "2026-05-08"
+    release: 1.34.8
+    targetDate: "2026-05-12"
+  - cherryPickDeadline: "2026-04-10"
+    release: 1.34.7
+    targetDate: "2026-04-14"
+  - cherryPickDeadline: "2026-03-13"
+    release: 1.34.6
+    targetDate: "2026-03-19"
+  - cherryPickDeadline: "2026-02-26"
+    note: Out of band patch release to pick up a new version of Go to [address several
+      Go CVEs](https://groups.google.com/g/golang-dev/c/ytMTMwK7QBk/m/hpcstrxADwAJ).
+      No other changes.
+    release: 1.34.5
+    targetDate: "2026-02-26"
+  - cherryPickDeadline: "2026-02-06"
+    note: January 2026 patches consolidated with February
+    release: 1.34.4
+    targetDate: "2026-02-10"
+  - cherryPickDeadline: "2025-12-05"
+    release: 1.34.3
+    targetDate: "2025-12-09"
+  - cherryPickDeadline: "2025-11-07"
+    note: October 2025 patches consolidated with November
+    release: 1.34.2
+    targetDate: "2025-11-11"
+  - cherryPickDeadline: "2025-09-05"
+    release: 1.34.1
+    targetDate: "2025-09-09"
+  release: "1.34"
+  releaseDate: "2025-08-27"
+upcoming_releases:
+- cherryPickDeadline: "2026-10-09"
+  targetDate: "2026-10-13"
+- cherryPickDeadline: "2026-11-06"
+  targetDate: "2026-11-10"
+- cherryPickDeadline: "2026-12-11"
+  targetDate: "2026-12-15"
+- cherryPickDeadline: "2027-01-08"
+  targetDate: "2027-01-12"

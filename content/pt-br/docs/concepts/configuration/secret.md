@@ -78,7 +78,7 @@ está rodando no mesmo cluster Kubernetes, você pode utilizar uma
 e seus tokens para identificar seu cliente.
 - existem ferramentas fornecidas por terceiros que você pode rodar, no seu
 cluster ou externamente, que providenciam gerenciamento de Secrets. Por exemplo,
-um serviço que Pods accessam via HTTPS, que revelam um Secret se o cliente
+um serviço que Pods acessam via HTTPS, que revelam um Secret se o cliente
 autenticar-se corretamente (por exemplo, utilizando um token de ServiceAccount).
 - para autenticação, você pode implementar um serviço de assinatura de
 certificados X.509 personalizado, e utilizar
@@ -181,7 +181,7 @@ muitos Secrets. Escolha a opção que for mais conveniente para o caso de uso.
 
 Secrets podem ser montados como volumes de dados ou expostos como
 {{< glossary_tooltip text="variáveis de ambiente" term_id="container-env-variables" >}}
-para serem utilizados num container de um Pod. Secrets também podem ser
+para serem utilizados num contêiner de um Pod. Secrets também podem ser
 utilizados por outras partes do sistema, sem serem diretamente expostos ao Pod.
 Por exemplo, Secrets podem conter credenciais que outras partes do sistema devem
 utilizar para interagir com sistemas externos no lugar do usuário.
@@ -617,7 +617,7 @@ metadata:
 spec:
   containers:
     - name: test-container
-      image: k8s.gcr.io/busybox
+      image: registry.k8s.io/busybox
       command: [ "/bin/sh", "-c", "env" ]
       envFrom:
       - secretRef:
@@ -855,7 +855,7 @@ spec:
       secretName: dotfile-secret
   containers:
   - name: dotfile-test-container
-    image: k8s.gcr.io/busybox
+    image: registry.k8s.io/busybox
     command:
     - ls
     - "-l"
@@ -999,7 +999,7 @@ para mais informações sobre como referenciar service accounts em Pods.
 ### Secrets de configuração do Docker
 
 Você pode utilizar um dos tipos abaixo para criar um Secret que armazena
-credenciais para accesso a um registro de contêineres para busca de imagens:
+credenciais para acesso a um registro de contêineres para busca de imagens:
 
 - `kubernetes.io/dockercfg`
 - `kubernetes.io/dockerconfigjson`
@@ -1141,7 +1141,7 @@ data:
 O Secret de autenticação SSH é fornecido apenas para a conveniência do usuário.
 Você pode criar um Secret do tipo `Opaque` para credentials utilizadas para
 autenticação SSH. No entanto, a utilização do tipo embutido e público de Secret
-(`kubernetes.io/ssh-auth`) auxilia outras pessoas a compreenderem o propósito do
+(`kubernetes.io/tls`) auxilia outras pessoas a compreenderem o propósito do
 seu Secret, e define uma convenção de quais chaves podem ser esperadas.
 O tipo embutido também fornece verificação dos campos requeridos em uma
 configuração de Secret.
@@ -1256,7 +1256,7 @@ Um Secret do tipo token de autoinicialização possui as seguintes chaves no cam
   do token. Requerido.
 - `description`: Uma string contendo uma descrição do propósito para o qual este
   token é utilizado. Opcional.
-- `expiration`: Um horário absoluto UTC no formato RFC3339 especificando quando
+- `expiration`: Um horário absoluto UTC no formato [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339) especificando quando
   o token deve expirar. Opcional.
 - `usage-bootstrap-<usage>`: Um conjunto de flags booleanas indicando outros
   usos para este token de autoinicialização.

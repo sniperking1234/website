@@ -12,25 +12,30 @@ kubeconfigを使用すると、クラスターに、ユーザー、名前空間�
 クラスターへのアクセスを設定するために使われるファイルは*kubeconfigファイル*と呼ばれます。これは設定ファイルを指すために使われる一般的な方法です。`kubeconfig`という名前を持つファイルが存在するという意味ではありません。
 {{< /note >}}
 
+{{< warning >}}
+信頼できるソースからのkubeconfigファイルのみを使用してください。特別に細工されたkubeconfigファイルを使用すると、悪意のあるコードの実行やファイルの公開につながる可能性があります。
+信頼できないkubeconfigファイルを使用しなければならない場合は、シェルスクリプトを使用するのと同じように、まず最初に慎重に検査してください。
+{{< /warning>}}
+
 デフォルトでは、`kubectl`は`$HOME/.kube`ディレクトリ内にある`config`という名前のファイルを探します。`KUBECONFIG`環境変数を設定するか、[`--kubeconfig`](/docs/reference/generated/kubectl/kubectl/)フラグで指定することで、別のkubeconfigファイルを指定することもできます。
 
 kubeconfigファイルの作成と指定に関するステップバイステップの手順を知りたいときは、[複数のクラスターへのアクセスを設定する](/ja/docs/tasks/access-application-cluster/configure-access-multiple-clusters)を参照してください。
 
 <!-- body -->
 
-## 複数のクラスター、ユーザ、認証の仕組みのサポート
+## 複数のクラスター、ユーザー、認証の仕組みのサポート
 
 複数のクラスターを持っていて、ユーザーやコンポーネントがさまざまな方法で認証を行う次のような状況を考えてみます。
 
 - 実行中のkubeletが証明書を使用して認証を行う可能性がある。
 - ユーザーがトークンを使用して認証を行う可能性がある。
-- 管理者が個別のユーザに提供する複数の証明書を持っている可能性がある。
+- 管理者が個別のユーザーに提供する複数の証明書を持っている可能性がある。
 
 kubeconfigファイルを使用すると、クラスター、ユーザー、名前空間を組織化することができます。また、contextを定義することで、複数のクラスターや名前空間を素早く簡単に切り替えられます。
 
 ## Context
 
-kubeconfigファイルの*context*要素は、アクセスパラメーターを使いやすい名前でグループ化するために使われます。各contextは3つのパラメータ、cluster、namespace、userを持ちます。デフォルトでは、`kubectl`コマンドラインツールはクラスターとの通信に*current context*のパラメーターを使用します。
+kubeconfigファイルの*context*要素は、アクセスパラメーターを使いやすい名前でグループ化するために使われます。各contextは3つのパラメーター、cluster、namespace、userを持ちます。デフォルトでは、`kubectl`コマンドラインツールはクラスターとの通信に*current context*のパラメーターを使用します。
 
 current contextを選択するには、以下のコマンドを使用します。
 
@@ -103,12 +108,31 @@ kubectl config view
 
 kubeconfigファイル内のファイルとパスのリファレンスは、kubeconfigファイルの位置からの相対パスで指定します。コマンドライン上のファイルのリファレンスは、現在のワーキングディレクトリからの相対パスです。`$HOME/.kube/config`内では、相対パスは相対のまま、絶対パスは絶対のまま保存されます。
 
+## プロキシ
+
+kubeconfigファイルで`proxy-url`を使用すると、以下のようにクラスターごとにプロキシを使用するように`kubectl`を設定することができます。
+
+```yaml
+apiVersion: v1
+kind: Config
+
+clusters:
+- cluster:
+    proxy-url: http://proxy.example.org:3128
+    server: https://k8s.example.org/k8s/clusters/c-xxyyzz
+  name: development
+
+users:
+- name: developer
+
+contexts:
+- context:
+  name: development
+```
+
+
 ## {{% heading "whatsnext" %}}
 
 
-* [複数のクラスターへのアクセスを設定する](/docs/tasks/access-application-cluster/configure-access-multiple-clusters/)
+* [複数のクラスターへのアクセスを設定する](/ja/docs/tasks/access-application-cluster/configure-access-multiple-clusters/)
 * [`kubectl config`](/docs/reference/generated/kubectl/kubectl-commands#config)
-
-
-
-

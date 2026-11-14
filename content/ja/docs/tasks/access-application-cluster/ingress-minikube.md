@@ -1,7 +1,7 @@
 ---
 title: Minikube上でNGINX Ingressコントローラーを使用してIngressをセットアップする
 content_type: task
-weight: 100
+weight: 110
 ---
 
 <!-- overview -->
@@ -114,10 +114,6 @@ weight: 100
     http://172.17.0.15:31637
     ```
 
-    {{< note >}}
-    Katacoda環境の場合のみ: 上部のterminalパネルでプラスのアイコンをクリックして、**Select port to view on Host 1**(Host 1を表示するポートを選択)をクリックします。NodePort(上の例では`31637`)を入力して、**Display Port**(ポートを表示)をクリックしてください。
-    {{< /note >}}
-
     出力は次のようになります。
 
     ```shell
@@ -134,7 +130,7 @@ weight: 100
 
 1. 以下の内容で`example-ingress.yaml`を作成します。
 
-    {{< codenew file="service/networking/example-ingress.yaml" >}}
+    {{% code_sample file="service/networking/example-ingress.yaml" %}}
 
 1. 次のコマンドを実行して、Ingressリソースを作成します。
 

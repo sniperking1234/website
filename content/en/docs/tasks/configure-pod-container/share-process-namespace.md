@@ -5,7 +5,7 @@ reviewers:
 - yujuhong
 - dchen1107
 content_type: task
-weight: 160
+weight: 200
 ---
 
 <!-- overview -->
@@ -29,7 +29,7 @@ include debugging utilities like a shell.
 Process namespace sharing is enabled using the `shareProcessNamespace` field of
 `.spec` for a Pod. For example:
 
-{{< codenew file="pods/share-process-namespace.yaml" >}}
+{{% code_sample file="pods/share-process-namespace.yaml" %}}
 
 1. Create the pod `nginx` on your cluster:
 
@@ -40,7 +40,7 @@ Process namespace sharing is enabled using the `shareProcessNamespace` field of
 1. Attach to the `shell` container and run `ps`:
 
    ```shell
-   kubectl attach -it nginx -c shell
+   kubectl exec -it nginx -c shell -- /bin/sh
    ```
 
    If you don't see a command prompt, try pressing enter. In the container shell:

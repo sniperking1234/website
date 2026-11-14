@@ -7,7 +7,6 @@ weight: 70
 <!-- overview -->
 Role Based Access Control(RBAC)は、組織内の個々のユーザーのRoleをベースに、コンピューターまたはネットワークリソースへのアクセスを制御する方法です。
 
-
 <!-- body -->
 RBAC認可は{{< glossary_tooltip term_id="api-group" >}} `rbac.authorization.k8s.io`を使用して認可の決定を行い、Kubernetes APIを介して動的にポリシーを構成できるようにします。
 
@@ -95,7 +94,7 @@ RoleまたはClusterRoleオブジェクトの名前は有効な
 
 ### RoleBindingとClusterRoleBinding
 
-RoleBindingはRoleで定義された権限をユーザーまたはユーザのセットに付与します。
+RoleBindingはRoleで定義された権限をユーザーまたはユーザーのセットに付与します。
 RoleBindingは*subjects* (ユーザー、グループ、サービスアカウント)のリストと、付与されるRoleへの参照を保持します。
 RoleBindingは特定のNamespace内の権限を付与しますが、ClusterRoleBindingはクラスター全体にアクセスする権限を付与します。
 
@@ -195,7 +194,7 @@ Bindingの`roleRef`を変更しようとすると、バリデーションエラ�
 
 KubernetesのAPIでは、ほとんどのリソースはPodであれば`pods`のように、オブジェクト名の文字列表現を使用して表されます。RBACは、関連するAPIエンドポイントのURLに表示されるものとまったく同じ名前を使用するリソースを参照します。
 一部のKubernetes APIには、Podのログなどの
-_subresource_　が含まれます。Podのログのリクエストは次のようになります。
+_subresource_ が含まれます。Podのログのリクエストは次のようになります。
 
 ```http
 GET /api/v1/namespaces/{namespace}/pods/{name}/log
@@ -266,14 +265,17 @@ rules: [] # コントロールプレーンは自動的にルールを入力し�
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: monitoring-endpoints
+  name: monitoring-endpointslices
   labels:
     rbac.example.com/aggregate-to-monitoring: "true"
-# ClusterRole「monitoring-endpoints」を作成すると、
+# ClusterRole「monitoring-endpointslices」を作成すると、
 # 以下のルールがClusterRole「monitoring」に追加されます
 rules:
 - apiGroups: [""]
-  resources: ["services", "endpoints", "pods"]
+  resources: ["services", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
   verbs: ["get", "list", "watch"]
 ```
 
@@ -508,7 +510,7 @@ APIサーバーは、デフォルトのClusterRoleオブジェクトとClusterRo
 
 起動するたびに、APIサーバーはデフォルトのClusterRoleを不足している権限で更新し、
 デフォルトのClusterRoleBindingを不足しているsubjectsで更新します。
-これにより、誤った変更をクラスタが修復できるようになり、新しいKubernetesリリースで権限とsubjectsが変更されても、
+これにより、誤った変更をクラスターが修復できるようになり、新しいKubernetesリリースで権限とsubjectsが変更されても、
 RoleとRoleBindingを最新の状態に保つことができます。
 
 この調整を無効化するには`rbac.authorization.kubernetes.io/autoupdate`をデフォルトのClusterRoleまたはRoleBindingのアノテーションを`false`に設定します。
@@ -557,7 +559,7 @@ ClusterRoleを編集すると、変更が[自動調整](#自動調整)によるA
 
 ### ユーザー向けRole
 
-一部のデフォルトClusterRolesにはプレフィックス`system:`が付いていません。これらは、ユーザー向けのroleを想定しています。それらは、スーパーユーザのRole(`cluster-admin`)、ClusterRoleBindingsを使用してクラスタ全体に付与されることを意図しているRole、そしてRoleBindings(`admin`, `edit`, `view`)を使用して、特定のNamespace内に付与されることを意図しているRoleを含んでいます。
+一部のデフォルトClusterRolesにはプレフィックス`system:`が付いていません。これらは、ユーザー向けのroleを想定しています。それらは、スーパーユーザーのRole(`cluster-admin`)、ClusterRoleBindingsを使用してクラスター全体に付与されることを意図しているRole、そしてRoleBindings(`admin`, `edit`, `view`)を使用して、特定のNamespace内に付与されることを意図しているRoleを含んでいます。
 
 ユーザー向けのClusterRolesは[ClusterRoleの集約](#集約clusterrole)を使用して、管理者がこれらのClusterRolesにカスタムリソースのルールを含めることができるようにします。ルールを`admin`、`edit`、または`view` Roleに追加するには、次のラベルの一つ以上でClusterRoleを作成します。
 
@@ -707,7 +709,7 @@ Secretsの内容を読み取るとNamespaceのServiceAccountのクレデンシ�
 Kubernetes {{< glossary_tooltip term_id="kube-controller-manager" text="controller manager" >}}は、Kubernetesコントロールプレーンに組み込まれている{{< glossary_tooltip term_id="controller" text="controllers" >}}を実行します。
 `--use-service-account-credentials`を指定して呼び出すと、kube-controller-manager個別のサービスアカウントを使用して各コントローラーを起動します。
 組み込みコントローラーごとに、プレフィックス`system:controller:`付きの対応するRoleが存在します。
-コントローラーマネージャーが`--use-service-account-credentials`で開始されていない場合、コントローラマネージャーは、関連するすべてのRoleを付与する必要がある自身のクレデンシャルを使用して、すべてのコントロールループを実行します。
+コントローラーマネージャーが`--use-service-account-credentials`で開始されていない場合、コントローラーマネージャーは、関連するすべてのRoleを付与する必要がある自身のクレデンシャルを使用して、すべてのコントロールループを実行します。
 これらのRoleは次のとおりです。
 
 * `system:controller:attachdetach-controller`
@@ -907,7 +909,7 @@ subjects:
 
 ### `kubectl create clusterrolebinding`
 
-以下に、クラスタ全体(すべてのNamespace)にClusterRoleをいくつか例として付与します。
+以下に、クラスター全体(すべてのNamespace)にClusterRoleをいくつか例として付与します。
 
 * クラスター全体で、ClusterRole「cluster-admin」へのアクセス許可を「root」という名前のユーザーに付与します。
 
@@ -1087,7 +1089,7 @@ RBACRoleBindingを使用して、permissive ABACポリシーを複製できま�
 {{< warning >}}
 次のポリシーでは、**すべて**のサービスアカウントがクラスター管理者としてふるまうことを許可しています。
 コンテナで実行されているアプリケーションは、サービスアカウントのクレデンシャルを自動的に受け取ります。
-secretsの表示や権限の変更など、APIに対して任意のアクションを実行できます。
+Secretの表示や権限の変更など、APIに対して任意のアクションを実行できます。
 これは推奨されるポリシーではありません。
 
 ```shell

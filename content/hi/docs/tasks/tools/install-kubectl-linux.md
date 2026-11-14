@@ -32,10 +32,10 @@ Linux पर kubectl संस्थापित करने के लिए �
    {{< note >}}
 एक विशिष्ट संस्करण डाउनलोड करने के लिए, कमांड के `$(curl -L -s https://dl.k8s.io/release/stable.txt)` हिस्से को विशिष्ट संस्करण से बदलें।
 
-उदाहरण के लिए, लिनक्स पर {{< param "fullversion" >}} संस्करण डाउनलोड करने के लिए, टाइप करें:
+उदाहरण के लिए, लिनक्स पर {{< skew currentPatchVersion >}} संस्करण डाउनलोड करने के लिए, टाइप करें:
 
    ```bash
-   curl -LO https://dl.k8s.io/release/{{< param "fullversion" >}}/bin/linux/amd64/kubectl
+   curl -LO https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/linux/amd64/kubectl
    ```
    {{< /note >}}
 
@@ -44,7 +44,7 @@ Linux पर kubectl संस्थापित करने के लिए �
   kubectl चेकसम फाइल डाउनलोड करें:
 
    ```bash
-   curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
    ```
 
    चेकसम फ़ाइल से kubectl बाइनरी को मान्य करें:
@@ -61,7 +61,7 @@ Linux पर kubectl संस्थापित करने के लिए �
 
    अगर चेक फेल हो जाता है, तो `sha256` nonzero स्थिति के साथ बाहर निकलता है और इस आउटपुट के समान प्रिंट करता है:
 
-   ```bash
+   ```console
    kubectl: FAILED
    sha256sum: WARNING: 1 computed checksum did NOT match
    ```
@@ -103,7 +103,7 @@ Linux पर kubectl संस्थापित करने के लिए �
 
    ```shell
    sudo apt-get update
-   sudo apt-get install -y apt-transport-https ca-certificates curl
+   sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
    ```
 
 2. गूगल क्लाउड पब्लिक साइनिंग कुंजी (key) डाउनलोड करें:
@@ -199,7 +199,7 @@ kubectl Bash और Zsh के लिए ऑटोकम्प्लेशन �
    kubectl-convert चेकसम फ़ाइल डाउनलोड करें:
 
    ```bash
-   curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl-convert.sha256"
+   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl-convert.sha256"
    ```
 
    चेकसम फ़ाइल से kubectl-convert बाइनरी को मान्य करें:
@@ -216,7 +216,7 @@ kubectl Bash और Zsh के लिए ऑटोकम्प्लेशन �
 
    अगर चेक फेल हो जाता है, तो `sha256` nonzero स्थिति के साथ बाहर निकलता है और इस आउटपुट के समान प्रिंट करता है:
 
-   ```bash
+   ```console
    kubectl-convert: FAILED
    sha256sum: WARNING: 1 computed checksum did NOT match
    ```

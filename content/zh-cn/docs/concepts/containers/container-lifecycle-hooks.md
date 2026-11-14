@@ -1,7 +1,7 @@
 ---
 title: 容器生命周期回调
 content_type: concept
-weight: 30
+weight: 40
 ---
 <!--
 reviewers:
@@ -9,7 +9,7 @@ reviewers:
 - thockin
 title: Container Lifecycle Hooks
 content_type: concept
-weight: 30
+weight: 40
 -->
 
 <!-- overview -->
@@ -31,7 +31,7 @@ Kubernetes provides Containers with lifecycle hooks.
 The hooks enable Containers to be aware of events in their management lifecycle
 and run code implemented in a handler when the corresponding lifecycle hook is executed.
 -->
-## 概述
+## 概述   {#overview}
 
 类似于许多具有生命周期回调组件的编程语言框架，例如 Angular、Kubernetes 为容器提供了生命周期回调。
 回调使容器能够了解其管理生命周期中的事件，并在执行相应的生命周期回调时运行在处理程序中实现的代码。
@@ -49,12 +49,26 @@ There are two hooks that are exposed to Containers:
 
 <!--
 This hook is executed immediately after a container is created.
-However, there is no guarantee that the hook will execute before the container ENTRYPOINT.
+It runs **concurrently** with the container's `ENTRYPOINT` (main process),
+meaning the hook may run before, during, or after the main process starts.
+
 No parameters are passed to the handler.
 -->
 这个回调在容器被创建之后立即被执行。
-但是，不能保证回调会在容器入口点（ENTRYPOINT）之前执行。
+它与容器的 `ENTRYPOINT`（主进程）**并发**运行，  
+这意味着此回调程序可能在主进程启动之前、期间或之后运行。
+
 没有参数传递给处理程序。
+
+{{< note >}}
+<!--
+While the hook runs concurrently with the container process,
+it can delay container status updates;
+the container may not transition to `Running` until the hook completes.
+-->
+当回调程序与容器进程并发运行时，此回调程序可以延迟容器状态的更新；
+在回调完成之前，容器可能不会进入 `Running` 状态。
+{{< /note >}}
 
 `PreStop`
 
@@ -68,8 +82,7 @@ the handler, the container will eventually terminate within the Pod's terminatio
 parameters are passed to the handler.
 -->
 在容器因 API 请求或者管理事件（诸如存活态探针、启动探针失败、资源抢占、资源竞争等）
-而被终止之前，此回调会被调用。
-如果容器已经处于已终止或者已完成状态，则对 preStop 回调的调用将失败。
+而被终止之前，此回调会被调用。如果容器已经处于已终止或者已完成状态，则对 `preStop` 回调的调用将失败。
 在用来停止容器的 TERM 信号被发出之前，回调必须执行结束。
 Pod 的终止宽限周期在 `PreStop` 回调被执行之前即开始计数，
 所以无论回调函数的执行结果如何，容器最终都会在 Pod 的终止宽限期内被终止。
@@ -79,52 +92,75 @@ Pod 的终止宽限周期在 `PreStop` 回调被执行之前即开始计数，
 A more detailed description of the termination behavior can be found in
 [Termination of Pods](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination).
 -->
-有关终止行为的更详细描述，请参见
-[终止 Pod](/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)。
+有关终止行为的更详细描述，
+请参见[终止 Pod](/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)。
+
+`StopSignal`
+
+<!--
+The StopSignal lifecycle can be used to define a stop signal which would be sent to the container when it is
+stopped. If you set this, it overrides any `STOPSIGNAL` instruction defined within the container image.
+
+A more detailed description of termination behaviour with custom stop signals can be found in
+[Stop Signals](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-stop-signals).
+-->
+StopSignal 生命周期可用于定义停止信号，该信号将在容器停止时发送给容器。
+如果设置了该字段，将会覆盖容器镜像中定义的 `STOPSIGNAL` 指令。
+
+关于自定义停止信号的终止行为的更为详细的描述，
+请参阅[停止信号](/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-stop-signals)。
 
 <!--
 ### Hook handler implementations
 
 Containers can access a hook by implementing and registering a handler for that hook.
-There are two types of hook handlers that can be implemented for Containers:
+There are three types of hook handlers that can be implemented for Containers:
 -->
-### 回调处理程序的实现
+### 回调处理程序的实现   {#hook-handler-implementations}
 
 容器可以通过实现和注册该回调的处理程序来访问该回调。
-针对容器，有两种类型的回调处理程序可供实现：
+针对容器，有三种类型的回调处理程序可供实现：
 
 <!--
 * Exec - Executes a specific command, such as `pre-stop.sh`, inside the cgroups and namespaces of the Container.
 Resources consumed by the command are counted against the Container.
 * HTTP - Executes an HTTP request against a specific endpoint on the Container.
+* Sleep - Pauses the container for a specified duration.
 -->
 
 * Exec - 在容器的 cgroups 和名字空间中执行特定的命令（例如 `pre-stop.sh`）。
   命令所消耗的资源计入容器的资源消耗。
 * HTTP - 对容器上的特定端点执行 HTTP 请求。
+* Sleep - 将容器暂停一段指定的时间。
 
 <!--
 ### Hook handler execution
 
 When a Container lifecycle management hook is called,
 the Kubernetes management system executes the handler according to the hook action,
-`httpGet` and `tcpSocket` are executed by the kubelet process, and `exec` is executed in the container.
+`httpGet`, `tcpSocket` ([deprecated](/docs/reference/generated/kubernetes-api/v1.35/#lifecyclehandler-v1-core))
+and `sleep` are executed by the kubelet process, and `exec` is executed in the container.
 -->
-### 回调处理程序执行
+### 回调处理程序执行   {#hook-handler-execution}
 
 当调用容器生命周期管理回调时，Kubernetes 管理系统根据回调动作执行其处理程序，
-`httpGet` 和 `tcpSocket` 在 kubelet 进程执行，而 `exec` 则由容器内执行。
+`httpGet`、`tcpSocket`（[已弃用](/docs/reference/generated/kubernetes-api/v1.35/#lifecyclehandler-v1-core)）
+和 `sleep` 由 kubelet 进程执行，而 `exec` 在容器内执行。
 
 <!--
-Hook handler calls are synchronous within the context of the Pod containing the Container.
-This means that for a `PostStart` hook,
-the Container ENTRYPOINT and hook fire asynchronously.
-However, if the hook takes too long to run or hangs,
-the Container cannot reach a `running` state.
+The `PostStart` hook handler call is initiated when a container is created,
+meaning the container ENTRYPOINT and the `PostStart` hook are triggered simultaneously. 
+(This means it generally doesn't make sense to use an HTTP hook for `PostStart`, since
+there is no guarantee that the container's process will have fully started up when the
+hook runs.)
+If the `PostStart` hook takes too long to execute or if it hangs,
+it can prevent the container from transitioning to a `running` state.
 -->
-回调处理程序调用在包含容器的 Pod 上下文中是同步的。
-这意味着对于 `PostStart` 回调，容器入口点和回调异步触发。
-但是，如果回调运行或挂起的时间太长，则容器无法达到 `running` 状态。
+当容器创建时，会调用 `PostStart` 回调程序，
+意味着容器的 ENTRYPOINT 和 `PostStart` 回调程序会同时触发。
+（这意味着通常不适合在 `PostStart` 中使用 HTTP 回调，
+因为在回调程序运行时，无法保证容器的进程已经完全启动。）
+如果 `PostStart` 回调程序执行时间过长或挂起，它可能会阻止容器进入 `running` 状态。
 
 <!--
 `PreStop` hooks are not executed asynchronously from the signal
@@ -171,7 +207,7 @@ which means that a hook may be called multiple times for any given event,
 such as for `PostStart` or `PreStop`.
 It is up to the hook implementation to handle this correctly.
 -->
-### 回调递送保证
+### 回调递送保证   {#hook-delivery-guarantees}
 
 回调的递送应该是**至少一次**，这意味着对于任何给定的事件，
 例如 `PostStart` 或 `PreStop`，回调可以被调用多次。
@@ -197,16 +233,19 @@ The logs for a Hook handler are not exposed in Pod events.
 If a handler fails for some reason, it broadcasts an event.
 For `PostStart`, this is the `FailedPostStartHook` event,
 and for `PreStop`, this is the `FailedPreStopHook` event.
-To generate a failed `FailedPreStopHook` event yourself, modify the [lifecycle-events.yaml](https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/pods/lifecycle-events.yaml) file to change the postStart command to "badcommand" and apply it.
-Here is some example output of the resulting events you see from running `kubectl describe pod lifecycle-demo`:
+To generate a failed `FailedPostStartHook` event yourself, modify the
+[lifecycle-events.yaml](https://k8s.io/examples/pods/lifecycle-events.yaml)
+file to change the postStart command to "badcommand" and apply it.
+Here is some example output of the resulting events you see from running `kubectl describe
+pod lifecycle-demo`:
 -->
-### 调试回调处理程序
+### 调试回调处理程序   {#debugging-hook-handlers}
 
 回调处理程序的日志不会在 Pod 事件中公开。
 如果处理程序由于某种原因失败，它将播放一个事件。
 对于 `PostStart`，这是 `FailedPostStartHook` 事件，对于 `PreStop`，这是 `FailedPreStopHook` 事件。
-要自己生成失败的 `FailedPreStopHook` 事件，请修改
-[lifecycle-events.yaml](https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/pods/lifecycle-events.yaml)
+要自己生成失败的 `FailedPostStartHook` 事件，请修改
+[lifecycle-events.yaml](https://k8s.io/examples/pods/lifecycle-events.yaml)
 文件将 postStart 命令更改为 “badcommand” 并应用它。
 以下是通过运行 `kubectl describe pod lifecycle-demo` 后你看到的一些结果事件的示例输出：
 
@@ -232,7 +271,5 @@ Events:
 * Get hands-on experience
   [attaching handlers to Container lifecycle events](/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/).
 -->
-
 * 进一步了解[容器环境](/zh-cn/docs/concepts/containers/container-environment/)。
 * 动手[为容器的生命周期事件设置处理函数](/zh-cn/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/)。
-

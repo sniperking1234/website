@@ -147,7 +147,9 @@ When reviewing, use the following as a starting point.
 - Does similar content exist elsewhere on the Kubernetes site?
 - Does the content excessively link to off-site, individual vendor or non-open source documentation?
 
-### Website
+### Documentation
+
+Some checks to consider:
 
 - Did this PR change or remove a page title, slug/alias or anchor link? If so, are there broken
   links as a result of this PR? Is there another option, like changing the page title without
@@ -163,16 +165,103 @@ When reviewing, use the following as a starting point.
 - Do the changes show up in the Netlify preview? Be particularly vigilant about lists, code
   blocks, tables, notes and images.
 
+### Website infrastructure
+
+For changes involving the website framework (such as Hugo upgrades, Docsy theme updates),
+Reviewers must ask the PR author to confirm the site builds without errors in production mode, or verify it themselves.
+This is necessary because automated Netlify previews may not catch specific asset transformation 
+or path resolution errors that only trigger during a full production build.
+
+Reviewers can verify the build using one of the following methods:
+
+- **Container-based (recommended):** Ensures environment parity without needing Hugo installed locally.
+ 
+  {{< note >}}
+  The default `container-serve` target runs in development mode. 
+  For a production-equivalent build, temporarily edit the `Makefile` and change 
+  `--environment development` to `--environment production` in the `container-serve` target, then run:
+
+  ```bash
+  make container-image
+  make container-serve
+  ```
+
+  {{< /note >}}
+
+
+- **Local Hugo via Make:** Uses the existing Makefile target for a production build. Note that this performs a full build and is slower than serving the site.
+
+  ```bash
+  make production-build
+  ```
+ 
+- **Direct Hugo command:** The fastest way to perform the production build without serving the site.
+
+  ```bash
+  hugo --gc --minify --templateMetrics --environment production
+  ```
+
+#### Verify the output
+ 
+A successful build will display a summary table:
+
+```text
+| EN  | ZH-CN | JA | ...
+---+------+-------+-----+
+Pages | 2601 | 2148 | 747 | ...
+
+Built in 95753 ms
+Environment: "production"
+```
+
+If the build fails, you will see explicit ERROR logs;
+a failure such as a shortcode or asset transformation might look like:
+
+```text
+ERROR render of "page" failed: "/src/layouts/shortcodes/cve-feed.html:3:14": 
+execute of template failed: template: shortcodes/cve-feed.html:3:14: 
+failed to transform "scss/main.scss" (text/x-scss): SCSS processing failed
+```
+
+Review the Netlify preview to see how the failure is rendered on the site.
+If the production build fails, the PR must not be merged until the author addresses the
+transformation or template errors.
+
+### Blog
+
+Early feedback on blog posts is welcome via a Google Doc or HackMD. Please request input early from the [#sig-docs-blog Slack channel](https://kubernetes.slack.com/archives/CJDHVD54J).
+
+Before reviewing blog PRs, be familiar with the [blog guidelines](/docs/contribute/blog/guidelines/)
+  and with [submitting blog articles](/docs/contribute/blog/article-submission/).
+
+Make sure you also know about [evergreen](/docs/contribute/blog/#maintenance-evergreen) articles
+and how to decide if an article is evergreen.
+
+Blog articles may contain [direct quotes](https://en.wikipedia.org/wiki/Direct_discourse) and
+[indirect speech](https://en.wikipedia.org/wiki/Indirect_speech). Avoid suggesting a rewording for
+anything that is attributed to someone or part of a dialog that has happened - even if you think
+the original speaker's grammar was not correct. For those cases, also, try to respect the article
+author's suggested punctuation unless it is obviously wrong.
+
+As a project, we only mark blog articles as maintained (`evergreen: true` in front matter) if the Kubernetes project
+is happy to commit to maintaining them indefinitely.
+Some blog articles absolutely merit this, and we always mark our release announcements evergreen. Check with other contributors if you are not sure how to review on this point.
+
+The [content guide](/docs/contribute/style/content-guide/) applies unconditionally to blog articles and the PRs that add them. Bear in mind that some restrictions in the guide state that they are only relevant to documentation; those restrictions don't apply to blog articles.
+
+Check if the Markdown source is using the right [page content type](/docs/contribute/style/page-content-types/) and / or `layout`.
+
 ### Other
 
-- Watch out for [trivial edits](https://www.kubernetes.dev/docs/guide/pull-requests/#trivial-edits);
+Watch out for [trivial edits](https://www.kubernetes.dev/docs/guide/pull-requests/#trivial-edits);
   if you see a change that you think is a trivial edit, please point out that policy
-  (it's still OK to accept the change if it is genuinely an improvement).
-- Encourage authors who are making whitespace fixes to do
-  so in the first commit of their PR, and then add other changes on top of that. This
-  makes both merges and reviews easier. Watch out especially for a trivial change that
-  happens in a single commit along with a large amount of whitespace cleanup
-  (and if you see that, encourage the author to fix it).
+(it's still OK to accept the change if it is genuinely an improvement).
+
+Encourage authors who are making whitespace fixes to do
+so in the first commit of their PR, and then add other changes on top of that. This
+makes both merges and reviews easier. Watch out especially for a trivial change that
+happens in a single commit along with a large amount of whitespace cleanup
+(and if you see that, encourage the author to fix it).
 
 As a reviewer, if you identify small issues with a PR that aren't essential to the meaning,
 such as typos or incorrect whitespace, prefix your comments with `nit:`.
@@ -181,5 +270,4 @@ This lets the author know that this part of your feedback is non-critical.
 If you are considering a pull request for approval and all the remaining feedback is
 marked as a nit, you can merge the PR anyway. In that case, it's often useful to open
 an issue about the remaining nits. Consider whether you're able to meet the requirements
-for marking that new issue as a [Good First Issue](https://www.kubernetes.dev/docs/guide/help-wanted/#good-first-issue);
-if you can, these are a good source.
+for marking that new issue as a [Good First Issue](https://www.kubernetes.dev/docs/guide/help-wanted/#good-first-issue); if you can, these are a good source.

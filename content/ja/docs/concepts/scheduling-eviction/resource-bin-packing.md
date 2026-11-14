@@ -129,7 +129,7 @@ Nodeのスコア:
 
 ```
 intel.com/foo  = resourceScoringFunction((2+1),4)
-               = (100 - ((4-3)*100/4)
+               = (100 - ((4-3)*100/4))
                = (100 - 25)
                = 75                       # requested + used = 75% * available
                = rawScoringFunction(75)
@@ -147,7 +147,7 @@ cpu            = resourceScoringFunction((2+1),8)
                = rawScoringFunction(37.5)
                = 3                        # floor(37.5/10)
 
-NodeScore   =  (7 * 5) + (5 * 1) + (3 * 3) / (5 + 1 + 3)
+NodeScore   =  ((7 * 5) + (5 * 1) + (3 * 3)) / (5 + 1 + 3)
             =  5
 ```
 
@@ -186,7 +186,7 @@ cpu            = resourceScoringFunction((2+6),8)
                = rawScoringFunction(100)
                = 10
 
-NodeScore   =  (5 * 5) + (7 * 1) + (10 * 3) / (5 + 1 + 3)
+NodeScore   =  ((5 * 5) + (7 * 1) + (10 * 3)) / (5 + 1 + 3)
             =  7
 
 ```

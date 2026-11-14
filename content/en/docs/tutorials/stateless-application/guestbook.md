@@ -46,7 +46,7 @@ The guestbook application uses Redis to store its data.
 
 The manifest file, included below, specifies a Deployment controller that runs a single replica Redis Pod.
 
-{{< codenew file="application/guestbook/redis-leader-deployment.yaml" >}}
+{{% code_sample file="application/guestbook/redis-leader-deployment.yaml" %}}
 
 1. Launch a terminal window in the directory you downloaded the manifest files.
 1. Apply the Redis Deployment from the `redis-leader-deployment.yaml` file:
@@ -86,7 +86,7 @@ You need to apply a [Service](/docs/concepts/services-networking/service/) to
 proxy the traffic to the Redis Pod. A Service defines a policy to access the
 Pods.
 
-{{< codenew file="application/guestbook/redis-leader-service.yaml" >}}
+{{% code_sample file="application/guestbook/redis-leader-service.yaml" %}}
 
 1. Apply the Redis Service from the following `redis-leader-service.yaml` file:
 
@@ -113,18 +113,18 @@ Pods.
    redis-leader   ClusterIP   10.103.78.24 <none>        6379/TCP   16s
    ```
 
-{{< note >}}
+{{< alert color="info" title="Note" >}}
 This manifest file creates a Service named `redis-leader` with a set of labels
 that match the labels previously defined, so the Service routes network
 traffic to the Redis Pod.
-{{< /note >}}
+{{< /alert >}}
 
 ### Set up Redis followers
 
 Although the Redis leader is a single Pod, you can make it highly available
 and meet traffic demands by adding a few Redis followers, or replicas.
 
-{{< codenew file="application/guestbook/redis-follower-deployment.yaml" >}}
+{{% code_sample file="application/guestbook/redis-follower-deployment.yaml" %}}
 
 1. Apply the Redis Deployment from the following `redis-follower-deployment.yaml` file:
 
@@ -158,7 +158,7 @@ The guestbook application needs to communicate with the Redis followers to
 read data. To make the Redis followers discoverable, you must set up another
 [Service](/docs/concepts/services-networking/service/).
 
-{{< codenew file="application/guestbook/redis-follower-service.yaml" >}}
+{{% code_sample file="application/guestbook/redis-follower-service.yaml" %}}
 
 1. Apply the Redis Service from the following `redis-follower-service.yaml` file:
 
@@ -186,11 +186,11 @@ read data. To make the Redis followers discoverable, you must set up another
    redis-leader     ClusterIP   10.103.78.24    <none>        6379/TCP   6m10s
    ```
 
-{{< note >}}
+{{< alert color="info" title="Note" >}}
 This manifest file creates a Service named `redis-follower` with a set of
 labels that match the labels previously defined, so the Service routes network
 traffic to the Redis Pod.
-{{< /note >}}
+{{< /alert >}}
 
 ## Set up and Expose the Guestbook Frontend
 
@@ -205,7 +205,7 @@ jQuery-Ajax-based UX.
 
 ### Creating the Guestbook Frontend Deployment
 
-{{< codenew file="application/guestbook/frontend-deployment.yaml" >}}
+{{% code_sample file="application/guestbook/frontend-deployment.yaml" %}}
 
 1. Apply the frontend Deployment from the `frontend-deployment.yaml` file:
 
@@ -247,13 +247,13 @@ from outside the Kubernetes cluster. However a Kubernetes user can use
 `kubectl port-forward` to access the service even though it uses a
 `ClusterIP`.
 
-{{< note >}}
+{{< alert color="info" title="Note" >}}
 Some cloud providers, like Google Compute Engine or Google Kubernetes Engine,
 support external load balancers. If your cloud provider supports load
 balancers and you want to use it, uncomment `type: LoadBalancer`.
-{{< /note >}}
+{{< /alert >}}
 
-{{< codenew file="application/guestbook/frontend-service.yaml" >}}
+{{% code_sample file="application/guestbook/frontend-service.yaml" %}}
 
 1. Apply the frontend Service from the `frontend-service.yaml` file:
 
@@ -297,7 +297,7 @@ balancers and you want to use it, uncomment `type: LoadBalancer`.
    Forwarding from [::1]:8080 -> 80
    ```
 
-1. load the page [http://localhost:8080](http://localhost:8080) in your browser to view your guestbook.
+1. Load the page [http://localhost:8080](http://localhost:8080) in your browser to view your guestbook.
 
 ### Viewing the Frontend Service via `LoadBalancer`
 
@@ -319,11 +319,11 @@ you need to find the IP address to view your Guestbook.
 
 1. Copy the external IP address, and load the page in your browser to view your guestbook.
 
-{{< note >}}
+{{< alert color="info" title="Note" >}}
 Try adding some guestbook entries by typing in a message, and clicking Submit.
 The message you typed appears in the frontend. This message indicates that
 data is successfully added to Redis through the Services you created earlier.
-{{< /note >}}
+{{< /alert >}}
 
 ## Scale the Web Frontend
 
@@ -418,5 +418,8 @@ labels to delete multiple resources with one command.
 
 * Complete the [Kubernetes Basics](/docs/tutorials/kubernetes-basics/) Interactive Tutorials
 * Use Kubernetes to create a blog using [Persistent Volumes for MySQL and Wordpress](/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/#visit-your-new-wordpress-blog)
-* Read more about [connecting applications](/docs/concepts/services-networking/connect-applications-service/)
-* Read more about [Managing Resources](/docs/concepts/cluster-administration/manage-deployment/#using-labels-effectively)
+* Read more about [connecting applications with services](/docs/tutorials/services/connect-applications-service/)
+* Read more about [using labels effectively](/docs/concepts/overview/working-with-objects/labels/#using-labels-effectively)
+
+* Try [Deploy a Canary Release](/docs/tutorials/stateless-application/canary-deployment/) to learn how to safely test new application versions in production.
+

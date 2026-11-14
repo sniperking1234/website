@@ -282,7 +282,7 @@ Kubelet puede medir la cantidad de almacenamiento local que se está usando. Est
 
 - el `LocalStorageCapacityIsolation`
   [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
-  está habilitado (esta caracterísitca está habilitada por defecto), y
+  está habilitado (esta característica está habilitada por defecto), y
 - has configurado el nodo usando una de las configuraciones soportadas
   para almacenamiento local efímero..
 
@@ -535,7 +535,7 @@ recurso extendido a nivel de clúster "example.com/foo" es mantenido
 por el extensor del scheduler.
 
 - El scheduler envía un Pod al extensor del scheduler solo si la solicitud del Pod "example.com/foo".
-- El campo `ignoredByScheduler` especifica que el schduler no compruba el recurso
+- El campo `ignoredByScheduler` especifica que el scheduler no comprueba el recurso
   "example.com/foo"  en su predicado `PodFitsResources`.
 
 ```json
@@ -722,7 +722,7 @@ Conditions:
 Events:
   FirstSeen                         LastSeen                         Count  From                              SubobjectPath                       Reason      Message
   Tue, 07 Jul 2015 12:53:51 -0700   Tue, 07 Jul 2015 12:53:51 -0700  1      {scheduler }                                                          scheduled   Successfully assigned simmemleak-hra99 to kubernetes-node-tf0f
-  Tue, 07 Jul 2015 12:53:51 -0700   Tue, 07 Jul 2015 12:53:51 -0700  1      {kubelet kubernetes-node-tf0f}    implicitly required container POD   pulled      Pod container image "k8s.gcr.io/pause:0.8.0" already present on machine
+  Tue, 07 Jul 2015 12:53:51 -0700   Tue, 07 Jul 2015 12:53:51 -0700  1      {kubelet kubernetes-node-tf0f}    implicitly required container POD   pulled      Pod container image "registry.k8s.io/pause:0.8.0" already present on machine
   Tue, 07 Jul 2015 12:53:51 -0700   Tue, 07 Jul 2015 12:53:51 -0700  1      {kubelet kubernetes-node-tf0f}    implicitly required container POD   created     Created with docker id 6a41280f516d
   Tue, 07 Jul 2015 12:53:51 -0700   Tue, 07 Jul 2015 12:53:51 -0700  1      {kubelet kubernetes-node-tf0f}    implicitly required container POD   started     Started with docker id 6a41280f516d
   Tue, 07 Jul 2015 12:53:51 -0700   Tue, 07 Jul 2015 12:53:51 -0700  1      {kubelet kubernetes-node-tf0f}    spec.containers{simmemleak}         created     Created with docker id 87348f12526a
@@ -763,4 +763,4 @@ Puedes ver que el Contenedor fué terminado a causa de `reason:OOM Killed`, dond
 
 * Lee [ResourceRequirements](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#resourcerequirements-v1-core) referencia de API
 
-* Lee sobre [cuotas de proyecto](https://xfs.org/index.php/XFS_FAQ#Q:_Quota:_Do_quotas_work_on_XFS.3F) en XFS
+* Lee sobre [cuotas de proyecto](https://www.linux.org/docs/man8/xfs_quota.html) en XFS

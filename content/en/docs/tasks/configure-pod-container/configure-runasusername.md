@@ -1,7 +1,7 @@
 ---
 title: Configure RunAsUserName for Windows pods and containers
 content_type: task
-weight: 20
+weight: 40
 ---
 
 <!-- overview -->
@@ -29,7 +29,7 @@ The Windows security context options that you specify for a Pod apply to all Con
 
 Here is a configuration file for a Windows Pod that has the `runAsUserName` field set:
 
-{{< codenew file="windows/run-as-username-pod.yaml" >}}
+{{% code_sample file="windows/run-as-username-pod.yaml" %}}
 
 Create the Pod:
 
@@ -69,7 +69,7 @@ The Windows security context options that you specify for a Container apply only
 
 Here is the configuration file for a Pod that has one Container, and the `runAsUserName` field is set at the Pod level and the Container level:
 
-{{< codenew file="windows/run-as-username-container.yaml" >}}
+{{% code_sample file="windows/run-as-username-container.yaml" %}}
 
 Create the Pod:
 
@@ -113,7 +113,7 @@ In order to use this feature, the value set in the `runAsUserName` field must be
 
 Examples of acceptable values for the `runAsUserName` field: `ContainerAdministrator`, `ContainerUser`, `NT AUTHORITY\NETWORK SERVICE`, `NT AUTHORITY\LOCAL SERVICE`.
 
-For more information about these limtations, check [here](https://support.microsoft.com/en-us/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and) and [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.localaccounts/new-localuser?view=powershell-5.1).
+For more information about these limitations, check [here](https://support.microsoft.com/en-us/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and) and [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.localaccounts/new-localuser?view=powershell-5.1).
 
 
 

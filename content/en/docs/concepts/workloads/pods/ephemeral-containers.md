@@ -4,7 +4,7 @@ reviewers:
 - yujuhong
 title: Ephemeral Containers
 content_type: concept
-weight: 80
+weight: 60
 ---
 
 <!-- overview -->
@@ -52,6 +52,10 @@ possible to add an ephemeral container using `kubectl edit`.
 Like regular containers, you may not change or remove an ephemeral container
 after you have added it to a Pod.
 
+{{< note >}}
+Ephemeral containers are not supported by [static pods](/docs/tasks/configure-pod-container/static-pod/).
+{{< /note >}}
+
 ## Uses for ephemeral containers
 
 Ephemeral containers are useful for interactive troubleshooting when `kubectl
@@ -67,6 +71,25 @@ images using `kubectl exec` alone.
 When using ephemeral containers, it's helpful to enable [process namespace
 sharing](/docs/tasks/configure-pod-container/share-process-namespace/) so
 you can view processes in other containers.
+
+## Access control {#access-control}
+
+Adding an ephemeral container to a running Pod uses the Pod's
+`ephemeralcontainers` subresource rather than being writable via `pod.spec`.
+This is a deliberate design choice. Some admission plugins and security policies don't recognize ephemeral containers, and treating
+ephemeral container creation as a distinct API surface lets cluster
+administrators make an explicit decision about who may add containers to
+already-running Pods.
+
+For the same reason, the `pods/ephemeralcontainers` subresource is **not**
+included in the default `admin` and `edit`
+[user-facing ClusterRoles](/docs/reference/access-authn-authz/rbac/#user-facing-roles).
+To allow users to add ephemeral containers (for example, by running
+[`kubectl debug`](/docs/reference/kubectl/generated/kubectl_debug/)),
+cluster administrators must grant the `patch` (and typically `update`) verb
+on `pods/ephemeralcontainers` explicitly. See
+[Debug Running Pods: Permissions for ephemeral containers](/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container-permissions)
+for recommended approaches.
 
 ## {{% heading "whatsnext" %}}
 

@@ -111,7 +111,7 @@ Webhookのモデルでは、Kubernetesは外部のサービスを呼び出しま
 
 これらの各ステップごとに拡張ポイントが用意されています。
 
-Kubdernetesはいくつかのビルトイン認証方式をサポートしています。それは認証プロキシの後ろに配置することも可能で、認可ヘッダーを通じて(Webhookの)検証のために外部サービスにトークンを送ることもできます。全てのこれらの方法は[認証ドキュメント](/ja/docs/reference/access-authn-authz/authentication/)でカバーされています。
+Kubernetesはいくつかのビルトイン認証方式をサポートしています。それは認証プロキシの後ろに配置することも可能で、認可ヘッダーを通じて(Webhookの)検証のために外部サービスにトークンを送ることもできます。全てのこれらの方法は[認証ドキュメント](/ja/docs/reference/access-authn-authz/authentication/)でカバーされています。
 
 ### 認証
 
@@ -150,7 +150,7 @@ Kubernetesはいくつかのビルトイン認証方式と、それらが要件�
 
 これはかなりの大きな作業で、ほとんど全てのKubernetesユーザーはスケジューラーを変更する必要はありません。
 
-スケジューラは[Webhook](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/scheduler_extender.md)もサポートしており、Webhookバックエンド(スケジューラーエクステンション)を通じてPodを配置するために選択されたノードをフィルタリング、優先度付けすることが可能です。
+スケジューラーは[Webhook](https://github.com/kubernetes/community/blob/main/contributors/design-proposals/scheduling/scheduler_extender.md)もサポートしており、Webhookバックエンド(スケジューラーエクステンション)を通じてPodを配置するために選択されたノードをフィルタリング、優先度付けすることが可能です。
 
 
 

@@ -34,7 +34,7 @@ API 호출 또는 요청/응답 타입을 직접 구현할 필요는 없다.
 | dotnet     | [github.com/kubernetes-client/csharp](https://github.com/kubernetes-client/csharp) | [둘러보기](https://github.com/kubernetes-client/csharp/tree/master/examples/simple)
 | Go         | [github.com/kubernetes/client-go/](https://github.com/kubernetes/client-go/) | [둘러보기](https://github.com/kubernetes/client-go/tree/master/examples)
 | Haskell    | [github.com/kubernetes-client/haskell](https://github.com/kubernetes-client/haskell) | [둘러보기](https://github.com/kubernetes-client/haskell/tree/master/kubernetes-client/example)
-| Java       | [github.com/kubernetes-client/java](https://github.com/kubernetes-client/java/) | [둘러보기](https://github.com/kubernetes-client/java#installation)
+| Java       | [github.com/kubernetes-client/java](https://github.com/kubernetes-client/java/) | [둘러보기](https://github.com/kubernetes-client/java/tree/master/examples)
 | JavaScript | [github.com/kubernetes-client/javascript](https://github.com/kubernetes-client/javascript) | [둘러보기](https://github.com/kubernetes-client/javascript/tree/master/examples)
 | Perl       | [github.com/kubernetes-client/perl/](https://github.com/kubernetes-client/perl/) | [둘러보기](https://github.com/kubernetes-client/perl/tree/master/examples)
 | Python     | [github.com/kubernetes-client/python/](https://github.com/kubernetes-client/python/) | [둘러보기](https://github.com/kubernetes-client/python/tree/master/examples)
@@ -69,9 +69,11 @@ API 호출 또는 요청/응답 타입을 직접 구현할 필요는 없다.
 | PHP                  | [github.com/maclof/kubernetes-client](https://github.com/maclof/kubernetes-client) |
 | PHP                  | [github.com/travisghansen/kubernetes-client-php](https://github.com/travisghansen/kubernetes-client-php) |
 | PHP                  | [github.com/renoki-co/php-k8s](https://github.com/renoki-co/php-k8s) |
+| Python               | [github.com/cloudcoil/cloudcoil](https://github.com/cloudcoil/cloudcoil) |
 | Python               | [github.com/fiaas/k8s](https://github.com/fiaas/k8s) |
 | Python               | [github.com/gtsystem/lightkube](https://github.com/gtsystem/lightkube) |
 | Python               | [github.com/mnubo/kubernetes-py](https://github.com/mnubo/kubernetes-py) |
+| Python               | [github.com/puzl-cloud/kubesdk](https://github.com/puzl-cloud/kubesdk) |
 | Python               | [github.com/tomplus/kubernetes_asyncio](https://github.com/tomplus/kubernetes_asyncio) |
 | Python               | [github.com/Frankkkkk/pykorm](https://github.com/Frankkkkk/pykorm) |
 | Ruby                 | [github.com/abonas/kubeclient](https://github.com/abonas/kubeclient) |
@@ -80,5 +82,6 @@ API 호출 또는 요청/응답 타입을 직접 구현할 필요는 없다.
 | Rust                 | [github.com/clux/kube-rs](https://github.com/clux/kube-rs) |
 | Rust                 | [github.com/ynqa/kubernetes-rust](https://github.com/ynqa/kubernetes-rust) |
 | Scala                | [github.com/hagay3/skuber](https://github.com/hagay3/skuber) |
+| Scala                | [github.com/hnaderi/scala-k8s](https://github.com/hnaderi/scala-k8s) |
 | Scala                | [github.com/joan38/kubernetes-client](https://github.com/joan38/kubernetes-client) |
 | Swift                | [github.com/swiftkube/client](https://github.com/swiftkube/client) |

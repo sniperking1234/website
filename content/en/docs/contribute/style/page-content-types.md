@@ -1,10 +1,7 @@
 ---
 title: Page content types
 content_type: concept
-weight: 30
-card:
-  name: contribute
-  weight: 30
+weight: 80
 ---
 
 <!-- overview -->
@@ -15,6 +12,9 @@ The Kubernetes documentation follows several types of page content:
 - Task
 - Tutorial
 - Reference
+
+You may also find the [Diátaxis](https://diataxis.fr/) documentation framework
+helpful as a reference for how to write each of these page content types.
 
 <!-- body -->
 
@@ -61,17 +61,17 @@ You can declare a `prerequisites` heading as follows:
 ```
 
 The `heading` shortcode expects one string parameter.
-The heading string parameter matches the prefix of a variable in the `i18n/<lang>.toml` files.
+The heading string parameter matches the prefix of a variable in the `i18n/<lang>/<lang>.toml` files.
 For example:
 
-`i18n/en.toml`:
+`i18n/en/en.toml`:
 
 ```toml
 [whatsnext_heading]
 other = "What's next"
 ```
 
-`i18n/ko.toml`:
+`i18n/ko/ko.toml`:
 
 ```toml
 [whatsnext_heading]
@@ -140,9 +140,14 @@ Within each section, write your content. Use the following guidelines:
 - Use a minimum of H2 headings (with two leading `#` characters). The sections
   themselves are titled automatically by the template.
 - For `overview`, use a paragraph to set context for the entire topic.
+  Briefly explain why a reader would want to perform this task (the motivation
+  or use case), so the reader can decide whether the page is relevant to them
+  before reading the steps.
 - For `prerequisites`, use bullet lists when possible. Start adding additional
   prerequisites below the `include`. The default prerequisites include a running Kubernetes cluster.
-- For `steps`, use numbered lists.
+- For `steps`, use numbered lists. Keep the focus on the task itself. If a
+  step requires substantial background, link to the relevant concept page
+  rather than repeating the explanation here.
 - For discussion, use normal content to expand upon the information covered
   in `steps`.
 - For `whatsnext`, give a bullet list of up to 5 topics the reader might be

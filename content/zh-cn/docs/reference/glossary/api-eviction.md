@@ -1,7 +1,6 @@
 ---
 title: API 发起的驱逐（API-initiated eviction）
 id: api-eviction
-date: 2021-04-27
 full_link: /zh-cn/docs/concepts/scheduling-eviction/api-eviction/
 short_description: >
   API 发起的驱逐是一个先调用 Eviction API 创建驱逐对象，再由该对象体面地中止 Pod 的过程。
@@ -12,7 +11,6 @@ tags:
 <!--
 title: API-initiated eviction
 id: api-eviction
-date: 2021-04-27
 full_link: /docs/concepts/scheduling-eviction/api-eviction/
 short_description: >
   API-initiated eviction is the process by which you use the Eviction API to create an
@@ -48,8 +46,7 @@ API-initiated eviction is not the same as [node-pressure eviction](/docs/concept
 API 发起的驱逐取决于你配置的 [`PodDisruptionBudgets`](/zh-cn/docs/tasks/run-application/configure-pdb/)
 和 [`terminationGracePeriodSeconds`](/zh-cn/docs/concepts/workloads/pods/pod-lifecycle#pod-termination)。
 
-API 发起的驱逐不同于
-[节点压力引发的驱逐](/zh-cn/docs/concepts/scheduling-eviction/node-pressure-eviction/)。
+API 发起的驱逐不同于[节点压力引发的驱逐](/zh-cn/docs/concepts/scheduling-eviction/node-pressure-eviction/)。
 
 <!--
 * See [API-initiated eviction](/docs/concepts/scheduling-eviction/api-eviction/) for more information.

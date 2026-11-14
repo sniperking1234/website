@@ -107,12 +107,12 @@ en cours d'exécution :
 * `readinessProbe` : Indique si le Conteneur est prêt à servir des requêtes.
    Si la readiness probe échoue, le contrôleur de points de terminaison (Endpoints)
    retire l'adresse IP du Pod des points de terminaison de tous les Services
-   correspodant au Pod. L'état par défaut avant le délai initial est
+   correspondant au Pod. L'état par défaut avant le délai initial est
    `Failure`. Si le Conteneur ne fournit pas de readiness probe, l'état par
    défaut est `Success`.
 
 * `startupProbe`: Indique si l'application à l'intérieur du conteneur a démarré.
-   Toutes les autres probes sont désactivées si une starup probe est fournie,
+   Toutes les autres probes sont désactivées si une startup probe est fournie,
    jusqu'à ce qu'elle réponde avec succès. Si la startup probe échoue, le kubelet
    tue le conteneur, et le conteneur est assujetti à sa [politique de redémarrage](#politique-de-redemarrage).
    Si un conteneur ne fournit pas de startup probe, l'état par défaut est `Success`.
@@ -152,10 +152,10 @@ Le Pod reste dans le statut non prêt le temps que les Conteneurs du Pod s'arrê
 
 ### Quand devez-vous utiliser une startup probe ?
 
-{{< feature-state for_k8s_version="v1.16" state="alpha" >}}
+{{< feature-state for_k8s_version="v1.20" state="stable" >}}
 
 Si votre conteneur démarre habituellement en plus de `initialDelaySeconds + failureThreshold × periodSeconds`, 
-vous devriez spécifier une startup probe qui vérifie le même point de terminaison que la liveness probe. La valeur par défaut pour `periodSeconds` est 30s.
+vous devriez spécifier une startup probe qui vérifie le même point de terminaison que la liveness probe. La valeur par défaut pour `periodSeconds` est 10s.
 Vous devriez alors mettre sa valeur `failureThreshold` suffisamment haute pour permettre au conteneur de démarrer, sans changer les valeurs par défaut de la liveness probe. Ceci aide à se protéger de deadlocks.
 
 Pour plus d'informations sur la manière de mettre en place une liveness, readiness ou startup probe,
@@ -288,7 +288,7 @@ En général, les Pods restent jusqu'à ce qu'un humain ou un process de
 
 Le plan de contrôle nettoie les Pods terminés (avec une phase à `Succeeded` ou
 `Failed`), lorsque le nombre de Pods excède le seuil configuré
-(determiné par `terminated-pod-gc-threshold` dans le kube-controller-manager).
+(déterminé par `terminated-pod-gc-threshold` dans le kube-controller-manager).
 Ceci empêche une fuite de ressources lorsque les Pods sont créés et supprimés au fil du temps.
 
 Il y a différents types de ressources pour créer des Pods :
@@ -328,8 +328,8 @@ metadata:
 spec:
   containers:
   - args:
-    - /server
-    image: k8s.gcr.io/liveness
+    - liveness
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
     livenessProbe:
       httpGet:
         # lorsque "host" n'est pas défini, "PodIP" sera utilisé

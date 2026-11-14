@@ -1,6 +1,6 @@
 ---
 title: "Changing the Container Runtime on a Node from Docker Engine to containerd"
-weight: 8
+weight: 10
 content_type: task 
 ---
 
@@ -98,27 +98,16 @@ then run the following commands:
 
 ## Configure the kubelet to use containerd as its container runtime
 
-Edit the file `/var/lib/kubelet/kubeadm-flags.env` and add the containerd runtime to the flags.
-`--container-runtime=remote` and
+Edit the file `/var/lib/kubelet/kubeadm-flags.env` and add the containerd runtime to the flags;
 `--container-runtime-endpoint=unix:///run/containerd/containerd.sock`.
 
-Users using kubeadm should be aware that the `kubeadm` tool stores the CRI socket for each host as
-an annotation in the Node object for that host. To change it you can execute the following command
-on a machine that has the kubeadm `/etc/kubernetes/admin.conf` file.
+Users using kubeadm should be aware that the kubeadm tool stores the host's CRI socket in the 
 
-```shell
-kubectl edit no <node-name>
-```
+`/var/lib/kubelet/instance-config.yaml` file on each node. You can create this `/var/lib/kubelet/instance-config.yaml` file on the node.
 
-This will start a text editor where you can edit the Node object.
-To choose a text editor you can set the `KUBE_EDITOR` environment variable.
+The `/var/lib/kubelet/instance-config.yaml` file allows setting the `containerRuntimeEndpoint` parameter. 
 
-- Change the value of `kubeadm.alpha.kubernetes.io/cri-socket` from `/var/run/dockershim.sock`
-  to the CRI socket path of your choice (for example `unix:///run/containerd/containerd.sock`).
-   
-  Note that new CRI socket paths must be prefixed with `unix://` ideally.
-
-- Save the changes in the text editor, which will update the Node object.
+You can set this parameter's value to the path of your chosen CRI socket (for example `unix:///run/containerd/containerd.sock`).
 
 ## Restart the kubelet
 
@@ -134,13 +123,13 @@ Run `kubectl get nodes -o wide` and containerd appears as the runtime for the no
 
 {{% thirdparty-content %}}
 
-Finally if everything goes well, remove Docker.
+If the node appears healthy, remove Docker.
 
 {{< tabs name="tab-remove-docker-engine" >}}
 {{% tab name="CentOS" %}}
 
 ```shell
-sudo yum remove docker-ce docker-ce-cli
+sudo dnf remove docker-ce docker-ce-cli
 ```
 {{% /tab %}}
 {{% tab name="Debian" %}}
@@ -169,3 +158,11 @@ To delete them, follow Docker's instructions to [Uninstall Docker Engine](https:
 {{< caution >}}
 Docker's instructions for uninstalling Docker Engine create a risk of deleting containerd. Be careful when executing commands.
 {{< /caution >}}
+
+## Uncordon the node 
+
+```shell
+kubectl uncordon <node-to-uncordon>
+```
+
+Replace `<node-to-uncordon>` with the name of your node you previously drained.

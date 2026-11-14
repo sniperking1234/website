@@ -1,18 +1,23 @@
 ---
 title: EndpointSlice
+api_metadata:
+- apiVersion: "discovery.k8s.io/v1"
+  kind: "EndpointSlice"
 content_type: concept
-weight: 45
+weight: 60
 description: >-
   EndpointSlice API 是 Kubernetes 用于扩缩 Service
   以处理大量后端的机制，还允许集群高效更新其健康后端的列表。
 ---
-
 <!--
 reviewers:
 - freehan
 title: EndpointSlices
+api_metadata:
+- apiVersion: "discovery.k8s.io/v1"
+  kind: "EndpointSlice"
 content_type: concept
-weight: 45
+weight: 60
 description: >-
   The EndpointSlice API is the mechanism that Kubernetes uses to let your Service
   scale to handle large numbers of backends, and allows the cluster to update its
@@ -23,74 +28,37 @@ description: >-
 
 {{< feature-state for_k8s_version="v1.21" state="stable" >}}
 
-<!--
-_EndpointSlices_ provide a simple way to track network endpoints within a
-Kubernetes cluster. They offer a more scalable and extensible alternative to
-Endpoints.
--->
-**端点切片（EndpointSlices）** 提供了一种简单的方法来跟踪 Kubernetes 集群中的网络端点（network endpoints）。
-它们为 Endpoints 提供了一种可扩缩和可拓展的替代方案。
+{{< glossary_definition term_id="endpoint-slice" length="short" >}}
 
 <!-- body -->
 
 <!--
-## Motivation
-
-The Endpoints API has provided a simple and straightforward way of
-tracking network endpoints in Kubernetes. Unfortunately as Kubernetes clusters
-and {{< glossary_tooltip text="Services" term_id="service" >}} have grown to handle and
-send more traffic to more backend Pods, limitations of that original API became
-more visible.
-Most notably, those included challenges with scaling to larger numbers of
-network endpoints.
--->
-## 动机    {#motivation}
-
-Endpoints API 提供了在 Kubernetes 中跟踪网络端点的一种简单而直接的方法。遗憾的是，随着 Kubernetes
-集群和{{< glossary_tooltip text="服务" term_id="service" >}}逐渐开始为更多的后端 Pod 处理和发送请求，
-原来的 API 的局限性变得越来越明显。最重要的是那些因为要处理大量网络端点而带来的挑战。
-
-<!--
-Since all network endpoints for a Service were stored in a single Endpoints
-resource, those resources could get quite large. That affected the performance
-of Kubernetes components (notably the master control plane) and resulted in
-significant amounts of network traffic and processing when Endpoints changed.
-EndpointSlices help you mitigate those issues as well as provide an extensible
-platform for additional features such as topological routing.
--->
-由于任一 Service 的所有网络端点都保存在同一个 Endpoints 资源中，
-这类资源可能变得非常巨大，而这一变化会影响到 Kubernetes
-组件（比如主控组件）的性能，并在 Endpoints 变化时产生大量的网络流量和额外的处理。
-EndpointSlice 能够帮助你缓解这一问题，
-还能为一些诸如拓扑路由这类的额外功能提供一个可扩展的平台。
-
-<!--
-## EndpointSlice resources {#endpointslice-resource}
+## EndpointSlice API {#endpointslice-resource}
 
 In Kubernetes, an EndpointSlice contains references to a set of network
 endpoints. The control plane automatically creates EndpointSlices
 for any Kubernetes Service that has a {{< glossary_tooltip text="selector"
 term_id="selector" >}} specified. These EndpointSlices include
 references to all the Pods that match the Service selector. EndpointSlices group
-network endpoints together by unique combinations of protocol, port number, and
-Service name.
+network endpoints together by unique combinations of IP family, protocol,
+port number, and Service name.
 The name of a EndpointSlice object must be a valid
 [DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
 
-As an example, here's a sample EndpointSlice resource for the `example`
+As an example, here's a sample EndpointSlice object, that's owned by the `example`
 Kubernetes Service.
 -->
-## EndpointSlice 资源 {#endpointslice-resource}
+## EndpointSlice API {#endpointslice-resource}
 
 在 Kubernetes 中，`EndpointSlice` 包含对一组网络端点的引用。
 控制面会自动为设置了{{< glossary_tooltip text="选择算符" term_id="selector" >}}的
 Kubernetes Service 创建 EndpointSlice。
 这些 EndpointSlice 将包含对与 Service 选择算符匹配的所有 Pod 的引用。
-EndpointSlice 通过唯一的协议、端口号和 Service 名称将网络端点组织在一起。
+EndpointSlice 通过唯一的 IP 地址簇、协议、端口号和 Service 名称将网络端点组织在一起。
 EndpointSlice 的名称必须是合法的
 [DNS 子域名](/zh-cn/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)。
 
-例如，下面是 Kubernetes Service `example` 的 EndpointSlice 资源示例。
+例如，下面是 Kubernetes Service `example` 所拥有的 EndpointSlice 对象示例。
 
 ```yaml
 apiVersion: discovery.k8s.io/v1
@@ -121,114 +89,104 @@ more than 100 endpoints each. You can configure this with the
 {{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager" >}}
 flag, up to a maximum of 1000.
 
-EndpointSlices can act as the source of truth for
+EndpointSlices act as the source of truth for
 {{< glossary_tooltip term_id="kube-proxy" text="kube-proxy" >}} when it comes to
-how to route internal traffic. When enabled, they should provide a performance
-improvement for services with large numbers of endpoints.
+how to route internal traffic.
 -->
 默认情况下，控制面创建和管理的 EndpointSlice 将包含不超过 100 个端点。
 你可以使用 {{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager" >}}
 的 `--max-endpoints-per-slice` 标志设置此值，最大值为 1000。
 
-当涉及如何路由内部流量时，EndpointSlice 可以充当
+当涉及如何路由内部流量时，EndpointSlice 充当
 {{< glossary_tooltip term_id="kube-proxy" text="kube-proxy" >}}
 的决策依据。
-启用该功能后，在服务的端点数量庞大时会有可观的性能提升。
 
 <!--
 ### Address types
 
-EndpointSlices support three address types:
+EndpointSlices support two address types:
 
 * IPv4
 * IPv6
-* FQDN (Fully Qualified Domain Name)
+
+Each `EndpointSlice` object represents a specific IP address type. If you have
+a Service that is available via IPv4 and IPv6, there will be at least two
+`EndpointSlice` objects (one for IPv4, and one for IPv6).
 -->
 ### 地址类型
 
-EndpointSlice 支持三种地址类型：
+EndpointSlice 支持两种地址类型：
 
 * IPv4
 * IPv6
-* FQDN (完全合格的域名)
+
+每个 `EndpointSlice` 对象代表一个特定的 IP 地址类型。如果你有一个支持 IPv4 和 IPv6 的 Service，
+那么将至少有两个 `EndpointSlice` 对象（一个用于 IPv4，一个用于 IPv6）。
 
 <!--
 ### Conditions
 
 The EndpointSlice API stores conditions about endpoints that may be useful for consumers.
-The three conditions are `ready`, `serving`, and `terminating`.
+The three conditions are `serving`, `terminating`, and `ready`.
 -->
 ### 状况
 
 EndpointSlice API 存储了可能对使用者有用的、有关端点的状况。
-这三个状况分别是 `ready`、`serving` 和 `terminating`。
+这三个状况分别是 `serving`、`terminating` 和 `ready`。
+
+<!--
+#### Serving
+-->
+#### Serving（服务中）
+
+{{< feature-state for_k8s_version="v1.26" state="stable" >}}
+
+<!--
+The `serving` condition indicates that the endpoint is currently serving responses, and
+so it should be used as a target for Service traffic. For endpoints backed by a Pod, this
+maps to the Pod's `Ready` condition.
+-->
+`serving` 状况表示端点目前正在提供响应，且因此应将其用作 Service 流量的目标。
+对于由 Pod 支持的端点，此状况对应于 Pod 的 `Ready` 状况。
+
+<!--
+#### Terminating
+-->
+#### Terminating（终止中）
+
+{{< feature-state for_k8s_version="v1.26" state="stable" >}}
+
+<!--
+The `terminating` condition indicates that the endpoint is
+terminating. For endpoints backed by a Pod, this condition is set when
+the Pod is first deleted (that is, when it receives a deletion
+timestamp, but most likely before the Pod's containers exit).
+
+Service proxies will normally ignore endpoints that are `terminating`,
+but they may route traffic to endpoints that are both `serving` and
+`terminating` if all available endpoints are `terminating`. (This
+helps to ensure that no Service traffic is lost during rolling updates
+of the underlying Pods.)
+-->
+`terminating` 状况表示端点正在终止中。对于由 Pod 支持的端点，
+当 Pod 首次被删除时（即收到删除时间戳时，但很可能在容器实际退出之前），会设置此状况。
+
+服务代理通常会忽略处于 `terminating` 状态的端点，但如果所有可用端点都处于 `terminating`，
+服务代理可能仍会将流量路由到同时具有 `serving` 和 `terminating` 的端点。
+（这样有助于在底层 Pod 滚动更新过程中确保 Service 流量不会中断。）
 
 <!--
 #### Ready
 
-`ready` is a condition that maps to a Pod's `Ready` condition. A running Pod with the `Ready`
-condition set to `True` should have this EndpointSlice condition also set to `true`. For
-compatibility reasons, `ready` is NEVER `true` when a Pod is terminating. Consumers should refer
-to the `serving` condition to inspect the readiness of terminating Pods. The only exception to
-this rule is for Services with `spec.publishNotReadyAddresses` set to `true`. Endpoints for these
-Services will always have the `ready` condition set to `true`.
+The `ready` condition is essentially a shortcut for checking
+"`serving` and not `terminating`" (though it will also always be
+`true` for Services with `spec.publishNotReadyAddresses` set to
+`true`).
 -->
 #### Ready（就绪）
 
-`ready` 状况是映射 Pod 的 `Ready` 状况的。
-对于处于运行中的 Pod，它的 `Ready` 状况被设置为 `True`，应该将此 EndpointSlice 状况也设置为 `true`。
-出于兼容性原因，当 Pod 处于终止过程中，`ready` 永远不会为 `true`。
-消费者应参考 `serving` 状况来检查处于终止中的 Pod 的就绪情况。
-该规则的唯一例外是将 `spec.publishNotReadyAddresses` 设置为 `true` 的 Service。
-这些 Service 的端点将始终将 `ready` 状况设置为 `true`。
-
-<!--
-#### Serving
-
-{{< feature-state for_k8s_version="v1.22" state="beta" >}}
-
-`serving` is identical to the `ready` condition, except it does not account for terminating states.
-Consumers of the EndpointSlice API should check this condition if they care about pod readiness while
-the pod is also terminating.
--->
-#### Serving（服务中）
-
-{{< feature-state for_k8s_version="v1.22" state="beta" >}}
-
-`serving` 状况与 `ready` 状况相同，不同之处在于它不考虑终止状态。
-如果 EndpointSlice API 的使用者关心 Pod 终止时的就绪情况，就应检查此状况。
-
-{{< note >}}
-<!--
-Although `serving` is almost identical to `ready`, it was added to prevent break the existing meaning
-of `ready`. It may be unexpected for existing clients if `ready` could be `true` for terminating
-endpoints, since historically terminating endpoints were never included in the Endpoints or
-EndpointSlice API to begin with. For this reason, `ready` is _always_ `false` for terminating
-endpoints, and a new condition `serving` was added in v1.20 so that clients can track readiness
-for terminating pods independent of the existing semantics for `ready`.
--->
-尽管 `serving` 与 `ready` 几乎相同，但是它是为防止破坏 `ready` 的现有含义而增加的。
-如果对于处于终止中的端点，`ready` 可能是 `true`，那么对于现有的客户端来说可能是有些意外的，
-因为从始至终，Endpoints 或 EndpointSlice API 从未包含处于终止中的端点。
-出于这个原因，`ready` 对于处于终止中的端点 **总是** `false`，
-并且在 v1.20 中添加了新的状况 `serving`，以便客户端可以独立于 `ready`
-的现有语义来跟踪处于终止中的 Pod 的就绪情况。
-{{< /note >}}
-
-<!-- 
-#### Terminating
-
-{{< feature-state for_k8s_version="v1.22" state="beta" >}}
-
-`Terminating` is a condition that indicates whether an endpoint is terminating.
-For pods, this is any pod that has a deletion timestamp set.
--->
-#### Terminating（终止中）
-
-{{< feature-state for_k8s_version="v1.22" state="beta" >}}
-
-`Terminating` 是表示端点是否处于终止中的状况。
-对于 Pod 来说，这是设置了删除时间戳的 Pod。
+`ready` 状况本质上是检查 "`serving` 且不是 `terminating`" 的一种简化方式
+（不过对于将 `spec.publishNotReadyAddresses` 设置为 `true` 的 Service，`ready` 状况始终设置为 `true`）。
 
 <!--
 ### Topology information {#topology}
@@ -250,29 +208,6 @@ EndpointSlice 中的每个端点都可以包含一定的拓扑信息。
 -->
 * `nodeName` - 端点所在的 Node 名称；
 * `zone` - 端点所处的可用区。
-
-{{< note >}}
-<!--
-In the v1 API, the per endpoint `topology` was effectively removed in favor of
-the dedicated fields `nodeName` and `zone`.
--->
-在 v1 API 中，逐个端点设置的 `topology` 实际上被去除，
-以鼓励使用专用的字段 `nodeName` 和 `zone`。
-
-<!--
-Setting arbitrary topology fields on the `endpoint` field of an `EndpointSlice`
-resource has been deprecated and is not supported in the v1 API.
-Instead, the v1 API supports setting individual `nodeName` and `zone` fields.
-These fields are automatically translated between API versions. For example, the
-value of the `"topology.kubernetes.io/zone"` key in the `topology` field in
-the v1beta1 API is accessible as the `zone` field in the v1 API.
--->
-对 `EndpointSlice` 对象的 `endpoint` 字段设置任意的拓扑结构信息这一操作已被废弃，
-不再被 v1 API 所支持。取而代之的是 v1 API 所支持的 `nodeName` 和 `zone`
-这些独立的字段。这些字段可以在不同的 API 版本之间自动完成转译。
-例如，v1beta1 API 中 `topology` 字段的 `topology.kubernetes.io/zone`
-取值可以在 v1 API 中通过 `zone` 字段访问。
-{{< /note >}}
 
 <!--
 ### Management
@@ -323,61 +258,18 @@ label that enables simple lookups of all EndpointSlices belonging to a Service.
 目的是方便查找隶属于某 Service 的所有 EndpointSlice。
 
 <!--
-### EndpointSlice mirroring
-
-In some cases, applications create custom Endpoints resources. To ensure that
-these applications do not need to concurrently write to both Endpoints and
-EndpointSlice resources, the cluster's control plane mirrors most Endpoints
-resources to corresponding EndpointSlices.
--->
-### EndpointSlice 镜像    {#endpointslice-mirroring}
-
-在某些场合，应用会创建定制的 Endpoints 资源。为了保证这些应用不需要并发的更改
-Endpoints 和 EndpointSlice 资源，集群的控制面将大多数 Endpoints
-映射到对应的 EndpointSlice 之上。
-
-<!--
-The control plane mirrors Endpoints resources unless:
-
-* the Endpoints resource has a `endpointslice.kubernetes.io/skip-mirror` label
-  set to `true`.
-* the Endpoints resource has a `control-plane.alpha.kubernetes.io/leader`
-  annotation.
-* the corresponding Service resource does not exist.
-* the corresponding Service resource has a non-nil selector.
--->
-控制面对 Endpoints 资源进行映射的例外情况有：
-
-* Endpoints 资源上标签 `endpointslice.kubernetes.io/skip-mirror` 值为 `true`。
-* Endpoints 资源包含标签 `control-plane.alpha.kubernetes.io/leader`。
-* 对应的 Service 资源不存在。
-* 对应的 Service 的选择算符不为空。
-
-<!--
-Individual Endpoints resources may translate into multiple EndpointSlices. This
-will occur if an Endpoints resource has multiple subsets or includes endpoints
-with multiple IP families (IPv4 and IPv6). A maximum of 1000 addresses per
-subset will be mirrored to EndpointSlices.
--->
-每个 Endpoints 资源可能会被转译到多个 EndpointSlices 中去。
-当 Endpoints 资源中包含多个子网或者包含多个 IP 协议族（IPv4 和 IPv6）的端点时，
-就有可能发生这种状况。
-每个子网最多有 1000 个地址会被镜像到 EndpointSlice 中。
-
-<!--
 ### Distribution of EndpointSlices
 
 Each EndpointSlice has a set of ports that applies to all endpoints within the
 resource. When named ports are used for a Service, Pods may end up with
 different target port numbers for the same named port, requiring different
-EndpointSlices. This is similar to the logic behind how subsets are grouped
-with Endpoints.
+EndpointSlices.
 -->
 ### EndpointSlices 的分布问题  {#distribution-of-endpointslices}
 
 每个 EndpointSlice 都有一组端口值，适用于资源内的所有端点。
 当为 Service 使用命名端口时，Pod 可能会就同一命名端口获得不同的端口号，
-因而需要不同的 EndpointSlice。这有点像 Endpoints 用来对子网进行分组的逻辑。
+因而需要不同的 EndpointSlice。
 
 <!--
 The control plane tries to fill EndpointSlices as full as possible, but does not
@@ -404,7 +296,7 @@ perfectly full distribution of EndpointSlices. As an example, if there are 10
 new endpoints to add and 2 EndpointSlices with room for 5 more endpoints each,
 this approach will create a new EndpointSlice instead of filling up the 2
 existing EndpointSlices. In other words, a single EndpointSlice creation is
-preferrable to multiple EndpointSlice updates.
+preferable to multiple EndpointSlice updates.
 -->
 这里比较重要的是，与在 EndpointSlice 之间完成最佳的分布相比，第三步中更看重限制
 EndpointSlice 更新的操作次数。例如，如果有 10 个端点待添加，有两个 EndpointSlice
@@ -434,7 +326,7 @@ getting replaced.
 -->
 在实践中，上面这种并非最理想的分布是很少出现的。大多数被 EndpointSlice
 控制器处理的变更都是足够小的，可以添加到某已有 EndpointSlice 中去的。
-并且，假使无法添加到已有的切片中，不管怎样都会快就会需要一个新的
+并且，假使无法添加到已有的切片中，不管怎样都很快就会创建一个新的
 EndpointSlice 对象。Deployment 的滚动更新为重新为 EndpointSlice
 打包提供了一个自然的机会，所有 Pod 及其对应的端点在这一期间都会被替换掉。
 
@@ -443,25 +335,96 @@ EndpointSlice 对象。Deployment 的滚动更新为重新为 EndpointSlice
 
 Due to the nature of EndpointSlice changes, endpoints may be represented in more
 than one EndpointSlice at the same time. This naturally occurs as changes to
-different EndpointSlice objects can arrive at the Kubernetes client watch/cache
-at different times. Implementations using EndpointSlice must be able to have the
-endpoint appear in more than one slice. A reference implementation of how to
-perform endpoint deduplication can be found in the `EndpointSliceCache`
-implementation in `kube-proxy`.
+different EndpointSlice objects can arrive at the Kubernetes client watch / cache
+at different times.
 -->
 ### 重复的端点   {#duplicate-endpoints}
 
 由于 EndpointSlice 变化的自身特点，端点可能会同时出现在不止一个 EndpointSlice
 中。鉴于不同的 EndpointSlice 对象在不同时刻到达 Kubernetes 的监视/缓存中，
 这种情况的出现是很自然的。
-使用 EndpointSlice 的实现必须能够处理端点出现在多个切片中的状况。
-关于如何执行端点去重（deduplication）的参考实现，你可以在 `kube-proxy` 的
-`EndpointSlice` 实现中找到。
+
+{{< note >}}
+<!--
+Clients of the EndpointSlice API must iterate through all the existing EndpointSlices
+associated to a Service and build a complete list of unique network endpoints. It is
+important to mention that endpoints may be duplicated in different EndpointSlices.
+
+You can find a reference implementation for how to perform this endpoint aggregation
+and deduplication as part of the `EndpointSliceCache` code within `kube-proxy`.
+-->
+EndpointSlice API 的客户端必须遍历与 Service 关联的所有现有 EndpointSlices，
+并构建唯一网络端点的完整列表。值得一提的是端点可能在不同的 EndpointSlices 中重复。
+
+你可以在 `kube-proxy` 中的 `EndpointSliceCache` 代码中找到有关如何执行此端点聚合和重复数据删除的参考实现。
+{{< /note >}}
+
+<!--
+### EndpointSlice mirroring
+-->
+### EndpointSlice 镜像    {#endpointslice-mirroring}
+
+{{< feature-state for_k8s_version="v1.33" state="deprecated" >}}
+
+<!--
+The EndpointSlice API is a replacement for the older Endpoints API. To
+preserve compatibility with older controllers and user workloads that
+expect {{<glossary_tooltip term_id="kube-proxy" text="kube-proxy">}}
+to route traffic based on Endpoints resources, the cluster's control
+plane mirrors most user-created Endpoints resources to corresponding
+EndpointSlices.
+-->
+EndpointSlice API 是旧版 Endpoints API 的替代方案。
+为了保持与旧版控制器和用户工作负载的兼容性
+（例如期望由 {{<glossary_tooltip term_id="kube-proxy" text="kube-proxy">}} 基于 Endpoints 资源来路由流量），
+集群的控制平面会将大多数用户创建的 Endpoints 资源镜像到相应的 EndpointSlice 中。
+
+<!--
+(However, this feature, like the rest of the Endpoints API, is
+deprecated. Users who manually specify endpoints for selectorless
+Services should do so by creating EndpointSlice resources directly,
+rather than by creating Endpoints resources and allowing them to be
+mirrored.)
+-->
+（不过，与 Endpoints API 的其他部分一样，此特性也已被弃用。
+对于无选择算符的 Service，用户如果需要手动指定端点，应该直接创建 EndpointSlice 资源，
+而不是创建 Endpoints 资源并允许其被镜像。）
+
+<!--
+The control plane mirrors Endpoints resources unless:
+
+* the Endpoints resource has a `endpointslice.kubernetes.io/skip-mirror` label
+  set to `true`.
+* the Endpoints resource has a `control-plane.alpha.kubernetes.io/leader`
+  annotation.
+* the corresponding Service resource does not exist.
+* the corresponding Service resource has a non-nil selector.
+-->
+控制面对 Endpoints 资源进行映射的例外情况有：
+
+* Endpoints 资源上标签 `endpointslice.kubernetes.io/skip-mirror` 值为 `true`。
+* Endpoints 资源包含标签 `control-plane.alpha.kubernetes.io/leader`。
+* 对应的 Service 资源不存在。
+* 对应的 Service 的选择算符不为空。
+
+<!--
+Individual Endpoints resources may translate into multiple EndpointSlices. This
+will occur if an Endpoints resource has multiple subsets or includes endpoints
+with multiple IP families (IPv4 and IPv6). A maximum of 1000 addresses per
+subset will be mirrored to EndpointSlices.
+-->
+每个 Endpoints 资源可能会被转译到多个 EndpointSlices 中去。
+当 Endpoints 资源中包含多个子网或者包含多个 IP 协议族（IPv4 和 IPv6）的端点时，
+就有可能发生这种状况。
+每个子网最多有 1000 个地址会被镜像到 EndpointSlice 中。
 
 ## {{% heading "whatsnext" %}}
 
 <!--
-* Read [Connecting Applications with Services](/docs/concepts/services-networking/connect-applications-service/)
+* Follow the [Connecting Applications with Services](/docs/tutorials/services/connect-applications-service/) tutorial
+* Read the [API reference](/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/) for the EndpointSlice API
+* Read the [API reference](/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for the Endpoints API
 -->
-* 阅读[使用 Service 连接到应用](/zh-cn/docs/concepts/services-networking/connect-applications-service/)
-
+* 遵循[使用 Service 连接到应用](/zh-cn/docs/tutorials/services/connect-applications-service/)教程
+* 阅读 EndpointSlice API 的 [API 参考](/zh-cn/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/)
+* 阅读 Endpoints API 的 [API 参考](/zh-cn/docs/reference/kubernetes-api/service-resources/endpoints-v1/)

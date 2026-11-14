@@ -1,6 +1,7 @@
 ---
 title: Custom Hugo Shortcodes
 content_type: concept
+weight: 120
 ---
 
 <!-- overview -->
@@ -47,6 +48,39 @@ feature state version by passing the `for_k8s_version` shortcode parameter. For 
 Renders to:
 
 {{< feature-state for_k8s_version="v1.10" state="beta" >}}
+
+### Feature state retrieval from description file
+
+To dynamically determine the state of the feature, make use of the `feature_gate_name`
+shortcode parameter. The feature state details will be extracted from the corresponding feature gate 
+description file located in `content/en/docs/reference/command-line-tools-reference/feature-gates/`.
+For example:
+
+```
+{{</* feature-state feature_gate_name="NodeSwap" */>}}
+```
+
+Renders to:
+
+{{< feature-state feature_gate_name="NodeSwap" >}}
+
+## Feature gate description
+
+In a Markdown page (`.md` file) on this site, you can add a shortcode to
+display the description for a shortcode.
+
+### Feature gate description demo
+
+Below is a demo of the feature state snippet, which displays the feature as
+stable in the latest Kubernetes version.
+
+```
+{{</* feature-gate-description name="DryRun" */>}}
+```
+
+Renders to:
+
+{{< feature-gate-description name="DryRun" >}}
 
 ## Glossary
 
@@ -95,33 +129,33 @@ which renders as:
 
 You can link to a page of the Kubernetes API reference using the
 `api-reference` shortcode, for example to the
-{{< api-reference page="workload-resources/pod-v1" >}} reference:
+{{< api-reference page="core/pod-v1" >}} reference:
 
 ```
-{{</* api-reference page="workload-resources/pod-v1" */>}}
+{{</* api-reference page="core/pod-v1" */>}}
 ```
 
 The content of the `page` parameter is the suffix of the URL of the API reference page.
 
 
 You can link to a specific place into a page by specifying an `anchor`
-parameter, for example to the {{< api-reference page="workload-resources/pod-v1" anchor="PodSpec" >}}
-reference or the {{< api-reference page="workload-resources/pod-v1" anchor="environment-variables" >}}
+parameter, for example to the {{< api-reference page="core/pod-v1" anchor="PodSpec" >}}
+reference or the {{< api-reference page="core/pod-v1" anchor="environment-variables" >}}
 section of the page:
 
 ```
-{{</* api-reference page="workload-resources/pod-v1" anchor="PodSpec" */>}}
-{{</* api-reference page="workload-resources/pod-v1" anchor="environment-variables" */>}}
+{{</* api-reference page="core/pod-v1" anchor="PodSpec" */>}}
+{{</* api-reference page="core/pod-v1" anchor="environment-variables" */>}}
 ```
 
 
 You can change the text of the link by specifying a `text` parameter, for
 example by linking to the
-{{< api-reference page="workload-resources/pod-v1" anchor="environment-variables" text="Environment Variables">}}
+{{< api-reference page="core/pod-v1" anchor="environment-variables" text="Environment Variables">}}
 section of the page:
 
 ```
-{{</* api-reference page="workload-resources/pod-v1" anchor="environment-variables" text="Environment Variable" */>}}
+{{</* api-reference page="core/pod-v1" anchor="environment-variables" text="Environment Variable" */>}}
 ```
 
 ## Table captions
@@ -197,7 +231,7 @@ The tab **name** in a `tabs` definition must be unique within a content page.
 {{< tab name="Tab 1" codelang="bash" >}}
 echo "This is tab 1."
 {{< /tab >}}
-{{< tab name="Tab 2" codelang="go" >}}
+{{< tab codelang="go" >}}
 println "This is tab 2."
 {{< /tab >}}
 {{< /tabs */>}}
@@ -206,11 +240,12 @@ println "This is tab 2."
 Renders to:
 
 {{< tabs name="tab_with_code" >}}
-{{< tab name="Tab 1" codelang="bash" >}}
-echo "This is tab 1."
+{{< tab name="Tab A" codelang="bash" >}}
+echo "This is tab A."
 {{< /tab >}}
-{{< tab name="Tab 2" codelang="go" >}}
-println "This is tab 2."
+{{< tab codelang="go" >}}
+// If you don't set a tab name, the site supplies one.
+println "This tab has a default name";
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -270,6 +305,36 @@ Renders to:
 {{< tab name="JSON File" include="podtemplate.json" />}}
 {{< /tabs >}}
 
+## Source code files
+
+You can use the `{{%/* code_sample */%}}` shortcode to embed the contents of file in a code block to allow users to download or copy its content to their clipboard. This shortcode is used when the contents of the sample file is generic and reusable, and you want the users to try it out themselves.
+
+This shortcode takes in two named parameters: `language` and `file`. The mandatory parameter `file` is used to specify the path to the file being displayed. The optional parameter `language` is used to specify the programming language of the file. If the `language` parameter is not provided, the shortcode will attempt to guess the language based on the file extension.
+
+For example:
+
+```none
+{{%/* code_sample language="yaml" file="application/deployment-scale.yaml" */%}}
+```
+
+The output is:
+
+{{% code_sample language="yaml" file="application/deployment-scale.yaml" %}}
+
+When adding a new sample file, such as a YAML file, create the file in one of the `<LANG>/examples/` subdirectories where `<LANG>` is the language for the page. In the markdown of your page, use the `code` shortcode:
+
+```none
+{{%/* code_sample file="<RELATIVE-PATH>/example-yaml>" */%}}
+```
+where `<RELATIVE-PATH>` is the path to the sample file to include, relative to the `examples` directory. The following shortcode references a YAML file located at `/content/en/examples/configmap/configmaps.yaml`.
+
+```none
+{{%/* code_sample file="configmap/configmaps.yaml" */%}}
+```
+
+The legacy `{{%/* codenew */%}}` shortcode is being replaced by `{{%/* code_sample */%}}`.
+Use `{{%/* code_sample */%}}` (not `{{%/* codenew */%}}` or `{{%/* code */%}}`) in new documentation.
+
 ## Third party content marker
 
 Running Kubernetes requires third-party software. For example: you
@@ -306,11 +371,39 @@ Add the shortcode:
 
 before the item, or just below the heading for the specific item.
 
+## Details
+
+You can render a `<details>` HTML element using a shortcode:
+
+```markdown
+{{</* details summary="More about widgets" */>}}
+The frobnicator extension API implements _widgets_ using example running text.
+
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
+adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et
+dolore magnam aliquam quaerat voluptatem.
+{{</* /details */>}}
+```
+
+This renders as:
+{{< details summary="More about widgets" >}}
+The frobnicator extension API implements _widgets_ using example running text.
+
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
+adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et
+dolore magnam aliquam quaerat voluptatem.
+{{< /details >}}
+
+{{< note >}}
+Use this shortcode sparingly; it is usually best to have all of the text directly shown
+to readers.
+{{< /note >}}
+
 ## Version strings
 
 To generate a version string for inclusion in the documentation, you can choose from
 several version shortcodes. Each version shortcode displays a version string derived from
-the value of a version parameter found in the site configuration file, `config.toml`.
+the value of a version parameter found in the site configuration file, `hugo.toml`.
 The two most commonly used version parameters are `latest` and `version`.
 
 ### `{{</* param "version" */>}}`
@@ -369,6 +462,7 @@ the release note CHANGELOG page with the modified version string.
 Renders to:
 
 {{< latest-release-notes >}}
+
 
 ## {{% heading "whatsnext" %}}
 

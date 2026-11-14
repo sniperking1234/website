@@ -1,23 +1,30 @@
 ---
 title: "Monitoring, Logging, and Debugging"
 description: Set up monitoring and logging to troubleshoot a cluster, or debug a containerized application.
-weight: 20
+weight: 40
 reviewers:
 - brendandburns
 - davidopp
 content_type: concept
 no_list: true
+card:
+  name: tasks
+  weight: 999
+  title: Getting help
 ---
 
 <!-- overview -->
 
-Sometimes things go wrong. This guide is aimed at making them right. It has
-two sections:
+Sometimes things go wrong. This guide helps you gather the relevant information and resolve issues. It has four sections:
 
 * [Debugging your application](/docs/tasks/debug/debug-application/) - Useful
   for users who are deploying code into Kubernetes and wondering why it is not working.
 * [Debugging your cluster](/docs/tasks/debug/debug-cluster/) - Useful
-  for cluster administrators and people whose Kubernetes cluster is unhappy.
+  for cluster administrators and operators troubleshooting issues with the Kubernetes cluster itself.
+* [Logging in Kubernetes](/docs/tasks/debug/logging/) - Useful
+  for cluster administrators who want to set up and manage logging in Kubernetes.
+* [Monitoring in Kubernetes](/docs/tasks/debug/monitoring/) - Useful
+  for cluster administrators who want to enable monitoring in a Kubernetes cluster.
 
 You should also check the known issues for the [release](https://github.com/kubernetes/kubernetes/releases)
 you're using.
@@ -43,14 +50,32 @@ and command-line interfaces (CLIs), such as [`kubectl`](/docs/reference/kubectl/
 
 ## Help! My question isn't covered!  I need help now!
 
-### Stack Overflow
+### Stack Exchange, Stack Overflow, or Server Fault {#stack-exchange}
 
-Someone else from the community may have already asked a similar question or may
-be able to help with your problem. The Kubernetes team will also monitor
+If you have questions related to *software development* for your containerized app,
+you can ask those on [Stack Overflow](https://stackoverflow.com/questions/tagged/kubernetes).
+
+If you have Kubernetes questions related to *cluster management* or *configuration*,
+you can ask those on
+[Server Fault](https://serverfault.com/questions/tagged/kubernetes).
+
+There are also several more specific Stack Exchange network sites which might
+be the right place to ask Kubernetes questions in areas such as
+[DevOps](https://devops.stackexchange.com/questions/tagged/kubernetes), 
+[Software Engineering](https://softwareengineering.stackexchange.com/questions/tagged/kubernetes),
+or [InfoSec](https://security.stackexchange.com/questions/tagged/kubernetes).
+
+Someone else from the community may have already asked a similar question or 
+may be able to help with your problem.
+
+The Kubernetes team will also monitor
 [posts tagged Kubernetes](https://stackoverflow.com/questions/tagged/kubernetes).
-If there aren't any existing questions that help, **please [ensure that your question is on-topic on Stack Overflow](https://stackoverflow.com/help/on-topic)
-and that you read through the guidance on [how to ask a new question](https://stackoverflow.com/help/how-to-ask)**,
-before [asking a new one](https://stackoverflow.com/questions/ask?tags=kubernetes)!
+If there aren't any existing questions that help, **please ensure that your question 
+is [on-topic on Stack Overflow](https://stackoverflow.com/help/on-topic),
+[Server Fault](https://serverfault.com/help/on-topic), or the Stack Exchange 
+Network site you're asking on**, and read through the guidance on 
+[how to ask a new question](https://stackoverflow.com/help/how-to-ask),
+before asking a new one!
 
 ### Slack
 
@@ -63,7 +88,7 @@ via your web browser or via Slack's own dedicated app.
 Once you are registered, browse the growing list of channels for various subjects of
 interest. For example, people new to Kubernetes may also want to join the
 [`#kubernetes-novice`](https://kubernetes.slack.com/messages/kubernetes-novice) channel. As another example, developers should join the
-[`#kubernetes-dev`](https://kubernetes.slack.com/messages/kubernetes-dev) channel.
+[`#kubernetes-contributors`](https://kubernetes.slack.com/messages/kubernetes-contributors) channel.
 
 There are also many country specific / local language channels. Feel free to join
 these channels for localized support and info:

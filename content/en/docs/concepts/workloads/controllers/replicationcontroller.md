@@ -3,14 +3,14 @@ reviewers:
 - bprashanth
 - janetkuo
 title: ReplicationController
-feature:
-  title: Self-healing
-  anchor: How a ReplicationController Works
-  description: >
-    Restarts containers that fail, replaces and reschedules containers when nodes die, kills containers that don't respond to your user-defined health check, and doesn't advertise them to clients until they are ready to serve.
-
+api_metadata:
+- apiVersion: "v1"
+  kind: "ReplicationController"
 content_type: concept
 weight: 90
+description: >-
+  Legacy API for managing workloads that can scale horizontally.
+  Superseded by the Deployment and ReplicaSet APIs.
 ---
 
 <!-- overview -->
@@ -25,7 +25,7 @@ always up and available.
 
 <!-- body -->
 
-## How a ReplicationController Works
+## How a ReplicationController works
 
 If there are too many pods, the ReplicationController terminates the extra pods. If there are too few, the
 ReplicationController starts more pods. Unlike manually created pods, the pods maintained by a
@@ -47,7 +47,7 @@ service, such as web servers.
 
 This example ReplicationController config runs three copies of the nginx web server.
 
-{{< codenew file="controllers/replication.yaml" >}}
+{{% code_sample file="controllers/replication.yaml" %}}
 
 Run the example job by downloading the example file and then running this command:
 
@@ -118,11 +118,17 @@ Here, the selector is the same as the selector for the ReplicationController (se
 `kubectl describe` output), and in a different form in `replication.yaml`.  The `--output=jsonpath` option
 specifies an expression with the name from each pod in the returned list.
 
-## Writing a ReplicationController Spec
+## Writing a ReplicationController Manifest
 
 As with all other Kubernetes config, a ReplicationController needs `apiVersion`, `kind`, and `metadata` fields.
-The name of a ReplicationController object must be a valid
-[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
+
+When the control plane creates new Pods for a ReplicationController, the `.metadata.name` of the
+ReplicationController is part of the basis for naming those Pods.  The name of a ReplicationController must be a valid
+[DNS subdomain](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)
+value, but this can produce unexpected results for the Pod hostnames.  For best compatibility,
+the name should follow the more restrictive rules for a
+[DNS label](/docs/concepts/overview/working-with-objects/names#dns-label-names).
+
 For general information about working with configuration files, see [object management](/docs/concepts/overview/working-with-objects/object-management/).
 
 A ReplicationController also needs a [`.spec` section](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status).
@@ -290,5 +296,5 @@ safe to terminate when the machine is otherwise ready to be rebooted/shutdown.
 * Learn about [Deployment](/docs/concepts/workloads/controllers/deployment/), the replacement
   for ReplicationController.
 * `ReplicationController` is part of the Kubernetes REST API.
-  Read the {{< api-reference page="workload-resources/replication-controller-v1" >}}
+  Read the {{< api-reference page="core/replication-controller-v1" >}}
   object definition to understand the API for replication controllers.

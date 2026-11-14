@@ -1,7 +1,7 @@
 ---
 title: API 概述
 content_type: concept
-weight: 10
+weight: 20
 no_list: true
 card:
   name: reference
@@ -16,7 +16,7 @@ reviewers:
 - lavalamp
 - jbeda
 content_type: concept
-weight: 10
+weight: 20
 no_list: true
 card:
   name: reference
@@ -64,7 +64,7 @@ Kubernetes API 服务器进行身份认证以及他们的请求如何被鉴权�
 <!--
 ## API versioning
 -->
-## API 版本控制 {#api-reference}
+## API 版本控制   {#api-versioning}
 
 <!--
 The JSON and Protobuf serialization schemas follow the same guidelines for
@@ -75,11 +75,11 @@ JSON 和 Protobuf 序列化模式遵循相同的模式更改原则。
 
 <!--
 The API versioning and software versioning are indirectly related.
-The [API and release versioning proposal](https://git.k8s.io/sig-release/release-engineering/versioning.md)
+The [API and release versioning proposal](https://git.k8s.io/sig-release/release-engineering/reference/versioning.md#kubernetes-release-versioning)
 describes the relationship between API versioning and software versioning.
 -->
 API 版本控制和软件版本控制是间接相关的。
-[API 和发布版本控制提案](https://git.k8s.io/sig-release/release-engineering/versioning.md)描述了
+[API 和发布版本控制提案](https://git.k8s.io/sig-release/release-engineering/reference/versioning.md#kubernetes-release-versioning)描述了
 API 版本控制和软件版本控制间的关系。
 
 <!--
@@ -126,7 +126,7 @@ Here's a summary of each level:
 -->
 - Beta：
   - 版本名称包含 `beta`（例如：`v2beta3`）。
-  - 内置的 Alpha API 版本默认被禁用且必须在 `kube-apiserver` 配置中显式启用才能使用
+  - 内置的 Beta API 版本默认被禁用且必须在 `kube-apiserver` 配置中显式启用才能使用
     （例外情况是 Kubernetes 1.22 之前引入的 Beta 版本的 API，这些 API 默认被启用）。
   - 内置 Beta API 版本从引入到弃用的最长生命周期为 9 个月或 3 个次要版本（以较长者为准），
     从弃用到移除的最长生命周期为 9 个月或 3 个次要版本（以较长者为准）。
@@ -218,7 +218,7 @@ part is omitted, it is treated as if `=true` is specified. For example:
 
  - to disable `batch/v1`, set `--runtime-config=batch/v1=false`
  - to enable `batch/v2alpha1`, set `--runtime-config=batch/v2alpha1`
- - to enable a specific version of an API, such as `storage.k8s.io/v1beta1/csistoragecapacities`, set `--runtime-config=storage.k8s.io/v1beta1/csistoragecapacities` 
+ - to enable a specific version of an API, such as `storage.k8s.io/v1beta1/csistoragecapacities`, set `--runtime-config=storage.k8s.io/v1beta1/csistoragecapacities`
 -->
 ## 启用或禁用 API 组   {#enabling-or-disabling}
 
@@ -259,6 +259,8 @@ Kubernetes 通过 API 资源来将序列化的状态写到 {{< glossary_tooltip 
 - Learn more about [API conventions](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#api-conventions)
 - Read the design documentation for
   [aggregator](https://git.k8s.io/design-proposals-archive/api-machinery/aggregated-api-servers.md)
+- Learn about [Declarative API Validation](/docs/reference/using-api/declarative-validation/).
 -->
 - 进一步了解 [API 惯例](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#api-conventions)
 - 阅读[聚合器](https://git.k8s.io/design-proposals-archive/api-machinery/aggregated-api-servers.md)
+- 详细了解[声明式 API 校验](/zh-cn/docs/reference/using-api/declarative-validation/)。

@@ -37,7 +37,7 @@ content_type: concept
    {{< note >}}
    <!--
    If using containerd as your container runtime the pause image is specified in the
-   `plugins.plugins.cri.sandbox_image` field of the of config.toml configration file.
+   `plugins.plugins.cri.sandbox_image` field of the of config.toml configuration file.
    -->
    如果你在使用 containerd 作为你的容器运行时，那么 pause 镜像在 config.toml 配置文件的
    `plugins.plugins.cri.sandbox_image` 中指定。
@@ -246,7 +246,7 @@ content_type: concept
    tries to assign a new pod subnet to the node. Users should remove the old pod
    subnet configuration files in the following paths:
 -->
-## Flannel 故障排查 {#troubleshooting-network}
+### Flannel 故障排查 {#flannel-troubleshooting}
 
 1. 使用 Flannel 时，我的节点在重新加入集群后出现问题
 

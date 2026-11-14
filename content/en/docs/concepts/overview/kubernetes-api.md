@@ -3,7 +3,7 @@ reviewers:
 - chenopis
 title: The Kubernetes API
 content_type: concept
-weight: 30
+weight: 40
 description: >
   The Kubernetes API lets you query and manipulate the state of objects in Kubernetes.
   The core of Kubernetes' control plane is the API server and the HTTP API that it exposes. Users, the different parts of your cluster, and external components all communicate with one another through the API server.
@@ -22,21 +22,139 @@ external components communicate with one another.
 The Kubernetes API lets you query and manipulate the state of API objects in Kubernetes
 (for example: Pods, Namespaces, ConfigMaps, and Events).
 
-Most operations can be performed through the
-[kubectl](/docs/reference/kubectl/) command-line interface or other
-command-line tools, such as
-[kubeadm](/docs/reference/setup-tools/kubeadm/), which in turn use the
-API. However, you can also access the API directly using REST calls.
+Most operations can be performed through the [kubectl](/docs/reference/kubectl/)
+command-line interface or other command-line tools, such as
+[kubeadm](/docs/reference/setup-tools/kubeadm/), which in turn use the API.
+However, you can also access the API directly using REST calls. Kubernetes
+provides a set of [client libraries](/docs/reference/using-api/client-libraries/)
+for those looking to
+write applications using the Kubernetes API.
 
-Consider using one of the [client libraries](/docs/reference/using-api/client-libraries/)
-if you are writing an application using the Kubernetes API.
+Each Kubernetes cluster publishes the specification of the APIs that the cluster serves.
+There are two mechanisms that Kubernetes uses to publish these API specifications; both are useful
+to enable automatic interoperability. For example, the `kubectl` tool fetches and caches the API
+specification for enabling command-line completion and other features.
+The two supported mechanisms are as follows:
+
+- [The Discovery API](#discovery-api) provides information about the Kubernetes APIs:
+  API names, resources, versions, and supported operations. This is a Kubernetes
+  specific term as it is a separate API from the Kubernetes OpenAPI.
+  It is intended to be a brief summary of the available resources and it does not
+  detail specific schema for the resources. For reference about resource schemas,
+  please refer to the OpenAPI document.
+
+- The [Kubernetes OpenAPI Document](#openapi-interface-definition) provides (full)
+  [OpenAPI v2.0 and 3.0 schemas](https://www.openapis.org/) for all Kubernetes API
+endpoints.
+  The OpenAPI v3 is the preferred method for accessing OpenAPI as it
+provides
+  a more comprehensive and accurate view of the API. It includes all the available
+  API paths, as well as all resources consumed and produced for every operations
+  on every endpoints. It also includes any extensibility components that a cluster supports.
+  The data is a complete specification and is significantly larger than that from the
+  Discovery API.
+
+## Discovery API
+
+Kubernetes publishes a list of all group versions and resources supported via
+the Discovery API. This includes the following for each resource:
+
+- Name
+- Cluster or namespaced scope
+- Endpoint URL and supported verbs
+- Alternative names
+- Group, version, kind
+
+The API is available in both aggregated and unaggregated form. The aggregated
+discovery serves two endpoints, while the unaggregated discovery serves a
+separate endpoint for each group version.
+
+### Aggregated discovery
+
+{{< feature-state feature_gate_name="AggregatedDiscoveryEndpoint" >}}
+
+Kubernetes offers stable support for _aggregated discovery_, publishing
+all resources supported by a cluster through two endpoints (`/api` and
+`/apis`). Requesting this
+endpoint drastically reduces the number of requests sent to fetch the
+discovery data from the cluster. You can access the data by
+requesting the respective endpoints with an `Accept` header indicating
+the aggregated discovery resource:
+`Accept: application/json;v=v2;g=apidiscovery.k8s.io;as=APIGroupDiscoveryList`.
+
+Without indicating the resource type using the `Accept` header, the default
+response for the `/api` and `/apis` endpoint is an unaggregated discovery
+document.
+
+The [discovery document](https://github.com/kubernetes/kubernetes/blob/release-{{< skew currentVersion >}}/api/discovery/aggregated_v2.json)
+for the built-in resources can be found in the Kubernetes GitHub repository.
+This Github document can be used as a reference of the base set of the available resources
+if a Kubernetes cluster is not available to query.
+
+The endpoint also supports ETag and protobuf encoding.
+
+### Unaggregated discovery
+
+Without discovery aggregation, discovery is published in levels, with the root
+endpoints publishing discovery information for downstream documents.
+
+A list of all group versions supported by a cluster is published at
+the `/api` and `/apis` endpoints. Example:
+
+```
+{
+  "kind": "APIGroupList",
+  "apiVersion": "v1",
+  "groups": [
+    {
+      "name": "apiregistration.k8s.io",
+      "versions": [
+        {
+          "groupVersion": "apiregistration.k8s.io/v1",
+          "version": "v1"
+        }
+      ],
+      "preferredVersion": {
+        "groupVersion": "apiregistration.k8s.io/v1",
+        "version": "v1"
+      }
+    },
+    {
+      "name": "apps",
+      "versions": [
+        {
+          "groupVersion": "apps/v1",
+          "version": "v1"
+        }
+      ],
+      "preferredVersion": {
+        "groupVersion": "apps/v1",
+        "version": "v1"
+      }
+    },
+    ...
+}
+```
+
+Additional requests are needed to obtain the discovery document for each group version at
+`/apis/<group>/<version>` (for example:
+`/apis/rbac.authorization.k8s.io/v1alpha1`), which advertises the list of
+resources served under a particular group version. These endpoints are used by
+kubectl to fetch the list of resources supported by a cluster.
 
 <!-- body -->
 
-## OpenAPI specification {#api-specification}
+<a id="#api-specification" />
 
-Complete API details are documented using [OpenAPI](https://www.openapis.org/).
+## OpenAPI interface definition
 
+For details about the OpenAPI specifications, see the [OpenAPI documentation](https://www.openapis.org/).
+
+Kubernetes serves both OpenAPI v2.0 and OpenAPI v3.0. OpenAPI v3 is the
+preferred method of accessing the OpenAPI because it offers a more comprehensive
+(lossless) representation of Kubernetes resources. Due to limitations of OpenAPI
+version 2, certain fields are dropped from the published OpenAPI including but not
+limited to `default`, `nullable`, `oneOf`.
 ### OpenAPI V2
 
 The Kubernetes API server serves an aggregated OpenAPI v2 spec via the
@@ -74,25 +192,22 @@ request headers as follows:
   </tbody>
 </table>
 
-Kubernetes implements an alternative Protobuf based serialization format that
-is primarily intended for intra-cluster communication. For more information
-about this format, see the [Kubernetes Protobuf serialization](https://git.k8s.io/design-proposals-archive/api-machinery/protobuf.md) design proposal and the
-Interface Definition Language (IDL) files for each schema located in the Go
-packages that define the API objects.
+{{< warning >}}
+The validation rules published as part of OpenAPI schemas may not be complete, and usually aren't.
+Additional validation occurs within the API server. If you want precise and complete verification,
+a `kubectl apply --dry-run=server` runs all the applicable validation (and also activates admission-time
+checks).
+{{< /warning >}}
 
 ### OpenAPI V3
 
-{{< feature-state state="beta"  for_k8s_version="v1.24" >}}
+{{< feature-state feature_gate_name="OpenAPIV3" >}}
 
-Kubernetes {{< param "version" >}} offers beta support for publishing its APIs as OpenAPI v3; this is a
-beta feature that is enabled by default.
-You can disable the beta feature by turning off the
-[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) named `OpenAPIV3`
-for the kube-apiserver component.
+Kubernetes supports publishing a description of its APIs as OpenAPI v3.
 
 A discovery endpoint `/openapi/v3` is provided to see a list of all
-group/versions available. This endpoint only returns JSON. These group/versions
-are provided in the following format:
+group/versions available. This endpoint only returns JSON. These
+group/versions are provided in the following format:
 
 ```yaml
 {
@@ -152,6 +267,21 @@ Refer to the table below for accepted request headers.
      </tr>
   </tbody>
 </table>
+
+A Golang implementation to fetch the OpenAPI V3 is provided in the package
+[`k8s.io/client-go/openapi3`](https://pkg.go.dev/k8s.io/client-go/openapi3).
+
+Kubernetes {{< skew currentVersion >}} publishes
+OpenAPI v2.0 and v3.0; there are no plans to support 3.1 in the near future.
+
+### Protobuf serialization
+
+Kubernetes implements an alternative Protobuf based serialization format that
+is primarily intended for intra-cluster communication. For more information
+about this format, see the [Kubernetes Protobuf serialization](https://git.k8s.io/design-proposals-archive/api-machinery/protobuf.md)
+design proposal and the
+Interface Definition Language (IDL) files for each schema located in the Go
+packages that define the API objects.
 
 ## Persistence
 
@@ -215,8 +345,6 @@ ways that require deleting all existing alpha objects prior to upgrade.
 
 Refer to [API versions reference](/docs/reference/using-api/#api-versioning)
 for more details on the API version level definitions.
-
-
 
 ## API Extension
 

@@ -10,9 +10,9 @@ card:
 <!-- overview -->
 
 SIG Docsは、Kubernetesプロジェクト内の 
-[special interest groups](https://github.com/kubernetes/community/blob/master/sig-list.md)の1つであり、
+[special interest groups](https://github.com/kubernetes/community/blob/main/sig-list.md)の1つであり、
 Kubernetes全体のドキュメントの作成、更新、および保守に重点を置いています。 
-SIGの詳細については、[SIG DocsのGithubリポジトリ](https://github.com/kubernetes/community/blob/master/sig-list.md)を参照してください。
+SIGの詳細については、[SIG DocsのGitHubリポジトリ](https://github.com/kubernetes/community/tree/main/sig-docs)を参照してください。
 
 SIG Docsは、すべての寄稿者からのコンテンツとレビューを歓迎します。
 誰でもPull Request(PR)を開くことができ、コンテンツに関するissueを提出したり、進行中のPull Requestにコメントしたりできます。
@@ -22,7 +22,7 @@ SIG Docsは、すべての寄稿者からのコンテンツとレビューを歓
 [approver](/docs/contribute/participate/roles-and-responsibilities/#approvers)になることもできます。
 これらの役割にはより多くのアクセスが必要であり、変更を承認およびコミットするための特定の責任が伴います。
 Kubernetesコミュニティ内でメンバーシップがどのように機能するかについての詳細は、
-[community-membership](https://github.com/kubernetes/community/blob/master/community-membership.md)
+[community-membership](https://github.com/kubernetes/community/blob/main/community-membership.md)
 をご覧ください。
 
 このドキュメントの残りの部分では、kubernetesの中で最も広く公開されている
@@ -37,7 +37,7 @@ SIG Docsを含む各SIGは、議長として機能する1人以上のSIGメン�
 これらは、SIGDocsとKubernetes organizationの他の部分との連絡先です。
 それらには、Kubernetesプロジェクト全体の構造と、SIG Docsがその中でどのように機能するかについての広範な知識が必要です。
 現在のchairpersonのリストについては、
-[Leadership](https://github.com/kubernetes/community/tree/master/sig-docs#leadership)
+[Leadership](https://github.com/kubernetes/community/tree/main/sig-docs#leadership)
 を参照してください。
 
 ## SIG Docs teamsと自動化
@@ -51,7 +51,7 @@ GitHubには、二つのSIG Docs
 カテゴリがあります:
 
 - `@sig-docs-{language}-owners`は承認者かつリードです。
-- `@sig-docs-{language}-reviewers` はレビュアーです。
+- `@sig-docs-{language}-reviews` はレビュアーです。
 
 それぞれをGitHubコメントの`@name`で参照して、そのグループの全員とコミュニケーションできます。
 
@@ -62,12 +62,12 @@ ProwチームとGitHub teamsが完全に一致せずに重複する場合があ�
 
 Kubernetesプロジェクトは、GitHubのissueとPull Requestに関連する自動化のためにprowと呼ばれる自動化ツールを使用します。 
 [Kubernetes Webサイトリポジトリ](https://github.com/kubernetes/website) 
-は、2つの[prowプラグイン](https://github.com/kubernetes/test-infra/tree/master/prow/plugins)を使用します：
+は、2つの[prowプラグイン](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins)を使用します：
 
 - blunderbuss
 - approve
 
-これらの2つのプラグインは`kubernetes.website`のGithubリポジトリのトップレベルにある
+これらの2つのプラグインは`kubernetes.website`のGitHubリポジトリのトップレベルにある
 [OWNERS](https://github.com/kubernetes/website/blob/main/OWNERS)ファイルと、
 [OWNERS_ALIASES](https://github.com/kubernetes/website/blob/main/OWNERS_ALIASES)ファイルを使用して、
 リポジトリ内でのprowの動作を制御します。
@@ -75,7 +75,7 @@ Kubernetesプロジェクトは、GitHubのissueとPull Requestに関連する�
 OWNERSファイルには、SIG Docsのレビュー担当者および承認者であるユーザーのリストが含まれています。 
 OWNERSファイルはサブディレクトリに存在することもでき、そのサブディレクトリとその子孫のファイルのレビュー担当者または承認者として機能できるユーザーを上書きできます。
 一般的なOWNERSファイルの詳細については、
-[OWNERS](https://github.com/kubernetes/community/blob/master/contributors/guide/owners.md)を参照してください。
+[OWNERS](https://github.com/kubernetes/community/blob/main/contributors/guide/owners.md)を参照してください。
 
 さらに、個々のMarkdownファイルは、個々のGitHubユーザー名またはGitHubグループを一覧表示することにより、そのfront-matterでレビュー担当者と承認者を一覧表示できます。
 
@@ -83,7 +83,7 @@ OWNERSファイルとMarkdownファイルのfront-matterの組み合わせによ
 
 ## マージの仕組み
 
-Pull Requestがコンテンツの公開に使用されるブランチにマージされると、そのコンテンツは http://kubernetes.io に公開されます。
+Pull Requestがコンテンツの公開に使用されるブランチにマージされると、そのコンテンツは https://kubernetes.io に公開されます。
 公開されたコンテンツの品質を高くするために、Pull RequestのマージはSIG Docsの承認者に限定しています。仕組みは次のとおりです。
 
 - Pull Requestに`lgtm`ラベルと`approve`ラベルの両方があり、`hold`ラベルがなく、すべてのテストに合格すると、Pull Requestは自動的にマージされます。

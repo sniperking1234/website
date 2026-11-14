@@ -2,11 +2,18 @@
 title: API 优先级和公平性
 content_type: concept
 min-kubernetes-server-version: v1.18
+weight: 110
 ---
+<!--
+title: API Priority and Fairness
+content_type: concept
+min-kubernetes-server-version: v1.18
+weight: 110
+-->
 
 <!-- overview -->
 
-{{< feature-state state="beta"  for_k8s_version="v1.20" >}}
+{{< feature-state state="stable"  for_k8s_version="v1.29" >}}
 
 <!--
 Controlling the behavior of the Kubernetes API server in an overload situation
@@ -29,7 +36,7 @@ The API Priority and Fairness feature (APF) is an alternative that improves upon
 aforementioned max-inflight limitations. APF classifies
 and isolates requests in a more fine-grained way. It also introduces
 a limited amount of queuing, so that no requests are rejected in cases
-of very brief bursts.  Requests are dispatched from queues using a
+of very brief bursts. Requests are dispatched from queues using a
 fair queuing technique so that, for example, a poorly-behaved
 {{< glossary_tooltip text="controller" term_id="controller" >}} need not
 starve others (even at the same priority level).
@@ -62,7 +69,7 @@ are not subject to the `--max-requests-inflight` limit.
 -->
 属于 “长时间运行” 类型的某些请求（例如远程命令执行或日志拖尾）不受 API 优先级和公平性过滤器的约束。
 如果未启用 APF 特性，即便设置 `--max-requests-inflight` 标志，该类请求也不受约束。
-APF **不** 适用于 **watch** 请求。当 APF 被禁用时，**watch** 请求不受 `--max-requests-inflight` 限制。
+APF 适用于 **watch** 请求。当 APF 被禁用时，**watch** 请求不受 `--max-requests-inflight` 限制。
 {{< /caution >}}
 
 <!-- body -->
@@ -73,50 +80,101 @@ APF **不** 适用于 **watch** 请求。当 APF 被禁用时，**watch** 请求
 ## 启用/禁用 API 优先级和公平性    {#enabling-api-priority-and-fairness}
 
 <!--
-The API Priority and Fairness feature is controlled by a feature gate
-and is enabled by default.  See
-[Feature Gates](/docs/reference/command-line-tools-reference/feature-gates/)
-for a general explanation of feature gates and how to enable and
-disable them.  The name of the feature gate for APF is
-"APIPriorityAndFairness".  This feature also involves an {{<
-glossary_tooltip term_id="api-group" text="API Group" >}} with: (a) a
-`v1alpha1` version, disabled by default, and (b) `v1beta1` and
-`v1beta2` versions, enabled by default.  You can disable the feature
-gate and API group beta versions by adding the following
-command-line flags to your `kube-apiserver` invocation:
+The API Priority and Fairness feature is controlled by a command-line flag
+and is enabled by default. See 
+[Options](/docs/reference/command-line-tools-reference/kube-apiserver/#options)
+for a general explanation of the available kube-apiserver command-line 
+options and how to enable and disable them. The name of the 
+command-line option for APF is "--enable-priority-and-fairness". This feature
+also involves an {{<glossary_tooltip term_id="api-group" text="API Group" >}} 
+with: (a) a stable `v1` version, introduced in 1.29, and 
+enabled by default (b) a `v1beta3` version, enabled by default, and
+deprecated in v1.29. You can
+disable the API group beta version `v1beta3` by adding the
+following command-line flags to your `kube-apiserver` invocation:
 -->
-API 优先级与公平性（APF）特性由特性门控控制，默认情况下启用。
-有关特性门控的一般性描述以及如何启用和禁用特性门控，
-请参见[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)。
-APF 的特性门控称为 `APIPriorityAndFairness`。
+API 优先级与公平性（APF）特性由命令行标志控制，默认情况下启用。
+有关可用 kube-apiserver 命令行参数以及如何启用和禁用的说明，
+请参见[参数](/zh-cn/docs/reference/command-line-tools-reference/kube-apiserver/#options)。
+APF 的命令行参数是 "--enable-priority-and-fairness"。
 此特性也与某个 {{< glossary_tooltip term_id="api-group" text="API 组" >}}相关：
-(a) `v1alpha1` 版本，默认被禁用；
-(b) `v1beta1` 和 `v1beta2` 版本，默认被启用。
-你可以在启动 `kube-apiserver` 时，添加以下命令行标志来禁用此功能门控及 API Beta 组：
+(a) 稳定的 `v1` 版本，在 1.29 中引入，默认启用；
+(b) `v1beta3` 版本，默认被启用，在 1.29 中被弃用。
+你可以通过添加以下内容来禁用 Beta 版的 `v1beta3` API 组：
 
+<!--
 ```shell
 kube-apiserver \
---feature-gates=APIPriorityAndFairness=false \
---runtime-config=flowcontrol.apiserver.k8s.io/v1beta1=false,flowcontrol.apiserver.k8s.io/v1beta2=false \
+--runtime-config=flowcontrol.apiserver.k8s.io/v1beta3=false \
+ # …and other flags as usual
+```
+-->
+```shell
+kube-apiserver \
+--runtime-config=flowcontrol.apiserver.k8s.io/v1beta3=false \
   # ...其他配置不变
 ```
 
 <!--
-Alternatively, you can enable the v1alpha1 version of the API group
-with `--runtime-config=flowcontrol.apiserver.k8s.io/v1alpha1=true`.
+The command-line flag `--enable-priority-and-fairness=false` will disable the
+API Priority and Fairness feature.
 -->
-或者，你也可以通过 `--runtime-config=flowcontrol.apiserver.k8s.io/v1alpha1=true`
-启用 API 组的 v1alpha1 版本。
+命令行标志 `--enable-priority-fairness=false` 将彻底禁用 APF 特性。
 
 <!--
-The command-line flag `--enable-priority-and-fairness=false` will disable the
-API Priority and Fairness feature, even if other flags have enabled it.
+## Recursive server scenarios
+
+API Priority and Fairness must be used carefully in recursive server
+scenarios. These are scenarios in which some server A, while serving
+a request, issues a subsidiary request to some server B. Perhaps
+server B might even make a further subsidiary call back to server
+A. In situations where Priority and Fairness control is applied to
+both the original request and some subsidiary ones(s), no matter how
+deep in the recursion, there is a danger of priority inversions and/or
+deadlocks.
 -->
-命令行标志 `--enable-priority-fairness=false` 将彻底禁用 APF 特性，
-即使其他标志启用它也是无效。
+## 递归服务器场景     {#recursive-server-scenarios}
+
+在递归服务器场景中，必须谨慎使用 API 优先级和公平性。这些场景指的是服务器 A 在处理一个请求时，
+会向服务器 B 发出一个辅助请求。服务器 B 可能会进一步向服务器 A 发出辅助请求。
+当优先级和公平性控制同时应用于原始请求及某些辅助请求（无论递归多深）时，存在优先级反转和/或死锁的风险。
+
+<!--
+One example of recursion is when the `kube-apiserver` issues an
+admission webhook call to server B, and while serving that call,
+server B makes a further subsidiary request back to the
+`kube-apiserver`. Another example of recursion is when an `APIService`
+object directs the `kube-apiserver` to delegate requests about a
+certain API group to a custom external server B (this is one of the
+things called "aggregation").
+-->
+递归的一个例子是 `kube-apiserver` 向服务器 B 发出一个准入 Webhook 调用，
+而在处理该调用时，服务器 B 进一步向 `kube-apiserver` 发出一个辅助请求。
+另一个递归的例子是，某个 `APIService` 对象指示 `kube-apiserver`
+将某个 API 组的请求委托给自定义的外部服务器 B（这被称为"聚合"）。
+
+<!--
+When the original request is known to belong to a certain priority
+level, and the subsidiary controlled requests are classified to higher
+priority levels, this is one possible solution. When the original
+requests can belong to any priority level, the subsidiary controlled
+requests have to be exempt from Priority and Fairness limitation. One
+way to do that is with the objects that configure classification and
+handling, discussed below. Another way is to disable Priority and
+Fairness on server B entirely, using the techniques discussed above. A
+third way, which is the simplest to use when server B is not
+`kube-apiserver`, is to build server B with Priority and Fairness
+disabled in the code.
+-->
+当原始请求被确定为属于某个特定优先级别时，将辅助请求分类为更高的优先级别是一个可行的解决方案。
+当原始请求可能属于任何优先级时，辅助受控请求必须免受优先级和公平性限制。
+一种实现方法是使用下文中讨论的配置分类和处理的对象。
+另一种方法是采用前面提到的技术，在服务器 B 上完全禁用优先级和公平性。第三种方法是，
+当服务器 B 不是 `kube-apiserver` 时，最简单的做法是在服务器 B 的代码中禁用优先级和公平性。
 
 <!--
 ## Concepts
+
 There are several distinct features involved in the API Priority and Fairness
 feature. Incoming requests are classified by attributes of the request using
 _FlowSchemas_, and assigned to priority levels. Priority levels add a degree of
@@ -143,14 +201,14 @@ Without APF enabled, overall concurrency in the API server is limited by the
 defined by these flags are summed and then the sum is divided up among a
 configurable set of _priority levels_. Each incoming request is assigned to a
 single priority level, and each priority level will only dispatch as many
-concurrent requests as its configuration allows.
+concurrent requests as its particular limit allows.
 -->
-### 优先级    {#Priority-Levels}
+### 优先级    {#priority-levels}
 
 如果未启用 APF，API 服务器中的整体并发量将受到 `kube-apiserver` 的参数
 `--max-requests-inflight` 和 `--max-mutating-requests-inflight` 的限制。
 启用 APF 后，将对这些参数定义的并发限制进行求和，然后将总和分配到一组可配置的 **优先级** 中。
-每个传入的请求都会分配一个优先级；每个优先级都有各自的配置，设定允许分发的并发请求数。
+每个传入的请求都会分配一个优先级；每个优先级都有各自的限制，设定特定限制允许分发的并发请求数。
 
 <!--
 The default configuration, for example, includes separate priority levels for
@@ -163,52 +221,63 @@ from succeeding.
 这表示即使异常的 Pod 向 API 服务器发送大量请求，也无法阻止领导者选举或内置控制器的操作执行成功。
 
 <!--
+The concurrency limits of the priority levels are periodically
+adjusted, allowing under-utilized priority levels to temporarily lend
+concurrency to heavily-utilized levels. These limits are based on
+nominal limits and bounds on how much concurrency a priority level may
+lend and how much it may borrow, all derived from the configuration
+objects mentioned below.
+-->
+优先级的并发限制会被定期调整，允许利用率较低的优先级将并发度临时借给利用率很高的优先级。
+这些限制基于一个优先级可以借出多少个并发度以及可以借用多少个并发度的额定限制和界限，
+所有这些均源自下述配置对象。
+
+<!--
 ### Seats Occupied by a Request
 
 The above description of concurrency management is the baseline story.
-In it, requests have different durations but are counted equally at
-any given moment when comparing against a priority level's concurrency
-limit. In the baseline story, each request occupies one unit of
-concurrency. The word "seat" is used to mean one unit of concurrency,
-inspired by the way each passenger on a train or aircraft takes up one
-of the fixed supply of seats.
+Requests have different durations but are counted equally at any given
+moment when comparing against a priority level's concurrency limit. In
+the baseline story, each request occupies one unit of concurrency. The
+word "seat" is used to mean one unit of concurrency, inspired by the
+way each passenger on a train or aircraft takes up one of the fixed
+supply of seats.
 
-But some requests take up more than one seat.  Some of these are **list**
+But some requests take up more than one seat. Some of these are **list**
 requests that the server estimates will return a large number of
-objects.  These have been found to put an exceptionally heavy burden
-on the server, among requests that take a similar amount of time to
-run.  For this reason, the server estimates the number of objects that
-will be returned and considers the request to take a number of seats
+objects. These have been found to put an exceptionally heavy burden
+on the server. For this reason, the server estimates the number of objects
+that will be returned and considers the request to take a number of seats
 that is proportional to that estimated number.
 -->
 ### 请求占用的席位  {#seats-occupied-by-a-request}
 
-上述并发管理的描述是基线情况。其中，各个请求具有不同的持续时间，
+上述并发管理的描述是基线情况。各个请求具有不同的持续时间，
 但在与一个优先级的并发限制进行比较时，这些请求在任何给定时刻都以同等方式进行计数。
 在这个基线场景中，每个请求占用一个并发单位。
 我们用 “席位（Seat）” 一词来表示一个并发单位，其灵感来自火车或飞机上每位乘客占用一个固定座位的供应方式。
 
 但有些请求所占用的席位不止一个。有些请求是服务器预估将返回大量对象的 **list** 请求。
-和所需运行时间相近的其他请求相比，我们发现这类请求会给服务器带来异常沉重的负担。
+我们发现这类请求会给服务器带来异常沉重的负担。
 出于这个原因，服务器估算将返回的对象数量，并认为请求所占用的席位数与估算得到的数量成正比。
 
 <!--
 ### Execution time tweaks for watch requests
 
 API Priority and Fairness manages **watch** requests, but this involves a
-couple more excursions from the baseline behavior.  The first concerns
-how long a **watch**  request is considered to occupy its seat.  Depending
-on request parameters, the response to a **watch**  request may or may not
-begin with **create**  notifications for all the relevant pre-existing
-objects.  API Priority and Fairness considers a **watch**  request to be
+couple more excursions from the baseline behavior. The first concerns
+how long a **watch** request is considered to occupy its seat. Depending
+on request parameters, the response to a **watch** request may or may not
+begin with **create** notifications for all the relevant pre-existing
+objects. API Priority and Fairness considers a **watch** request to be
 done with its seat once that initial burst of notifications, if any,
 is over.
 
 The normal notifications are sent in a concurrent burst to all
-relevant **watch**  response streams whenever the server is notified of an
-object create/update/delete.  To account for this work, API Priority
+relevant **watch** response streams whenever the server is notified of an
+object create/update/delete. To account for this work, API Priority
 and Fairness considers every write request to spend some additional
-time occupying seats after the actual writing is done.  The server
+time occupying seats after the actual writing is done. The server
 estimates the number of notifications to be sent and adjusts the write
 request's number of seats and seat occupancy time to include this
 extra work.
@@ -241,7 +310,7 @@ flows of the same priority level.
 To enable distinct handling of distinct instances, controllers that have
 many instances should authenticate with distinct usernames
 -->
-### 排队    {#Queuing}
+### 排队    {#queuing}
 
 即使在同一优先级内，也可能存在大量不同的流量源。
 在过载情况下，防止一个请求流饿死其他流是非常有价值的
@@ -256,7 +325,7 @@ many instances should authenticate with distinct usernames
 
 <!--
 After classifying a request into a flow, the API Priority and Fairness
-feature then may assign the request to a queue.  This assignment uses
+feature then may assign the request to a queue. This assignment uses
 a technique known as {{< glossary_tooltip term_id="shuffle-sharding"
 text="shuffle sharding" >}}, which makes relatively efficient use of
 queues to insulate low-intensity flows from high-intensity flows.
@@ -283,7 +352,7 @@ any of the limitations imposed by this feature. These exemptions prevent an
 improperly-configured flow control configuration from totally disabling an API
 server.
 -->
-### 豁免请求    {#Exempt-requests}
+### 豁免请求    {#exempt-requests}
 
 某些特别重要的请求不受制于此特性施加的任何限制。
 这些豁免可防止不当的流控配置完全禁用 API 服务器。
@@ -292,23 +361,20 @@ server.
 ## Resources
 
 The flow control API involves two kinds of resources.
-[PriorityLevelConfigurations](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#prioritylevelconfiguration-v1beta2-flowcontrol-apiserver-k8s-io)
+[PriorityLevelConfigurations](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#prioritylevelconfiguration-v1-flowcontrol-apiserver-k8s-io)
 define the available priority levels, the share of the available concurrency
 budget that each can handle, and allow for fine-tuning queuing behavior.
-[FlowSchemas](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#flowschema-v1beta2-flowcontrol-apiserver-k8s-io)
+[FlowSchemas](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#flowschema-v1-flowcontrol-apiserver-k8s-io)
 are used to classify individual inbound requests, matching each to a
-single PriorityLevelConfiguration.  There is also a `v1alpha1` version
-of the same API group, and it has the same Kinds with the same syntax and
-semantics.
+single PriorityLevelConfiguration.
 -->
-## 资源    {#Resources}
+## 资源    {#resources}
 
 流控 API 涉及两种资源。
-[PriorityLevelConfiguration](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#prioritylevelconfiguration-v1beta2-flowcontrol-apiserver-k8s-io)
+[PriorityLevelConfiguration](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#prioritylevelconfiguration-v1-flowcontrol-apiserver-k8s-io)
 定义可用的优先级和可处理的并发预算量，还可以微调排队行为。
-[FlowSchema](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#flowschema-v1beta2-flowcontrol-apiserver-k8s-io)
+[FlowSchema](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#flowschema-v1-flowcontrol-apiserver-k8s-io)
 用于对每个入站请求进行分类，并与一个 PriorityLevelConfiguration 相匹配。
-此外同一 API 组还有一个 `v1alpha1` 版本，其中包含语法和语义都相同的资源类别。
 
 <!--
 ### PriorityLevelConfiguration
@@ -317,27 +383,66 @@ A PriorityLevelConfiguration represents a single priority level. Each
 PriorityLevelConfiguration has an independent limit on the number of outstanding
 requests, and limitations on the number of queued requests.
 -->
-### PriorityLevelConfiguration    {#PriorityLevelConfiguration}
+### PriorityLevelConfiguration
 
 一个 PriorityLevelConfiguration 表示单个优先级。每个 PriorityLevelConfiguration
 对未完成的请求数有各自的限制，对排队中的请求数也有限制。
 
 <!--
-Concurrency limits for PriorityLevelConfigurations are not specified in absolute
-number of requests, but rather in "concurrency shares." The total concurrency
-limit for the API Server is distributed among the existing
-PriorityLevelConfigurations in proportion with these shares. This allows a
-cluster administrator to scale up or down the total amount of traffic to a
-server by restarting `kube-apiserver` with a different value for
-`--max-requests-inflight` (or `--max-mutating-requests-inflight`), and all
-PriorityLevelConfigurations will see their maximum allowed concurrency go up (or
-down) by the same fraction.
+The nominal concurrency limit for a PriorityLevelConfiguration is not
+specified in an absolute number of seats, but rather in "nominal
+concurrency shares." The total concurrency limit for the API Server is
+distributed among the existing PriorityLevelConfigurations in
+proportion to these shares, to give each level its nominal limit in
+terms of seats. This allows a cluster administrator to scale up or
+down the total amount of traffic to a server by restarting
+`kube-apiserver` with a different value for `--max-requests-inflight`
+(or `--max-mutating-requests-inflight`), and all
+PriorityLevelConfigurations will see their maximum allowed concurrency
+go up (or down) by the same fraction.
 -->
-PriorityLevelConfiguration 的并发限制不是指定请求绝对数量，而是在“并发份额”中指定。
-API 服务器的总并发量限制通过这些份额按例分配到现有 PriorityLevelConfiguration 中。
+PriorityLevelConfiguration 的额定并发限制不是指定请求绝对数量，而是以“额定并发份额”的形式指定。
+API 服务器的总并发量限制通过这些份额按例分配到现有 PriorityLevelConfiguration 中，
+为每个级别按照数量赋予其额定限制。
 集群管理员可以更改 `--max-requests-inflight` （或 `--max-mutating-requests-inflight`）的值，
 再重新启动 `kube-apiserver` 来增加或减小服务器的总流量，
 然后所有的 PriorityLevelConfiguration 将看到其最大并发增加（或减少）了相同的比例。
+
+{{< caution >}}
+<!--
+In the versions before `v1beta3` the relevant
+PriorityLevelConfiguration field is named "assured concurrency shares"
+rather than "nominal concurrency shares". Also, in Kubernetes release
+1.25 and earlier there were no periodic adjustments: the
+nominal/assured limits were always applied without adjustment.
+-->
+在 `v1beta3` 之前的版本中，相关的 PriorityLevelConfiguration
+字段被命名为“保证并发份额”而不是“额定并发份额”。此外在 Kubernetes v1.25
+及更早的版本中，不存在定期的调整：所实施的始终是额定/保证的限制，不存在调整。
+{{< /caution >}}
+
+<!--
+The bounds on how much concurrency a priority level may lend and how
+much it may borrow are expressed in the PriorityLevelConfiguration as
+percentages of the level's nominal limit. These are resolved to
+absolute numbers of seats by multiplying with the nominal limit /
+100.0 and rounding. The dynamically adjusted concurrency limit of a
+priority level is constrained to lie between (a) a lower bound of its
+nominal limit minus its lendable seats and (b) an upper bound of its
+nominal limit plus the seats it may borrow. At each adjustment the
+dynamic limits are derived by each priority level reclaiming any lent
+seats for which demand recently appeared and then jointly fairly
+responding to the recent seat demand on the priority levels, within
+the bounds just described.
+-->
+一个优先级可以借出的并发数界限以及可以借用的并发数界限在
+PriorityLevelConfiguration 表现该优先级的额定限制。
+这些界限值乘以额定限制/100.0 并取整，被解析为绝对席位数量。
+某优先级的动态调整并发限制范围被约束在
+(a) 其额定限制的下限值减去其可借出的席位和
+(b) 其额定限制的上限值加上它可以借用的席位之间。
+在每次调整时，通过每个优先级推导得出动态限制，具体过程为回收最近出现需求的所有借出的席位，
+然后在刚刚描述的界限内共同公平地响应有关这些优先级最近的席位需求。
 
 {{< caution >}}
 <!--
@@ -348,10 +453,9 @@ between mutating and non-mutating requests; if you want to treat them
 separately for a given resource, make separate FlowSchemas that match the
 mutating and non-mutating verbs respectively.
 -->
-启用 APF 特性后，服务器的总并发量限制将设置为
-`--max-requests-inflight` 和 `--max-mutating-requests-inflight` 之和。
-可变请求和不可变请求之间不再有任何区别；
-如果对于某种资源，你需要区别对待不同请求，请创建不同的 FlowSchema 分别匹配可变请求和不可变请求。
+启用 APF 特性时，服务器的总并发限制被设置为 `--max-requests-inflight` 及
+`--max-mutating-requests-inflight` 之和。变更性和非变更性请求之间不再有任何不同；
+如果你想针对某给定资源分别进行处理，请制作单独的 FlowSchema，分别匹配变更性和非变更性的动作。
 {{< /caution >}}
 
 <!--
@@ -428,7 +532,7 @@ https://play.golang.org/p/Gi0PLgVHiUg , which computes this table.
 
 {{< table caption = "混分切片配置示例" >}}
 <!-- HandSize | Queues | 1 elephant | 4 elephants | 16 elephants -->
-随机分片 | 队列数 | 1 个大象 | 4 个大象 | 16 个大象
+随机分片 | 队列数 | 1 头大象 | 4 头大象 | 16 头大象
 |----------|-----------|------------|----------------|--------------------|
 | 12 | 32 | 4.428838398950118e-09 | 0.11431348830099144 | 0.9935089607656024 |
 | 10 | 32 | 1.550093439632541e-08 | 0.0626479840223545 | 0.9753101519027554 |
@@ -447,16 +551,15 @@ https://play.golang.org/p/Gi0PLgVHiUg , which computes this table.
 ### FlowSchema
 
 A FlowSchema matches some inbound requests and assigns them to a
-priority level. Every inbound request is tested against every
-FlowSchema in turn, starting with those with numerically lowest ---
-which we take to be the logically highest --- `matchingPrecedence` and
-working onward.  The first match wins.
+priority level. Every inbound request is tested against FlowSchemas,
+starting with those with the numerically lowest `matchingPrecedence` and
+working upward. The first match wins.
 -->
-### FlowSchema  {#flowschema}
+### FlowSchema
 
 FlowSchema 匹配一些入站请求，并将它们分配给优先级。
-每个入站请求都会对所有 FlowSchema 测试是否匹配，
-首先从 `matchingPrecedence` 数值最低的匹配开始（我们认为这是逻辑上匹配度最高），
+每个入站请求都会对 FlowSchema 测试是否匹配，
+首先从 `matchingPrecedence` 数值最低的匹配开始，
 然后依次进行，直到首个匹配出现。
 
 {{< caution >}}
@@ -468,8 +571,8 @@ with the highest `matchingPrecedence`. If multiple FlowSchemas with equal
 smaller `name` will win, but it's better not to rely on this, and instead to
 ensure that no two FlowSchemas have the same `matchingPrecedence`.
 -->
-对一个请求来说，只有首个匹配的 FlowSchema  才有意义。
-如果一个入站请求与多个 FlowSchema 匹配，则将基于 `matchingPrecedence` 值最高的请求进行筛选。
+对一个请求来说，只有首个匹配的 FlowSchema 才有意义。
+如果一个入站请求与多个 FlowSchema 匹配，则将基于逻辑上最高优先级 `matchingPrecedence` 的请求进行筛选。
 如果一个请求匹配多个 FlowSchema 且 `matchingPrecedence` 的值相同，则按 `name` 的字典序选择最小，
 但是最好不要依赖它，而是确保不存在两个 FlowSchema 具有相同的 `matchingPrecedence` 值。
 {{< /caution >}}
@@ -478,12 +581,12 @@ ensure that no two FlowSchemas have the same `matchingPrecedence`.
 A FlowSchema matches a given request if at least one of its `rules`
 matches. A rule matches if at least one of its `subjects` *and* at least
 one of its `resourceRules` or `nonResourceRules` (depending on whether the
-incoming request is for a resource or non-resource URL) matches the request.
+incoming request is for a resource or non-resource URL) match the request.
 -->
 当给定的请求与某个 FlowSchema 的 `rules` 的其中一条匹配，那么就认为该请求与该 FlowSchema 匹配。
 判断规则与该请求是否匹配，**不仅**要求该条规则的 `subjects` 字段至少存在一个与该请求相匹配，
 **而且**要求该条规则的 `resourceRules` 或 `nonResourceRules`
-（取决于传入请求是针对资源URL还是非资源URL）字段至少存在一个与该请求相匹配。
+（取决于传入请求是针对资源 URL 还是非资源 URL）字段至少存在一个与该请求相匹配。
 
 <!--
 For the `name` field in subjects, and the `verbs`, `apiGroups`, `resources`,
@@ -497,19 +600,18 @@ effectively removing it from consideration.
 
 <!--
 A FlowSchema's `distinguisherMethod.type` determines how requests matching that
-schema will be separated into flows. It may be
-either `ByUser`, in which case one requesting user will not be able to starve
-other users of capacity, or `ByNamespace`, in which case requests for resources
-in one namespace will not be able to starve requests for resources in other
-namespaces of capacity, or it may be blank (or `distinguisherMethod` may be
-omitted entirely), in which case all requests matched by this FlowSchema will be
+schema will be separated into flows. It may be `ByUser`, in which one requesting
+user will not be able to starve other users of capacity; `ByNamespace`, in which
+requests for resources in one namespace will not be able to starve requests for
+resources in other namespaces of capacity; or blank (or `distinguisherMethod` may be
+omitted entirely), in which all requests matched by this FlowSchema will be
 considered part of a single flow. The correct choice for a given FlowSchema
 depends on the resource and your particular environment.
 -->
 FlowSchema 的 `distinguisherMethod.type` 字段决定了如何把与该模式匹配的请求分散到各个流中。
 可能是 `ByUser`，在这种情况下，一个请求用户将无法饿死其他容量的用户；
 或者是 `ByNamespace`，在这种情况下，一个名字空间中的资源请求将无法饿死其它名字空间的资源请求；
-或者它可以为空（或者可以完全省略 `distinguisherMethod`），
+或者为空（或者可以完全省略 `distinguisherMethod`），
 在这种情况下，与此 FlowSchema 匹配的请求将被视为单个流的一部分。
 资源和你的特定环境决定了如何选择正确一个 FlowSchema。
 
@@ -527,9 +629,9 @@ mandatory and suggested.
 ### Mandatory Configuration Objects
 
 The four mandatory configuration objects reflect fixed built-in
-guardrail behavior.  This is behavior that the servers have before
+guardrail behavior. This is behavior that the servers have before
 those objects exist, and when those objects exist their specs reflect
-this behavior.  The four mandatory objects are as follows.
+this behavior. The four mandatory objects are as follows.
 -->
 ### 强制的配置对象   {#mandatory-configuration-objects}
 
@@ -570,8 +672,8 @@ this behavior.  The four mandatory objects are as follows.
 ### Suggested Configuration Objects
 
 The suggested FlowSchemas and PriorityLevelConfigurations constitute a
-reasonable default configuration.  You can modify these and/or create
-additional configuration objects if you want.  If your cluster is
+reasonable default configuration. You can modify these and/or create
+additional configuration objects if you want. If your cluster is
 likely to experience heavy load then you should consider what
 configuration will work best.
 
@@ -597,7 +699,7 @@ The suggested configuration groups requests into six priority levels:
   them.
 -->
 * `system` 优先级用于 `system:nodes` 组（即 kubelet）的与健康状态更新无关的请求；
-  kubelets 必须能连上 API 服务器，以便工作负载能够调度到其上。
+  kubelet 必须能连上 API 服务器，以便工作负载能够调度到其上。
 
 <!--
 * The `leader-election` priority level is for leader election requests from
@@ -617,9 +719,11 @@ The suggested configuration groups requests into six priority levels:
 <!--
 * The `workload-high` priority level is for other requests from built-in
   controllers.
+
 * The `workload-low` priority level is for requests from any other service
   account, which will typically include all requests from controllers running in
   Pods.
+
 * The `global-default` priority level handles all other traffic, e.g.
   interactive `kubectl` commands run by nonprivileged users.
 -->
@@ -669,10 +773,10 @@ inconsistent with the server's guardrail behavior.
 
 <!--
 Maintenance of suggested configuration objects is designed to allow
-their specs to be overridden.  Deletion, on the other hand, is not
-respected: maintenance will restore the object.  If you do not want a
+their specs to be overridden. Deletion, on the other hand, is not
+respected: maintenance will restore the object. If you do not want a
 suggested configuration object then you need to keep it around but set
-its spec to have minimal consequences.  Maintenance of suggested
+its spec to have minimal consequences. Maintenance of suggested
 objects is also designed to support automatic migration when a new
 version of the `kube-apiserver` is rolled out, albeit potentially with
 thrashing while there is a mixed population of servers.
@@ -686,9 +790,9 @@ thrashing while there is a mixed population of servers.
 <!--
 Maintenance of a suggested configuration object consists of creating
 it --- with the server's suggested spec --- if the object does not
-exist.  OTOH, if the object already exists, maintenance behavior
+exist. OTOH, if the object already exists, maintenance behavior
 depends on whether the `kube-apiservers` or the users control the
-object.  In the former case, the server ensures that the object's spec
+object. In the former case, the server ensures that the object's spec
 is what the server suggests; in the latter case, the spec is left
 alone.
 -->
@@ -700,16 +804,16 @@ alone.
 
 <!--
 The question of who controls the object is answered by first looking
-for an annotation with key `apf.kubernetes.io/autoupdate-spec`.  If
+for an annotation with key `apf.kubernetes.io/autoupdate-spec`. If
 there is such an annotation and its value is `true` then the
-kube-apiservers control the object.  If there is such an annotation
-and its value is `false` then the users control the object.  If
-neither of those condtions holds then the `metadata.generation` of the
-object is consulted.  If that is 1 then the kube-apiservers control
-the object.  Otherwise the users control the object.  These rules were
+kube-apiservers control the object. If there is such an annotation
+and its value is `false` then the users control the object. If
+neither of those conditions holds then the `metadata.generation` of the
+object is consulted. If that is 1 then the kube-apiservers control
+the object. Otherwise the users control the object. These rules were
 introduced in release 1.22 and their consideration of
 `metadata.generation` is for the sake of migration from the simpler
-earlier behavior.  Users who wish to control a suggested configuration
+earlier behavior. Users who wish to control a suggested configuration
 object should set its `apf.kubernetes.io/autoupdate-spec` annotation
 to `false`.
 -->
@@ -743,12 +847,12 @@ nor suggested but are annotated
 
 The suggested configuration gives no special treatment to the health
 check requests on kube-apiservers from their local kubelets --- which
-tend to use the secured port but supply no credentials.  With the
+tend to use the secured port but supply no credentials. With the
 suggested config, these requests get assigned to the `global-default`
 FlowSchema and the corresponding `global-default` priority level,
 where other traffic can crowd them out.
 -->
-## 健康检查并发豁免    {#Health-check-concurrency-exemption}
+## 健康检查并发豁免    {#health-check-concurrency-exemption}
 
 推荐配置没有为本地 kubelet 对 kube-apiserver 执行健康检查的请求进行任何特殊处理
 ——它们倾向于使用安全端口，但不提供凭据。
@@ -765,7 +869,7 @@ requests from rate limiting.
 <!--
 Making this change also allows any hostile party to then send
 health-check requests that match this FlowSchema, at any volume they
-like.  If you have a web traffic filter or similar external security
+like. If you have a web traffic filter or similar external security
 mechanism to protect your cluster's API server from general internet
 traffic, you can configure rules to block any health check requests
 that originate from outside your cluster.
@@ -775,45 +879,16 @@ that originate from outside your cluster.
 则可以配置规则，阻止所有来自集群外部的健康检查请求。
 {{< /caution >}}
 
-{{< codenew file="priority-and-fairness/health-for-strangers.yaml" >}}
-
-<!--
-## Diagnostics
-
-Every HTTP response from an API server with the priority and fairness feature
-enabled has two extra headers: `X-Kubernetes-PF-FlowSchema-UID` and
-`X-Kubernetes-PF-PriorityLevel-UID`, noting the flow schema that matched the request
-and the priority level to which it was assigned, respectively. The API objects'
-names are not included in these headers in case the requesting user does not
-have permission to view them, so when debugging you can use a command like
--->
-## 问题诊断    {#diagnostics}
-
-启用了 APF 的 API 服务器，它每个 HTTP 响应都有两个额外的 HTTP 头：
-`X-Kubernetes-PF-FlowSchema-UID` 和 `X-Kubernetes-PF-PriorityLevel-UID`，
-注意与请求匹配的 FlowSchema 和已分配的优先级。
-如果请求用户没有查看这些对象的权限，则这些 HTTP 头中将不包含 API 对象的名称，
-因此在调试时，你可以使用类似如下的命令：
-
-```shell
-kubectl get flowschemas -o custom-columns="uid:{metadata.uid},name:{metadata.name}"
-kubectl get prioritylevelconfigurations -o custom-columns="uid:{metadata.uid},name:{metadata.name}"
-```
-
-<!--
-to get a mapping of UIDs to names for both FlowSchemas and
-PriorityLevelConfigurations.
--->
-来获取 UID 到 FlowSchema 的名称和 UID 到 PriorityLevelConfiguration 的名称的映射。
+{{% code_sample file="priority-and-fairness/health-for-strangers.yaml" %}}
 
 <!--
 ## Observability
 
 ### Metrics
 -->
-## 可观察性    {#Observability}
+## 可观察性    {#observability}
 
-### 指标    {#Metrics}
+### 指标    {#metrics}
 
 {{< note >}}
 <!--
@@ -838,167 +913,206 @@ poorly-behaved workloads that may be harming system health.
 或者发现可能会损害系统健康的，行为不良的工作负载。
 
 <!--
+#### Maturity level BETA
+-->
+#### 成熟度水平 BETA
+
+<!--
 * `apiserver_flowcontrol_rejected_requests_total` is a counter vector
   (cumulative since server start) of requests that were rejected,
   broken down by the labels `flow_schema` (indicating the one that
-  matched the request), `priority_evel` (indicating the one to which
-  the request was assigned), and `reason`.  The `reason` label will be
-  have one of the following values:
+  matched the request), `priority_level` (indicating the one to which
+  the request was assigned), and `reason`. The `reason` label will be
+  one of the following values:
 -->
 * `apiserver_flowcontrol_rejected_requests_total` 是一个计数器向量，
   记录被拒绝的请求数量（自服务器启动以来累计值），
-  由标签 `flow_chema`（表示与请求匹配的 FlowSchema）、`priority_evel`
-  （表示分配给请该求的优先级）和 `reason` 来区分。
-  `reason` 标签将具有以下值之一：
+  可按标签 `flow_chema`（表示与请求匹配的 FlowSchema）、`priority_level`
+  （表示分配给请该求的优先级）和 `reason` 分解。
+  `reason` 标签将是以下值之一：
+
   <!--
   * `queue-full`, indicating that too many requests were already
-    queued,
+    queued.
   * `concurrency-limit`, indicating that the
     PriorityLevelConfiguration is configured to reject rather than
-    queue excess requests, or
+    queue excess requests.
   * `time-out`, indicating that the request was still in the queue
     when its queuing time limit expired.
+  * `cancelled`, indicating that the request is not purge locked
+    and has been ejected from the queue.
   -->
-  * `queue-full`，表明已经有太多请求排队，
+  * `queue-full`，表明已经有太多请求排队
   * `concurrency-limit`，表示将 PriorityLevelConfiguration 配置为
     `Reject` 而不是 `Queue`，或者
   * `time-out`，表示在其排队时间超期的请求仍在队列中。
+  * `cancelled`，表示该请求未被清除锁定，已从队列中移除。
 
 <!--
 * `apiserver_flowcontrol_dispatched_requests_total` is a counter
   vector (cumulative since server start) of requests that began
-  executing, broken down by the labels `flow_schema` (indicating the
-  one that matched the request) and `priority_level` (indicating the
-  one to which the request was assigned).
+  executing, broken down by `flow_schema` and `priority_level`.
 -->
 * `apiserver_flowcontrol_dispatched_requests_total` 是一个计数器向量，
   记录开始执行的请求数量（自服务器启动以来的累积值），
-  由标签 `flow_schema`（表示与请求匹配的 FlowSchema）和
-  `priority_level`（表示分配给该请求的优先级）来区分。
+  可按 `flow_schema` 和 `priority_level` 分解。
+
+<!--
+* `apiserver_flowcontrol_current_inqueue_requests` is a gauge vector
+  holding the instantaneous number of queued (not executing) requests,
+  broken down by `priority_level` and `flow_schema`.
+
+* `apiserver_flowcontrol_current_executing_requests` is a gauge vector
+  holding the instantaneous number of executing (not waiting in a
+  queue) requests, broken down by `priority_level` and `flow_schema`.
+-->
+* `apiserver_flowcontrol_current_inqueue_requests` 是一个测量向量，
+  记录排队中的（未执行）请求的瞬时数量，可按 `priority_level` 和 `flow_schema` 分解。
+
+* `apiserver_flowcontrol_current_executing_requests` 是一个测量向量，
+  记录执行中（不在队列中等待）请求的瞬时数量，可按 `priority_level` 和 `flow_schema` 分解。
+
+<!--
+* `apiserver_flowcontrol_current_executing_seats` is a gauge vector
+  holding the instantaneous number of occupied seats, broken down by
+  `priority_level` and `flow_schema`.
+
+* `apiserver_flowcontrol_request_wait_duration_seconds` is a histogram
+  vector of how long requests spent queued, broken down by the labels
+  `flow_schema`, `priority_level`, and `execute`. The `execute` label
+  indicates whether the request has started executing.
+-->
+* `apiserver_flowcontrol_current_executing_seats` 是一个测量向量，
+  记录了按 `priority_level` 和 `flow_schema` 细分的瞬时占用席位数量。
+
+* `apiserver_flowcontrol_request_wait_duration_seconds` 是一个直方图向量，
+  记录了按 `flow_schema`、`priority_level` 和 `execute` 标签细分的请求在队列中等待的时长。
+  `execute` 标签表示请求是否已开始执行。
+
+  {{< note >}}
+  <!--
+  Since each FlowSchema always assigns requests to a single
+  PriorityLevelConfiguration, you can add the histograms for all the
+  FlowSchemas for one priority level to get the effective histogram for
+  requests assigned to that priority level.
+  -->
+  由于每个 FlowSchema 总会给请求分配 PriorityLevelConfiguration，
+  因此你可以将一个优先级的所有 FlowSchema 的直方图相加，以得到分配给该优先级的请求的有效直方图。
+  {{< /note >}}
+
+<!--
+* `apiserver_flowcontrol_nominal_limit_seats` is a gauge vector
+  holding each priority level's nominal concurrency limit, computed
+  from the API server's total concurrency limit and the priority
+  level's configured nominal concurrency shares.
+-->
+* `apiserver_flowcontrol_nominal_limit_seats` 是一个测量向量，
+  记录了每个优先级的额定并发限制。
+  此值是根据 API 服务器的总并发限制和优先级的配置额定并发份额计算得出的。
+
+<!--
+#### Maturity level ALPHA
+-->
+#### 成熟度水平 ALPHA
 
 <!--
 * `apiserver_current_inqueue_requests` is a gauge vector of recent
   high water marks of the number of queued requests, grouped by a
   label named `request_kind` whose value is `mutating` or `readOnly`.
   These high water marks describe the largest number seen in the one
-  second window most recently completed.  These complement the older
+  second window most recently completed. These complement the older
   `apiserver_current_inflight_requests` gauge vector that holds the
   last window's high water mark of number of requests actively being
   served.
 -->
-* `apiserver_current_inqueue_requests` 是一个表向量，
+* `apiserver_current_inqueue_requests` 是一个测量向量，
   记录最近排队请求数量的高水位线，
   由标签 `request_kind` 分组，标签的值为 `mutating` 或 `readOnly`。
   这些高水位线表示在最近一秒钟内看到的最大数字。
-  它们补充说明了老的表向量 `apiserver_current_inflight_requests`
+  它们补充说明了老的测量向量 `apiserver_current_inflight_requests`
   （该量保存了最后一个窗口中，正在处理的请求数量的高水位线）。
 
 <!--
-* `apiserver_flowcontrol_read_vs_write_request_count_samples` is a
-  histogram vector of observations of the then-current number of
-  requests, broken down by the labels `phase` (which takes on the
-  values `waiting` and `executing`) and `request_kind` (which takes on
-  the values `mutating` and `readOnly`).  The observations are made
-  periodically at a high rate.  Each observed value is a ratio,
-  between 0 and 1, of a number of requests divided by the
-  corresponding limit on the number of requests (queue length limit
-  for waiting and concurrency limit for executing).
+* `apiserver_current_inqueue_seats` is a gauge vector of the sum over
+  queued requests of the largest number of seats each will occupy,
+  grouped by labels named `flow_schema` and `priority_level`.
 -->
-* `apiserver_flowcontrol_read_vs_write_request_count_samples` 是一个直方图向量，
-  记录当前请求数量的观察值，
-  由标签 `phase`（取值为 `waiting` 和 `executing`）和 `request_kind`
-  （取值 `mutating` 和 `readOnly`）拆分。定期以高速率观察该值。
+* `apiserver_current_inqueue_seats` 是一个测量向量，
+  记录了排队请求中每个请求将占用的最大席位数的总和，
+  按 `flow_schema` 和 `priority_level` 两个标签进行分组。
+
+<!--
+* `apiserver_flowcontrol_read_vs_write_current_requests` is a
+  histogram vector of observations, made at the end of every
+  nanosecond, of the number of requests broken down by the labels
+  `phase` (which takes on the values `waiting` and `executing`) and
+  `request_kind` (which takes on the values `mutating` and
+  `readOnly`). Each observed value is a ratio, between 0 and 1, of
+  the number of requests divided by the corresponding limit on the
+  number of requests (queue volume limit for waiting and concurrency
+  limit for executing).
+-->
+* `apiserver_flowcontrol_read_vs_write_current_requests` 是一个直方图向量，
+  在每个纳秒结束时记录请求数量的观察值，可按标签 `phase`（取值为 `waiting` 及 `executing`）
+  和 `request_kind`（取值为 `mutating` 及 `readOnly`）分解。
   每个观察到的值是一个介于 0 和 1 之间的比值，计算方式为请求数除以该请求数的对应限制
   （等待的队列长度限制和执行所用的并发限制）。
-
-<!--
-* `apiserver_flowcontrol_read_vs_write_request_count_watermarks` is a
-  histogram vector of high or low water marks of the number of
-  requests broken down by the labels `phase` (which takes on the
-  values `waiting` and `executing`) and `request_kind` (which takes on
-  the values `mutating` and `readOnly`); the label `mark` takes on
-  values `high` and `low`.  The water marks are accumulated over
-  windows bounded by the times when an observation was added to
-  `apiserver_flowcontrol_read_vs_write_request_count_samples`.  These
-  water marks show the range of values that occurred between samples.
--->
-* `apiserver_flowcontrol_read_vs_write_request_count_watermarks` 是一个直方图向量，
-  记录请求数量的高/低水位线，
-  由标签 `phase`（取值为 `waiting` 和 `executing`）和 `request_kind`
-  （取值为 `mutating` 和 `readOnly`）拆分；标签 `mark` 取值为 `high` 和 `low`。
-  `apiserver_flowcontrol_read_vs_write_request_count_samples` 向量观察到有值新增，
-  则该向量累积。这些水位线显示了样本值的范围。
-
-<!--
-* `apiserver_flowcontrol_current_inqueue_requests` is a gauge vector
-  holding the instantaneous number of queued (not executing) requests,
-  broken down by the labels `priorityLevel` and `flowSchema`.
--->
-* `apiserver_flowcontrol_current_inqueue_requests` 是一个表向量，
-  记录包含排队中的（未执行）请求的瞬时数量，
-  由标签 `priorityLevel` 和 `flowSchema` 拆分。
-
-<!--
-* `apiserver_flowcontrol_current_executing_requests` is a gauge vector
-  holding the instantaneous number of executing (not waiting in a
-  queue) requests, broken down by the labels `priority_level` and
-  `flow_schema`.
--->
-* `apiserver_flowcontrol_current_executing_requests` 是一个表向量，
-  记录包含执行中（不在队列中等待）请求的瞬时数量，
-  由标签 `priority_level` 和 `flow_schema` 进一步区分。
 
 <!-- 
 * `apiserver_flowcontrol_request_concurrency_in_use` is a gauge vector
   holding the instantaneous number of occupied seats, broken down by
-  the labels `priority_level` and `flow_schema`.
+  `priority_level` and `flow_schema`.
 -->
 * `apiserver_flowcontrol_request_concurrency_in_use` 是一个规范向量，
-  包含占用座位的瞬时数量，由标签 `priority_level` 和 `flow_schema` 进一步区分。
+  包含占用席位的瞬时数量，可按 `priority_level` 和 `flow_schema` 分解。
 
 <!--
-* `apiserver_flowcontrol_priority_level_request_count_samples` is a
-  histogram vector of observations of the then-current number of
-  requests broken down by the labels `phase` (which takes on the
-  values `waiting` and `executing`) and `priority_level`.  Each
-  histogram gets observations taken periodically, up through the last
-  activity of the relevant sort.  The observations are made at a high
-  rate.
+* `apiserver_flowcontrol_priority_level_request_utilization` is a
+  histogram vector of observations, made at the end of each
+  nanosecond, of the number of requests broken down by the labels
+  `phase` (which takes on the values `waiting` and `executing`) and
+  `priority_level`. Each observed value is a ratio, between 0 and 1,
+  of a number of requests divided by the corresponding limit on the
+  number of requests (queue volume limit for waiting and concurrency
+  limit for executing).
 -->
-* `apiserver_flowcontrol_priority_level_request_count_samples` 是一个直方图向量，
-  记录当前请求的观测值，由标签 `phase`（取值为`waiting` 和 `executing`）和
-  `priority_level` 进一步区分。
-  每个直方图都会定期进行观察，直到相关类别的最后活动为止。观察频率高。
+* `apiserver_flowcontrol_priority_level_request_utilization` 是一个直方图向量，
+  在每个纳秒结束时记录请求数量的观察值，
+  可按标签 `phase`（取值为 `waiting` 及 `executing`）和 `priority_level` 分解。
+  每个观察到的值是一个介于 0 和 1 之间的比值，计算方式为请求数除以该请求数的对应限制
+  （等待的队列长度限制和执行所用的并发限制）。
 
 <!--
-* `apiserver_flowcontrol_priority_level_request_count_watermarks` is a
-  histogram vector of high or low water marks of the number of
-  requests broken down by the labels `phase` (which takes on the
-  values `waiting` and `executing`) and `priority_level`; the label
-  `mark` takes on values `high` and `low`.  The water marks are
-  accumulated over windows bounded by the times when an observation
-  was added to
-  `apiserver_flowcontrol_priority_level_request_count_samples`.  These
-  water marks show the range of values that occurred between samples.
+* `apiserver_flowcontrol_priority_level_seat_utilization` is a
+  histogram vector of observations, made at the end of each
+  nanosecond, of the utilization of a priority level's concurrency
+  limit, broken down by `priority_level`. This utilization is the
+  fraction (number of seats occupied) / (concurrency limit). This
+  metric considers all stages of execution (both normal and the extra
+  delay at the end of a write to cover for the corresponding
+  notification work) of all requests except WATCHes; for those it
+  considers only the initial stage that delivers notifications of
+  pre-existing objects. Each histogram in the vector is also labeled
+  with `phase: executing` (there is no seat limit for the waiting
+  phase).
 -->
-* `apiserver_flowcontrol_priority_level_request_count_watermarks` 是一个直方图向量，
-  记录请求数的高/低水位线，由标签 `phase`（取值为 `waiting` 和 `executing`）和
-  `priority_level` 拆分；
-  标签 `mark` 取值为 `high` 和 `low`。
-  `apiserver_flowcontrol_priority_level_request_count_samples` 向量观察到有值新增，
-  则该向量累积。这些水位线显示了样本值的范围。
+* `apiserver_flowcontrol_priority_level_seat_utilization` 是一个直方图向量，
+  在每个纳秒结束时记录某个优先级并发度限制利用率的观察值，可按标签 `priority_level` 分解。
+  此利用率是一个分数：（占用的席位数）/（并发限制）。
+  此指标考虑了除 WATCH 之外的所有请求的所有执行阶段（包括写入结束时的正常延迟和额外延迟，
+  以覆盖相应的通知操作）；对于 WATCH 请求，只考虑传递预先存在对象通知的初始阶段。
+  该向量中的每个直方图也带有 `phase: executing`（等待阶段没有席位限制）的标签。
 
 <!--
 * `apiserver_flowcontrol_request_queue_length_after_enqueue` is a
   histogram vector of queue lengths for the queues, broken down by
-  the labels `priority_level` and `flow_schema`, as sampled by the
-  enqueued requests.  Each request that gets queued contributes one
-  sample to its histogram, reporting the length of the queue immediately
-  after the request was added.  Note that this produces different
-  statistics than an unbiased survey would.
+  `priority_level` and `flow_schema`, as sampled by the enqueued requests.
+  Each request that gets queued contributes one sample to its histogram,
+  reporting the length of the queue immediately after the request was added.
+  Note that this produces different statistics than an unbiased survey would.
 -->
 * `apiserver_flowcontrol_request_queue_length_after_enqueue` 是一个直方图向量，
-  记录请求队列的长度，由标签 `priority_level` 和 `flow_schema` 进一步区分。
+  记录请求队列的长度，可按 `priority_level` 和 `flow_schema` 分解。
   每个排队中的请求都会为其直方图贡献一个样本，并在添加请求后立即上报队列的长度。
   请注意，这样产生的统计数据与无偏调查不同。
 
@@ -1018,173 +1132,369 @@ poorly-behaved workloads that may be harming system health.
   {{< /note >}}
 
 <!--
-* `apiserver_flowcontrol_request_concurrency_limit` is a gauge vector
-  hoding the computed concurrency limit (based on the API server's
-  total concurrency limit and PriorityLevelConfigurations' concurrency
-  shares), broken down by the label `priority_level`.
+* `apiserver_flowcontrol_request_concurrency_limit` is the same as
+  `apiserver_flowcontrol_nominal_limit_seats`. Before the
+  introduction of concurrency borrowing between priority levels,
+  this was always equal to `apiserver_flowcontrol_current_limit_seats`
+  (which did not exist as a distinct metric).
 -->
-* `apiserver_flowcontrol_request_concurrency_limit` 是一个表向量，
-  记录并发限制的计算值（基于 API 服务器的总并发限制和 PriorityLevelConfiguration
-  的并发份额），并按标签 `priority_level` 进一步区分。
+* `apiserver_flowcontrol_request_concurrency_limit` 与
+  `apiserver_flowcontrol_nominal_limit_seats` 相同。在优先级之间引入并发度借用之前，
+  此字段始终等于 `apiserver_flowcontrol_current_limit_seats`
+  （它过去不作为一个独立的指标存在）。
 
 <!--
-* `apiserver_flowcontrol_request_wait_duration_seconds` is a histogram
-  vector of how long requests spent queued, broken down by the labels
-  `flowSchema` (indicating which one matched the request),
-  `priorityLevel` (indicating the one to which the request was
-  assigned), and `execute` (indicating whether the request started
-  executing).
+* `apiserver_flowcontrol_lower_limit_seats` is a gauge vector holding
+  the lower bound on each priority level's dynamic concurrency limit.
 -->
-* `apiserver_flowcontrol_request_wait_duration_seconds` 是一个直方图向量，
-  记录请求排队的时间，
-  由标签 `flow_schema`（表示与请求匹配的 FlowSchema），
-  `priority_level`（表示分配该请求的优先级）
-  和 `execute`（表示请求是否开始执行）进一步区分。
+* `apiserver_flowcontrol_lower_limit_seats` 是一个测量向量，包含每个优先级的动态并发度限制的下限。
 
-  {{< note >}}
-  <!--
-  Since each FlowSchema always assigns requests to a single
-  PriorityLevelConfiguration, you can add the histograms for all the
-  FlowSchemas for one priority level to get the effective histogram for
-  requests assigned to that priority level.
-  -->
-  由于每个 FlowSchema 总会给请求分配 PriorityLevelConfiguration，
-  因此你可以为一个优先级添加所有 FlowSchema 的直方图，以获取分配给该优先级的请求的有效直方图。
-  {{< /note >}}
+<!--
+* `apiserver_flowcontrol_upper_limit_seats` is a gauge vector holding
+  the upper bound on each priority level's dynamic concurrency limit.
+-->
+* `apiserver_flowcontrol_upper_limit_seats` 是一个测量向量，包含每个优先级的动态并发度限制的上限。
+
+<!--
+* `apiserver_flowcontrol_demand_seats` is a histogram vector counting
+  observations, at the end of every nanosecond, of each priority
+  level's ratio of (seat demand) / (nominal concurrency limit). 
+  A priority level's seat demand is the sum, over both queued requests
+  and those in the initial phase of execution, of the maximum of the
+  number of seats occupied in the request's initial and final
+  execution phases.
+-->
+* `apiserver_flowcontrol_demand_seats` 是一个直方图向量，
+  统计每纳秒结束时每个优先级的（席位需求）/（额定并发限制）比率的观察值。
+  某优先级的席位需求是针对排队的请求和初始执行阶段的请求，在请求的初始和最终执行阶段占用的最大席位数之和。
+
+<!--
+* `apiserver_flowcontrol_demand_seats_high_watermark` is a gauge vector
+  holding, for each priority level, the maximum seat demand seen
+  during the last concurrency borrowing adjustment period.
+-->
+* `apiserver_flowcontrol_demand_seats_high_watermark` 是一个测量向量，
+  为每个优先级包含了上一个并发度借用调整期间所观察到的最大席位需求。
+
+<!--
+* `apiserver_flowcontrol_demand_seats_average` is a gauge vector
+  holding, for each priority level, the time-weighted average seat
+  demand seen during the last concurrency borrowing adjustment period.
+-->
+* `apiserver_flowcontrol_demand_seats_average` 是一个测量向量，
+  为每个优先级包含了上一个并发度借用调整期间所观察到的时间加权平均席位需求。
+
+<!--
+* `apiserver_flowcontrol_demand_seats_stdev` is a gauge vector
+  holding, for each priority level, the time-weighted population
+  standard deviation of seat demand seen during the last concurrency
+  borrowing adjustment period.
+-->
+* `apiserver_flowcontrol_demand_seats_stdev` 是一个测量向量，
+  为每个优先级包含了上一个并发度借用调整期间所观察到的席位需求的时间加权总标准偏差。
+
+<!--
+* `apiserver_flowcontrol_demand_seats_smoothed` is a gauge vector
+  holding, for each priority level, the smoothed enveloped seat demand
+  determined at the last concurrency adjustment.
+-->
+* `apiserver_flowcontrol_demand_seats_smoothed` 是一个测量向量，
+  为每个优先级包含了上一个并发度调整期间确定的平滑包络席位需求。
+
+<!--
+* `apiserver_flowcontrol_target_seats` is a gauge vector holding, for
+  each priority level, the concurrency target going into the borrowing
+  allocation problem.
+-->
+* `apiserver_flowcontrol_target_seats` 是一个测量向量，
+  包含每个优先级触发借用分配问题的并发度目标值。
+
+<!--
+* `apiserver_flowcontrol_seat_fair_frac` is a gauge holding the fair
+  allocation fraction determined in the last borrowing adjustment.
+-->
+* `apiserver_flowcontrol_seat_fair_frac` 是一个测量向量，
+  包含了上一个借用调整期间确定的公平分配比例。
+
+<!--
+* `apiserver_flowcontrol_current_limit_seats` is a gauge vector
+  holding, for each priority level, the dynamic concurrency limit
+  derived in the last adjustment.
+-->
+* `apiserver_flowcontrol_current_limit_seats` 是一个测量向量，
+  包含每个优先级的上一次调整期间得出的动态并发限制。
 
 <!--
 * `apiserver_flowcontrol_request_execution_seconds` is a histogram
   vector of how long requests took to actually execute, broken down by
-  the labels `flowSchema` (indicating which one matched the request)
-  and `priorityLevel` (indicating the one to which the request was
-  assigned).
+  `flow_schema` and `priority_level`.
 -->
 * `apiserver_flowcontrol_request_execution_seconds` 是一个直方图向量，
   记录请求实际执行需要花费的时间，
-  由标签 `flow_schema`（表示与请求匹配的 FlowSchema）和
-  `priority_level`（表示分配给该请求的优先级）进一步区分。
+  可按标签 `flow_schema` 和 `priority_level` 分解。
 
 <!--
-### Debug endpoints
-
-When you enable the API Priority and Fairness feature, the `kube-apiserver`
-serves the following additional paths at its HTTP[S] ports.
+* `apiserver_flowcontrol_watch_count_samples` is a histogram vector of
+  the number of active WATCH requests relevant to a given write,
+  broken down by `flow_schema` and `priority_level`.
 -->
-### 调试端点    {#Debug-endpoints}
-
-启用 APF 特性后， kube-apiserver 会在其 HTTP/HTTPS 端口提供以下路径：
+* `apiserver_flowcontrol_watch_count_samples` 是一个直方图向量，
+  记录给定写的相关活动 WATCH 请求数量，
+  可按标签 `flow_schema` 和 `priority_level` 分解。
 
 <!--
-- `/debug/api_priority_and_fairness/dump_priority_levels` - a listing of
-  all the priority levels and the current state of each.  You can fetch like this:
+* `apiserver_flowcontrol_work_estimated_seats` is a histogram vector
+  of the number of estimated seats (maximum of initial and final stage
+  of execution) associated with requests, broken down by `flow_schema`
+  and `priority_level`.
 -->
-- `/debug/api_priority_and_fairness/dump_priority_levels` ——
-  所有优先级及其当前状态的列表。你可以这样获取：
-
-  ```shell
-  kubectl get --raw /debug/api_priority_and_fairness/dump_priority_levels
-  ```
-
-  <!--
-  The output is similar to this:
-  -->
-  输出类似于：
-
-  ```none
-  PriorityLevelName, ActiveQueues, IsIdle, IsQuiescing, WaitingRequests, ExecutingRequests,
-  workload-low,      0,            true,   false,       0,               0,
-  global-default,    0,            true,   false,       0,               0,
-  exempt,            <none>,       <none>, <none>,      <none>,          <none>,
-  catch-all,         0,            true,   false,       0,               0,
-  system,            0,            true,   false,       0,               0,
-  leader-election,   0,            true,   false,       0,               0,
-  workload-high,     0,            true,   false,       0,               0,
-  ```
+* `apiserver_flowcontrol_work_estimated_seats` 是一个直方图向量，
+  记录与估计席位（最初阶段和最后阶段的最多人数）相关联的请求数量，
+  可按标签 `flow_schema` 和 `priority_level` 分解。
 
 <!--
-- `/debug/api_priority_and_fairness/dump_queues` - a listing of all the
-  queues and their current state.  You can fetch like this:
+* `apiserver_flowcontrol_request_dispatch_no_accommodation_total` is a
+  counter vector of the number of events that in principle could have led
+  to a request being dispatched but did not, due to lack of available
+  concurrency, broken down by `flow_schema` and `priority_level`.
 -->
-- `/debug/api_priority_and_fairness/dump_queues` —— 所有队列及其当前状态的列表。
-  你可以这样获取：
-
-  ```shell
-  kubectl get --raw /debug/api_priority_and_fairness/dump_queues
-  ```
-
-  <!--
-  The output is similar to this:
-  -->
-  输出类似于：
-
-  ```none
-  PriorityLevelName, Index,  PendingRequests, ExecutingRequests, VirtualStart,
-  workload-high,     0,      0,               0,                 0.0000,
-  workload-high,     1,      0,               0,                 0.0000,
-  workload-high,     2,      0,               0,                 0.0000,
-  ...
-  leader-election,   14,     0,               0,                 0.0000,
-  leader-election,   15,     0,               0,                 0.0000,
-  ```
+* `apiserver_flowcontrol_request_dispatch_no_accommodation_total`
+  是一个事件数量的计数器，这些事件在原则上可能导致请求被分派，
+  但由于并发度不足而没有被分派，
+  可按标签 `flow_schema` 和 `priority_level` 分解。
 
 <!--
-- `/debug/api_priority_and_fairness/dump_requests` - a listing of all the requests
-  that are currently waiting in a queue.  You can fetch like this:
+* `apiserver_flowcontrol_epoch_advance_total` is a counter vector of
+  the number of attempts to jump a priority level's progress meter
+  backward to avoid numeric overflow, grouped by `priority_level` and
+  `success`.
 -->
-- `/debug/api_priority_and_fairness/dump_requests` —— 当前正在队列中等待的所有请求的列表。
-  你可以这样获取：
+* `apiserver_flowcontrol_epoch_advance_total` 是一个计数器向量，
+  记录了将优先级进度计向后跳跃以避免数值溢出的尝试次数，
+  按 `priority_level` 和 `success` 两个标签进行分组。
 
-  ```shell
-  kubectl get --raw /debug/api_priority_and_fairness/dump_requests
-  ```
+<!--
+## Good practices for using API Priority and Fairness
 
-  <!--
-  The output is similar to this:
-  -->
-  输出类似于：
+When a given priority level exceeds its permitted concurrency, requests can
+experience increased latency or be dropped with an HTTP 429 (Too Many Requests)
+error. To prevent these side effects of APF, you can modify your workload or
+tweak your APF settings to ensure there are sufficient seats available to serve
+your requests.
+-->
+## 使用 API 优先级和公平性的最佳实践   {#good-practices-for-using-api-priority-and-fairness}
 
-  ```none
-  PriorityLevelName, FlowSchemaName, QueueIndex, RequestIndexInQueue, FlowDistingsher,       ArriveTime,
-  exempt,            <none>,         <none>,     <none>,              <none>,                <none>,
-  system,            system-nodes,   12,         0,                   system:node:127.0.0.1, 2020-07-23T15:26:57.179170694Z,
-  ```
+当某个给定的优先级级别超过其所被允许的并发数时，请求可能会遇到延迟增加，
+或以错误 HTTP 429 (Too Many Requests) 的形式被拒绝。
+为了避免这些 APF 的副作用，你可以修改你的工作负载或调整你的 APF 设置，确保有足够的席位来处理请求。
 
-  <!--
-  In addition to the queued requests, the output includes one phantom line
-  for each priority level that is exempt from limitation.
-  -->
-  针对每个优先级别，输出中还包含一条虚拟记录，对应豁免限制。
+<!--
+To detect whether requests are being rejected due to APF, check the following
+metrics:
 
-  <!--
-  You can get a more detailed listing with a command like this:
-  -->
-  你可以使用以下命令获得更详细的清单：
+- apiserver_flowcontrol_rejected_requests_total: the total number of requests
+  rejected per FlowSchema and PriorityLevelConfiguration.
+- apiserver_flowcontrol_current_inqueue_requests: the current number of requests
+  queued per FlowSchema and PriorityLevelConfiguration.
+- apiserver_flowcontrol_request_wait_duration_seconds: the latency added to
+  requests waiting in queues.
+- apiserver_flowcontrol_priority_level_seat_utilization: the seat utilization
+  per PriorityLevelConfiguration.
+-->
+要检测请求是否由于 APF 而被拒绝，可以检查以下指标：
 
-  ```shell
-  kubectl get --raw '/debug/api_priority_and_fairness/dump_requests?includeRequestDetails=1'
-  ```
+- apiserver_flowcontrol_rejected_requests_total：
+  每个 FlowSchema 和 PriorityLevelConfiguration 拒绝的请求总数。
+- apiserver_flowcontrol_current_inqueue_requests：
+  每个 FlowSchema 和 PriorityLevelConfiguration 中排队的当前请求数。
+- apiserver_flowcontrol_request_wait_duration_seconds：请求在队列中等待的延迟时间。
+- apiserver_flowcontrol_priority_level_seat_utilization：
+  每个 PriorityLevelConfiguration 的席位利用率。
 
-  <!--
-  The output is similar to this:
-  -->
-  输出类似于：
+<!--
+### Workload modifications {#good-practice-workload-modifications}
 
-  ```none
-  PriorityLevelName, FlowSchemaName, QueueIndex, RequestIndexInQueue, FlowDistingsher,       ArriveTime,                     UserName,              Verb,   APIPath,                                                     Namespace, Name,   APIVersion, Resource, SubResource,
-  system,            system-nodes,   12,         0,                   system:node:127.0.0.1, 2020-07-23T15:31:03.583823404Z, system:node:127.0.0.1, create, /api/v1/namespaces/scaletest/configmaps,
-  system,            system-nodes,   12,         1,                   system:node:127.0.0.1, 2020-07-23T15:31:03.594555947Z, system:node:127.0.0.1, create, /api/v1/namespaces/scaletest/configmaps,
-  ```
+To prevent requests from queuing and adding latency or being dropped due to APF,
+you can optimize your requests by:
+-->
+### 工作负载修改 {#good-practice-workload-modifications}
+
+为了避免由于 APF 导致请求排队、延迟增加或被拒绝，你可以通过以下方式优化请求：
+
+<!--
+- Reducing the rate at which requests are executed. A fewer number of requests
+  over a fixed period will result in a fewer number of seats being needed at a
+  given time.
+-->
+- 减少请求执行的速率。在固定时间段内减少请求数量将导致在某一给定时间点需要的席位数更少。
+
+<!--
+- Avoid issuing a large number of expensive requests concurrently. Requests can
+  be optimized to use fewer seats or have lower latency so that these requests
+  hold those seats for a shorter duration. List requests can occupy more than 1
+  seat depending on the number of objects fetched during the request. Restricting
+  the number of objects retrieved in a list request, for example by using
+  pagination, will use less total seats over a shorter period. Furthermore,
+  replacing list requests with watch requests will require lower total concurrency
+  shares as watch requests only occupy 1 seat during its initial burst of
+  notifications. If using streaming lists in versions 1.27 and later, watch
+  requests will occupy the same number of seats as a list request for its initial
+  burst of notifications because the entire state of the collection has to be
+  streamed. Note that in both cases, a watch request will not hold any seats after
+  this initial phase.
+-->
+- 避免同时发出大量消耗较多席位的请求。请求可以被优化为使用更少的席位或降低延迟，
+  使这些请求占用席位的时间变短。列表请求根据请求期间获取的对象数量可能会占用多个席位。
+  例如通过使用分页等方式限制列表请求中取回的对象数量，可以在更短时间内使用更少的总席位数。
+  此外，将列表请求替换为监视请求将需要更低的总并发份额，因为监视请求仅在初始的通知突发阶段占用 1 个席位。
+  如果在 1.27 及更高版本中使用流式列表，因为集合的整个状态必须以流式传输，
+  所以监视请求在其初始的通知突发阶段将占用与列表请求相同数量的席位。
+  请注意，在这两种情况下，监视请求在此初始阶段之后将不再保留任何席位。
+
+<!--
+Keep in mind that queuing or rejected requests from APF could be induced by
+either an increase in the number of requests or an increase in latency for
+existing requests. For example, if requests that normally take 1s to execute
+start taking 60s, it is possible that APF will start rejecting requests because
+requests are occupying seats for a longer duration than normal due to this
+increase in latency. If APF starts rejecting requests across multiple priority
+levels without a significant change in workload, it is possible there is an
+underlying issue with control plane performance rather than the workload or APF
+settings.
+-->
+请注意，由于请求数量增加或现有请求的延迟增加，APF 可能会导致请求排队或被拒绝。
+例如，如果通常需要 1 秒执行的请求开始需要 60 秒，由于延迟增加，
+请求所占用的席位时间可能超过了正常情况下的时长，APF 将开始拒绝请求。
+如果在没有工作负载显著变化的情况下，APF 开始在多个优先级级别上拒绝请求，
+则可能存在控制平面性能的潜在问题，而不是工作负载或 APF 设置的问题。
+
+<!--
+### Priority and fairness settings {#good-practice-apf-settings}
+
+You can also modify the default FlowSchema and PriorityLevelConfiguration
+objects or create new objects of these types to better accommodate your
+workload.
+
+APF settings can be modified to:
+
+- Give more seats to high priority requests.
+- Isolate non-essential or expensive requests that would starve a concurrency
+  level if it was shared with other flows.
+-->
+### 优先级和公平性设置   {#good-practice-apf-settings}
+
+你还可以修改默认的 FlowSchema 和 PriorityLevelConfiguration 对象，
+或创建新的对象来更好地容纳你的工作负载。
+
+APF 设置可以被修改以实现下述目标：
+
+- 给予高优先级请求更多的席位。
+- 隔离那些非必要或开销大的请求，因为如果与其他流共享，这些请求可能会耗尽所有并发级别。
+
+<!--
+#### Give more seats to high priority requests
+-->
+#### 给予高优先级请求更多的席位
+
+<!--
+1. If possible, the number of seats available across all priority levels for a
+   particular `kube-apiserver` can be increased by increasing the values for the
+   `max-requests-inflight` and `max-mutating-requests-inflight` flags. Alternatively,
+   horizontally scaling the number of `kube-apiserver` instances will increase the
+   total concurrency per priority level across the cluster assuming there is
+   sufficient load balancing of requests.
+-->
+1. 如果有可能，你可以通过提高 `max-requests-inflight` 和 `max-mutating-requests-inflight`
+   参数的值为特定 `kube-apiserver` 提高所有优先级级别均可用的席位数量。另外，
+   如果在请求的负载均衡足够好的情况下，水平扩缩 `kube-apiserver` 实例的数量将提高集群中每个优先级级别的总并发数。
+
+<!--
+1. You can create a new FlowSchema which references a PriorityLevelConfiguration
+   with a larger concurrency level. This new PriorityLevelConfiguration could be an
+   existing level or a new level with its own set of nominal concurrency shares.
+   For example, a new FlowSchema could be introduced to change the
+   PriorityLevelConfiguration for your requests from global-default to workload-low
+   to increase the number of seats available to your user. Creating a new
+   PriorityLevelConfiguration will reduce the number of seats designated for
+   existing levels. Recall that editing a default FlowSchema or
+   PriorityLevelConfiguration will require setting the
+   `apf.kubernetes.io/autoupdate-spec` annotation to false.
+-->
+2. 你可以创建一个新的 FlowSchema，在其中引用并发级别更高的 PriorityLevelConfiguration。
+   这个新的 PriorityLevelConfiguration 可以是现有的级别，也可以是具有自己一组额定并发份额的新级别。
+   例如，你可以引入一个新的 FlowSchema 来将请求的 PriorityLevelConfiguration
+   从全局默认值更改为工作负载较低的级别，以增加用户可用的席位数。
+   创建一个新的 PriorityLevelConfiguration 将减少为现有级别指定的席位数。
+   请注意，编辑默认的 FlowSchema 或 PriorityLevelConfiguration 需要将
+   `apf.kubernetes.io/autoupdate-spec` 注解设置为 false。
+
+<!--
+1. You can also increase the NominalConcurrencyShares for the
+   PriorityLevelConfiguration which is serving your high priority requests.
+   Alternatively, for versions 1.26 and later, you can increase the LendablePercent
+   for competing priority levels so that the given priority level has a higher pool
+   of seats it can borrow.
+-->
+3. 你还可以为服务于高优先级请求的 PriorityLevelConfiguration 提高 NominalConcurrencyShares。
+   此外在 1.26 及更高版本中，你可以为有竞争的优先级级别提高 LendablePercent，以便给定优先级级别可以借用更多的席位。
+
+<!--
+#### Isolate non-essential requests from starving other flows
+
+For request isolation, you can create a FlowSchema whose subject matches the
+user making these requests or create a FlowSchema that matches what the request
+is (corresponding to the resourceRules). Next, you can map this FlowSchema to a
+PriorityLevelConfiguration with a low share of seats.
+-->
+#### 隔离非关键请求以免饿死其他流
+
+为了进行请求隔离，你可以创建一个 FlowSchema，使其主体与发起这些请求的用户匹配，
+或者创建一个与请求内容匹配（对应 resourceRules）的 FlowSchema。
+接下来，你可以将该 FlowSchema 映射到一个具有较低席位份额的 PriorityLevelConfiguration。
+
+<!--
+For example, suppose list event requests from Pods running in the default namespace
+are using 10 seats each and execute for 1 minute. To prevent these expensive
+requests from impacting requests from other Pods using the existing service-accounts
+FlowSchema, you can apply the following FlowSchema to isolate these list calls
+from other requests.
+
+Example FlowSchema object to isolate list event requests:
+-->
+例如，假设来自 default 名字空间中运行的 Pod 的每个事件列表请求使用 10 个席位，并且执行时间为 1 分钟。
+为了防止这些开销大的请求影响使用现有服务账号 FlowSchema 的其他 Pod 的请求，你可以应用以下
+FlowSchema 将这些列表调用与其他请求隔离开来。
+
+用于隔离列表事件请求的 FlowSchema 对象示例：
+
+{{% code_sample file="priority-and-fairness/list-events-default-service-account.yaml" %}}
+
+<!--
+- This FlowSchema captures all list event calls made by the default service
+  account in the default namespace. The matching precedence 8000 is lower than the
+  value of 9000 used by the existing service-accounts FlowSchema so these list
+  event calls will match list-events-default-service-account rather than
+  service-accounts.
+- The catch-all PriorityLevelConfiguration is used to isolate these requests.
+  The catch-all priority level has a very small concurrency share and does not
+  queue requests.
+-->
+- 这个 FlowSchema 用于抓取 default 名字空间中默认服务账号所发起的所有事件列表调用。
+  匹配优先级为 8000，低于现有服务账号 FlowSchema 所用的 9000，因此这些列表事件调用将匹配到
+  list-events-default-service-account 而不是服务账号。
+- 通用 PriorityLevelConfiguration 用于隔离这些请求。通用优先级级别具有非常小的并发份额，并且不对请求进行排队。
 
 ## {{% heading "whatsnext" %}}
 
 <!--
-For background information on design details for API priority and fairness, see
-the [enhancement proposal](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness).
-You can make suggestions and feature requests via [SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery) 
-or the feature's [slack channel](https://kubernetes.slack.com/messages/api-priority-and-fairness).
+- You can visit flow control [reference doc](/docs/reference/debug-cluster/flow-control/) to learn more about troubleshooting.
+- For background information on design details for API priority and fairness, see
+  the [enhancement proposal](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness).
+- You can make suggestions and feature requests via [SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery)
+  or the feature's [slack channel](https://kubernetes.slack.com/messages/api-priority-and-fairness).
 -->
-有关 API 优先级和公平性的设计细节的背景信息，
-请参阅[增强提案](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness)。
-你可以通过 [SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery/)
-或特性的 [Slack 频道](https://kubernetes.slack.com/messages/api-priority-and-fairness/)提出建议和特性请求。
-
+- 你可以查阅流控[参考文档](/zh-cn/docs/reference/debug-cluster/flow-control/)了解有关故障排查的更多信息。
+- 有关 API 优先级和公平性的设计细节的背景信息，
+  请参阅[增强提案](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness)。
+- 你可以通过 [SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery)
+  或特性的 [Slack 频道](https://kubernetes.slack.com/messages/api-priority-and-fairness/)提出建议和特性请求。

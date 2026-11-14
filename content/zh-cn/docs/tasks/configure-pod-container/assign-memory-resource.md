@@ -89,8 +89,8 @@ kubectl create namespace mem-example
 <!--
 ## Specify a memory request and a memory limit
 
-To specify a memory request for a Container, include the `resources:requests` field
-in the Container's resource manifest. To specify a memory limit, include `resources:limits`.
+To specify a memory request for a Container, include the `resources:requests.memory` field
+in the Container's resource manifest. To specify a memory limit, include `resources:limits.memory`.
 
 In this exercise, you create a Pod that has one Container. The Container has a memory
 request of 100 MiB and a memory limit of 200 MiB. Here's the configuration file
@@ -98,14 +98,14 @@ for the Pod:
 -->
 ## 指定内存请求和限制    {#specify-a-memory-request-and-a-memory-limit}
 
-要为容器指定内存请求，请在容器资源清单中包含 `resources：requests` 字段。
-同理，要指定内存限制，请包含 `resources：limits`。
+要为容器指定内存请求，请在容器资源清单中包含 `resources: requests.memory` 字段。
+同理，要指定内存限制，请包含 `resources: limits.memory`。
 
 在本练习中，你将创建一个拥有一个容器的 Pod。
 容器将会请求 100 MiB 内存，并且内存会被限制在 200 MiB 以内。
 这是 Pod 的配置文件：
 
-{{< codenew file="pods/resource/memory-request-limit.yaml" >}}
+{{% code_sample file="pods/resource/memory-request-limit.yaml" options="hl_lines=10-14" %}}
 
 <!--
 The `args` section in the configuration file provides arguments for the Container when it starts.
@@ -212,7 +212,7 @@ memory request of 50 MiB and a memory limit of 100 MiB:
 在本练习中，你将创建一个 Pod，尝试分配超出其限制的内存。
 这是一个 Pod 的配置文件，其拥有一个容器，该容器的内存请求为 50 MiB，内存限制为 100 MiB：
 
-{{< codenew file="pods/resource/memory-request-limit-2.yaml" >}}
+{{% code_sample file="pods/resource/memory-request-limit-2.yaml" options="hl_lines=10-14" %}}
 
 <!--
 In the `args` section of the configuration file, you can see that the Container
@@ -338,7 +338,7 @@ Warning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score
 <!--
 Delete your Pod:
 -->
-删除 Pod:
+删除 Pod：
 
 ```shell
 kubectl delete pod memory-demo-2 --namespace=mem-example
@@ -372,7 +372,7 @@ Pod 的调度基于请求。只有当节点拥有足够满足 Pod 内存请求�
 在本练习中，你将创建一个 Pod，其内存请求超过了你集群中的任意一个节点所拥有的内存。
 这是该 Pod 的配置文件，其拥有一个请求 1000 GiB 内存的容器，这应该超过了你集群中任何节点的容量。
 
-{{< codenew file="pods/resource/memory-request-limit-3.yaml" >}}
++{{% code_sample file="pods/resource/memory-request-limit-3.yaml" options="hl_lines=10-14" %}}
 
 <!--
 Create the Pod:
@@ -519,14 +519,21 @@ kubectl delete namespace mem-example
 
 * [Assign CPU Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-cpu-resource/)
 
+* [Assign Pod-level CPU and memory resources](/docs/tasks/configure-pod-container/assign-pod-level-resources/)
+
 * [Configure Quality of Service for Pods](/docs/tasks/configure-pod-container/quality-service-pod/)
+
+* [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/)
 -->
 ### 应用开发者扩展阅读    {#for-app-developers}
 
 * [为容器和 Pod 分配 CPU 资源](/zh-cn/docs/tasks/configure-pod-container/assign-cpu-resource/)
 
+* [分配 Pod 级别的 CPU 和内存资源](/zh-cn/docs/tasks/configure-pod-container/assign-pod-level-resources/)
+
 * [配置 Pod 的服务质量](/zh-cn/docs/tasks/configure-pod-container/quality-service-pod/)
 
+* [调整分配给容器的 CPU 和内存资源大小](/zh-cn/docs/tasks/configure-pod-container/resize-container-resources/)
 
 <!--
 ### For cluster administrators
@@ -544,6 +551,8 @@ kubectl delete namespace mem-example
 * [Configure a Pod Quota for a Namespace](/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/)
 
 * [Configure Quotas for API Objects](/docs/tasks/administer-cluster/quota-api-object/)
+
+* [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/)
 -->
 ### 集群管理员扩展阅读    {#for-cluster-administrators}
 
@@ -554,4 +563,4 @@ kubectl delete namespace mem-example
 * [为命名空间配置内存和 CPU 配额](/zh-cn/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/)
 * [配置命名空间下 Pod 总数](/zh-cn/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/)
 * [配置 API 对象配额](/zh-cn/docs/tasks/administer-cluster/quota-api-object/)
-
+* [调整分配给容器的 CPU 和内存资源的大小](/zh-cn/docs/tasks/configure-pod-container/resize-container-resources/)

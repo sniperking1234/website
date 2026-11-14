@@ -24,7 +24,7 @@ fabric that links Pods together.
   [FlexVolume](https://git.k8s.io/design-proposals-archive/storage/flexvolume-deployment.md)
   design proposal has more detail on this approach.
 
-  The [Kubernetes Volume Plugin FAQ for Storage Vendors](https://github.com/kubernetes/community/blob/master/sig-storage/volume-plugin-faq.md#kubernetes-volume-plugin-faq-for-storage-vendors)
+  The [Kubernetes Volume Plugin FAQ for Storage Vendors](https://github.com/kubernetes/community/blob/main/sig-storage/volume-plugin-faq.md#kubernetes-volume-plugin-faq-for-storage-vendors)
   includes general information on storage plugins.
 
 * [Device plugins](/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/)
@@ -35,7 +35,7 @@ fabric that links Pods together.
 
 * [Network plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/)
 
-  A network plugin allow Kubernetes to work with different networking topologies and technologies.
+  Network plugins allow Kubernetes to work with different networking topologies and technologies.
   Your Kubernetes cluster needs a _network plugin_ in order to have a working Pod network
   and to support other aspects of the Kubernetes network model.
 

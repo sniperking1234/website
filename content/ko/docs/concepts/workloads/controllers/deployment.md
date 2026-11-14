@@ -2,13 +2,18 @@
 # reviewers:
 # - janetkuo
 title: 디플로이먼트
+api_metadata:
+- apiVersion: "apps/v1"
+  kind: "Deployment"
 feature:
   title: 자동화된 롤아웃과 롤백
   description: >
     쿠버네티스는 애플리케이션 또는 애플리케이션의 설정 변경시 점진적으로 롤아웃하는 동시에 애플리케이션을 모니터링해서 모든 인스턴스가 동시에 종료되지 않도록 보장한다. 만약 어떤 문제가 발생하면 쿠버네티스는 변경 사항을 롤백한다. 성장하는 디플로이먼트 솔루션 생태계를 이용한다.
-
+description: >-
+  디플로이먼트는 애플리케이션 워크로드를 실행하기 위해 여러 파드 집합을 관리하며, 보통 스테이트리스(stateless) 애플리케이션을 대상으로 한다.
 content_type: concept
 weight: 10
+hide_summary: true # 섹션 색인에 별도로 나열됨
 ---
 
 <!-- overview -->
@@ -40,41 +45,42 @@ _디플로이먼트(Deployment)_ 는 {{< glossary_tooltip text="파드" term_id=
 
 다음은 디플로이먼트의 예시이다. 예시는 3개의 `nginx` 파드를 불러오기 위한 레플리카셋을 생성한다.
 
-{{< codenew file="controllers/nginx-deployment.yaml" >}}
+{{% code_sample file="controllers/nginx-deployment.yaml" %}}
 
 이 예시에 대한 설명은 다음과 같다.
 
-* `.metadata.name` 필드에 따라 `nginx-deployment` 이름으로 디플로이먼트가 생성된다.
-* `.spec.replicas` 필드에 따라 디플로이먼트는 3개의 레플리카 파드를 생성한다.
-* `.spec.selector` 필드는 디플로이먼트가 관리할 파드를 찾는 방법을 정의한다.
+* `.metadata.name` 필드에 따라, 
+  `nginx-deployment` 이름을 가진 디플로이먼트가 생성된다. 이 이름은 이후에 생성되는 
+  레플리카셋과 파드의 기준이 된다. 더 많은 정보를 위해 [디플로이먼트 사양 작성](#디플로이먼트-사양-작성)를
+  참고한다.
+* `.spec.replicas` 필드에 따라 디플로이먼트는 복제된 파드 3개를 만드는 레플리카셋을 생성한다.
+* `.spec.selector` 필드는 생성된 레플리카셋이 관리할 파드를 찾아내는 방법을 정의한다.
   이 사례에서는 파드 템플릿에 정의된 레이블(`app: nginx`)을 선택한다.
   그러나 파드 템플릿 자체의 규칙이 만족되는 한,
   보다 정교한 선택 규칙의 적용이 가능하다.
 
   {{< note >}}
-  `.spec.selector.matchLabels` 필드는 {key,value}의 쌍으로 매핑되어 있다. `matchLabels` 에 매핑된
-  단일 {key,value}은 `matchExpressions` 의 요소에 해당하며, `key` 필드는 "key"에 그리고 `operator`는 "In"에 대응되며
-  `value` 배열은 "value"만 포함한다.
+  `.spec.selector.matchLabels` 필드는 {key,value}의 쌍으로 매핑되어 있다.
+  `matchLabels` 에 매핑된 단일 {key,value}은 `matchExpressions` 의 요소에 해당하며, 
+  `key` 필드는 "key"에, 그리고 `operator`는 "In"에 대응되며 `value` 배열은 "value"만 포함한다.
   매칭을 위해서는 `matchLabels` 와 `matchExpressions` 의 모든 요건이 충족되어야 한다.
   {{< /note >}}
 
-* `template` 필드에는 다음 하위 필드가 포함되어 있다.
+* `.spec.template` 필드에는 다음 하위 필드가 포함되어 있다.
   * 파드는 `.metadata.labels` 필드를 사용해서 `app: nginx` 라는 레이블을 붙인다.
-  * 파드 템플릿의 사양 또는 `.template.spec` 필드는
+  * 파드 템플릿의 사양 또는 `.spec` 필드는
   파드가 [도커 허브](https://hub.docker.com/)의 `nginx` 1.14.2 버전 이미지를 실행하는
   `nginx` 컨테이너 1개를 실행하는 것을 나타낸다.
-  * 컨테이너 1개를 생성하고, `.spec.template.spec.containers[0].name` 필드를 사용해서 `nginx` 이름을 붙인다.
+  * 컨테이너 1개를 생성하고 `.spec.containers[0].name` 필드를 사용해서 `nginx` 이름을 붙인다.
 
 시작하기 전에, 쿠버네티스 클러스터가 시작되고 실행 중인지 확인한다.
 위의 디플로이먼트를 생성하려면 다음 단계를 따른다.
-
 
 1. 다음 명령어를 실행해서 디플로이먼트를 생성한다.
 
 ```shell
 kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
 ```
-
 
 2. `kubectl get deployments` 을 실행해서 디플로이먼트가 생성되었는지 확인한다.
 
@@ -121,16 +127,19 @@ kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
    * `READY` 는 사용자가 사용할 수 있는 애플리케이션의 레플리카의 수를 표시한다.
    * `AGE` 는 애플리케이션의 실행된 시간을 표시한다.
 
-   레플리카셋의 이름은 항상 `[DEPLOYMENT-NAME]-[RANDOM-STRING]` 형식으로 된 것을 알 수 있다. 무작위 문자열은
-   무작위로 생성되며, `pod-template-hash` 를 시드(seed)로 사용한다.
+   레플리카셋의 이름은 항상 `[DEPLOYMENT-NAME]-[HASH]` 형식으로 
+   된 것을 알 수 있다. 이 이름은 생성된 파드의 
+   기준이 된다. 
+
+   `HASH` 문자열은 레플리카셋의 `pod-template-hash` 레이블과 같다.
 
 6. 각 파드에 자동으로 생성된 레이블을 보려면, `kubectl get pods --show-labels` 를 실행한다.
    다음과 유사하게 출력된다.
    ```
    NAME                                READY     STATUS    RESTARTS   AGE       LABELS
-   nginx-deployment-75675f5897-7ci7o   1/1       Running   0          18s       app=nginx,pod-template-hash=3123191453
-   nginx-deployment-75675f5897-kzszj   1/1       Running   0          18s       app=nginx,pod-template-hash=3123191453
-   nginx-deployment-75675f5897-qqcnn   1/1       Running   0          18s       app=nginx,pod-template-hash=3123191453
+   nginx-deployment-75675f5897-7ci7o   1/1       Running   0          18s       app=nginx,pod-template-hash=75675f5897
+   nginx-deployment-75675f5897-kzszj   1/1       Running   0          18s       app=nginx,pod-template-hash=75675f5897
+   nginx-deployment-75675f5897-qqcnn   1/1       Running   0          18s       app=nginx,pod-template-hash=75675f5897
    ```
    만들어진 레플리카셋은 실행 중인 3개의 `nginx` 파드를 보장한다.
 
@@ -163,58 +172,62 @@ kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
 
 1. `nginx:1.14.2` 이미지 대신 `nginx:1.16.1` 이미지를 사용하도록 nginx 파드를 업데이트 한다.
 
-    ```shell
-    kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1
-    ```
+   ```shell
+   kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1
+   ```
 
-    또는 다음의 명령어를 사용한다.
+   또는 다음의 명령어를 사용한다.
 
-    ```shell
-    kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
-    ```
+   ```shell
+   kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
+   ```
+   여기서 `deployment/nginx-deployment`는 디플로이먼트를,
+   nginx는 업데이트가 이루어질 컨테이너를, 
+   그리고 `nginx:1.16.1`은 새 이미지와 태그 값을 가리킨다.
 
-    다음과 유사하게 출력된다.
 
-    ```
-    deployment.apps/nginx-deployment image updated
-    ```
+   다음과 유사하게 출력된다.
 
-    대안으로 디플로이먼트를 `edit` 해서 `.spec.template.spec.containers[0].image` 를 `nginx:1.14.2` 에서 `nginx:1.16.1` 로 변경한다.
+   ```
+   deployment.apps/nginx-deployment image updated
+   ```
 
-    ```shell
-    kubectl edit deployment/nginx-deployment
-    ```
+   다른 방법으로, 디플로이먼트를 `edit` 해서 `.spec.template.spec.containers[0].image` 를 `nginx:1.14.2` 에서 `nginx:1.16.1` 로 변경한다.
 
-    다음과 유사하게 출력된다.
+   ```shell
+   kubectl edit deployment/nginx-deployment
+   ```
 
-    ```
-    deployment.apps/nginx-deployment edited
-    ```
+   다음과 유사하게 출력된다.
+
+   ```
+   deployment.apps/nginx-deployment edited
+   ```
 
 2. 롤아웃 상태를 보려면 다음을 실행한다.
 
-    ```shell
-    kubectl rollout status deployment/nginx-deployment
-    ```
+   ```shell
+   kubectl rollout status deployment/nginx-deployment
+   ```
 
-    이와 유사하게 출력된다.
+   이와 유사하게 출력된다.
 
-    ```
-    Waiting for rollout to finish: 2 out of 3 new replicas have been updated...
-    ```
+   ```
+   Waiting for rollout to finish: 2 out of 3 new replicas have been updated...
+   ```
 
-    또는
+  또는
 
-    ```
-    deployment "nginx-deployment" successfully rolled out
-    ```
+  ```
+  deployment "nginx-deployment" successfully rolled out
+  ```
 
 업데이트된 디플로이먼트에 대해 자세한 정보 보기
 
 * 롤아웃이 성공하면 `kubectl get deployments` 를 실행해서 디플로이먼트를 볼 수 있다.
-    이와 유사하게 출력된다.
+  이와 유사하게 출력된다.
 
-  ```ini
+  ```
   NAME               READY   UP-TO-DATE   AVAILABLE   AGE
   nginx-deployment   3/3     3            3           36s
   ```
@@ -222,44 +235,44 @@ kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
 * `kubectl get rs` 를 실행해서 디플로이먼트가 새 레플리카셋을 생성해서 파드를 업데이트 했는지 볼 수 있고,
 새 레플리카셋을 최대 3개의 레플리카로 스케일 업, 이전 레플리카셋을 0개의 레플리카로 스케일 다운한다.
 
-    ```shell
-    kubectl get rs
-    ```
+  ```shell
+  kubectl get rs
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME                          DESIRED   CURRENT   READY   AGE
-    nginx-deployment-1564180365   3         3         3       6s
-    nginx-deployment-2035384211   0         0         0       36s
-    ```
+  이와 유사하게 출력된다.
+  ```
+  NAME                          DESIRED   CURRENT   READY   AGE
+  nginx-deployment-1564180365   3         3         3       6s
+  nginx-deployment-2035384211   0         0         0       36s
+  ```
 
 * `get pods` 를 실행하면 새 파드만 표시된다.
 
-    ```shell
-    kubectl get pods
-    ```
+  ```shell
+  kubectl get pods
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME                                READY     STATUS    RESTARTS   AGE
-    nginx-deployment-1564180365-khku8   1/1       Running   0          14s
-    nginx-deployment-1564180365-nacti   1/1       Running   0          14s
-    nginx-deployment-1564180365-z9gth   1/1       Running   0          14s
-    ```
+  이와 유사하게 출력된다.
+  ```
+  NAME                                READY     STATUS    RESTARTS   AGE
+  nginx-deployment-1564180365-khku8   1/1       Running   0          14s
+  nginx-deployment-1564180365-nacti   1/1       Running   0          14s
+  nginx-deployment-1564180365-z9gth   1/1       Running   0          14s
+  ```
 
-    다음에 이러한 파드를 업데이트 하려면 디플로이먼트의 파드 템플릿만 다시 업데이트 하면 된다.
+  다음에 이러한 파드를 업데이트 하려면 디플로이먼트의 파드 템플릿만 다시 업데이트 하면 된다.
 
-    디플로이먼트는 업데이트되는 동안 일정한 수의 파드만 중단되도록 보장한다. 기본적으로
-    적어도 의도한 파드 수의 75% 이상이 동작하도록 보장한다(최대 25% 불가).
+  디플로이먼트는 업데이트되는 동안 일정한 수의 파드만 중단되도록 보장한다. 기본적으로
+  적어도 의도한 파드 수의 75% 이상이 동작하도록 보장한다(최대 25% 불가).
 
-    또한 디플로이먼트는 의도한 파드 수 보다 더 많이 생성되는 파드의 수를 제한한다.
-    기본적으로, 의도한 파드의 수 기준 최대 125%까지만 추가 파드가 동작할 수 있도록 제한한다(최대 25% 까지).
+  또한 디플로이먼트는 의도한 파드 수 보다 더 많이 생성되는 파드의 수를 제한한다.
+  기본적으로, 의도한 파드의 수 기준 최대 125%까지만 추가 파드가 동작할 수 있도록 제한한다(최대 25% 까지).
 
-    예를 들어, 위 디플로이먼트를 자세히 살펴보면 먼저 새로운 파드를 생성한 다음, 
-    이전 파드를 삭제하고, 또 다른 새로운 파드를 만든 것을 볼 수 있다. 
-    충분한 수의 새로운 파드가 나올 때까지 이전 파드를 죽이지 않으며, 충분한 수의 이전 파드들이 죽기 전까지 새로운 파드를 만들지 않는다. 
-    이것은 최소 3개의 파드를 사용할 수 있게 하고, 최대 4개의 파드를 사용할 수 있게 한다. 
-    디플로이먼트의 레플리카 크기가 4인 경우, 파드 숫자는 3개에서 5개 사이이다.
+  예를 들어, 위 디플로이먼트를 자세히 살펴보면 먼저 새로운 파드를 생성한 다음, 
+  이전 파드를 삭제하고, 또 다른 새로운 파드를 만든 것을 볼 수 있다. 
+  충분한 수의 새로운 파드가 나올 때까지 이전 파드를 죽이지 않으며, 충분한 수의 이전 파드들이 죽기 전까지 새로운 파드를 만들지 않는다. 
+  이것은 최소 3개의 파드를 사용할 수 있게 하고, 최대 4개의 파드를 사용할 수 있게 한다. 
+  디플로이먼트의 레플리카 크기가 4인 경우, 파드 숫자는 3개에서 5개 사이이다.
 
 * 디플로이먼트의 세부 정보 가져오기
   ```shell
@@ -304,12 +317,12 @@ kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
       Normal  ScalingReplicaSet  19s   deployment-controller  Scaled up replica set nginx-deployment-1564180365 to 3
       Normal  ScalingReplicaSet  14s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 0
     ```
-    처음 디플로이먼트를 생성했을 때, 디플로이먼트가 레플리카셋(nginx-deployment-2035384211)을 생성하고 
-    3개의 레플리카로 직접 스케일 업한 것을 볼 수 있다. 
-    디플로이먼트를 업데이트하자, 새 레플리카셋(nginx-deployment-1564180365)을 생성하고, 1개로 스케일 업한 다음 모두 실행될 때까지 대기하였다. 
-    그 뒤 이전 레플리카셋을 2개로 스케일 다운하고 새 레플리카셋을 2개로 스케일 업하여 모든 시점에 대해 최소 3개 / 최대 3개의 파드가 존재하도록 하였다. 
-    이후 지속해서 같은 롤링 업데이트 정책으로 새 레플리카셋은 스케일 업하고 이전 레플리카셋은 스케일 다운한다. 
-    마지막으로 새로운 레플리카셋에 3개의 사용 가능한 레플리카가 구성되며, 이전 레플리카셋은 0개로 스케일 다운된다.
+  처음 디플로이먼트를 생성했을 때, 디플로이먼트가 레플리카셋(nginx-deployment-2035384211)을 생성하고 
+  3개의 레플리카로 직접 스케일 업한 것을 볼 수 있다. 
+  디플로이먼트를 업데이트하자, 새 레플리카셋(nginx-deployment-1564180365)을 생성하고, 1개로 스케일 업한 다음 모두 실행될 때까지 대기하였다. 
+  그 뒤 이전 레플리카셋을 2개로 스케일 다운하고 새 레플리카셋을 2개로 스케일 업하여 모든 시점에 대해 최소 3개 / 최대 3개의 파드가 존재하도록 하였다. 
+  이후 지속해서 같은 롤링 업데이트 정책으로 새 레플리카셋은 스케일 업하고 이전 레플리카셋은 스케일 다운한다. 
+  마지막으로 새로운 레플리카셋에 3개의 사용 가능한 레플리카가 구성되며, 이전 레플리카셋은 0개로 스케일 다운된다.
 
 {{< note >}}
 쿠버네티스가 `availableReplicas` 수를 계산할 때 종료 중인(terminating) 파드는 포함하지 않으며, 
@@ -339,21 +352,28 @@ kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
 ### 레이블 셀렉터 업데이트
 
 일반적으로 레이블 셀렉터를 업데이트 하는 것을 권장하지 않으며 셀렉터를 미리 계획하는 것을 권장한다.
-어떤 경우든 레이블 셀렉터의 업데이트를 해야하는 경우 매우 주의하고,
-모든 영향을 파악했는지 확인해야 한다.
+디플로이먼트의 레이블 셀렉터는 생성 후에는 **변경할 수 없다**.
+`kubectl patch`, `kubectl edit`, `kubectl apply` 또는 `helm upgrade` 같은 도구로도 업데이트할 수 없다.
 
-{{< note >}}
-API 버전 `apps/v1` 에서 디플로이먼트의 레이블 셀렉터는 생성 이후에는 변경할 수 없다.
-{{< /note >}}
+셀렉터를 반드시 변경해야 한다면 디플로이먼트를 삭제하고 다시 생성해야 한다.
+기본적으로 디플로이먼트를 삭제하면 실행 중인 파드도 삭제되어 다운타임이 발생한다.
+디플로이먼트를 다시 생성하는 동안 해당 파드를 계속 실행해야 한다면 `--cascade=orphan`을 사용한다
+(아래에서 그 영향을 설명한다).
+다음 영향을 숙지하고 각별히 주의한다.
 
-* 셀렉터 추가 시 디플로이먼트의 사양에 있는 파드 템플릿 레이블도 새 레이블로 업데이트해야 한다.
-그렇지 않으면 유효성 검사 오류가 반환된다. 이 변경은 겹치지 않는 변경으로 새 셀렉터가
-이전 셀렉터로 만든 레플리카셋과 파드를 선택하지 않게 되고, 그 결과로 모든 기존 레플리카셋은 고아가 되며,
-새로운 레플리카셋을 생성하게 된다.
-* 셀렉터 업데이트는 기존 셀렉터 키 값을 변경하며, 결과적으로 추가와 동일한 동작을 한다.
-* 셀렉터 삭제는 디플로이먼트 셀렉터의 기존 키를 삭제하며 파드 템플릿 레이블의 변경을 필요로 하지 않는다.
-기존 레플리카셋은 고아가 아니고, 새 레플리카셋은 생성되지 않는다.
-그러나 제거된 레이블은 기존 파드와 레플리카셋에 여전히 존재한다는 점을 참고해야 한다.
+* **추가:** 범위가 더 좁은 셀렉터로 새 디플로이먼트를 생성할 때는 새 디플로이먼트에 적합한 파드 템플릿도 **반드시** 있어야 한다.
+  기존 매니페스트가 있고 이 매니페스트를 편집하여 셀렉터의 범위를 좁히려면, 해당 디플로이먼트 안의 파드 템플릿 메타데이터도 편집하여
+  새 레이블을
+  추가해 일치시켜야 한다. 그렇지 않으면 API 서버가 유효성 검사 오류를 반환한다. 이는 _겹치지 않는_ 변경이다.
+  새 디플로이먼트는 새 레이블이 없는 기존 파드를 "인식"하지 못하므로, 기존
+  레플리카셋은 **고아 상태**가 되고 완전히 새로운 레플리카셋이 생성된다.
+* **값 업데이트:** 셀렉터 키의 기존 값을 변경하면(예: `v1`에서 `v2`로)
+  추가와 동일하게 동작한다(고아 상태가 되고 다시 생성됨).
+* **제거:** 디플로이먼트 셀렉터에서 기존 키를 제거할 때는 파드 템플릿 레이블을 변경할 필요가 없다.
+  이는 _겹치는_ 변경이다. 범위가 더 넓어진 새 셀렉터가
+  기존 파드와 일치하기 때문이다. 기존 레플리카셋은 고아 상태가 되지 않고 새 레플리카셋도 생성되지 않는다.
+  다만 제거된 레이블은 기존 파드와 레플리카셋에 여전히 남아 있다는 점에 유의한다.
+  디플로이먼트의 롤아웃을 트리거하여 이를 정리할 수 있다.
 
 ## 디플로이먼트 롤백
 
@@ -364,7 +384,7 @@ API 버전 `apps/v1` 에서 디플로이먼트의 레이블 셀렉터는 생성 
 {{< note >}}
 디플로이먼트의 수정 버전은 디플로이먼트 롤아웃시 생성된다. 이는 디플로이먼트 파드 템플릿
 (`.spec.template`)이 변경되는 경우에만 새로운 수정 버전이 생성된다는 것을 의미한다.
-예를 들어 템플릿의 레이블 또는 컨테이너 이미지를 업데이트 하는 경우.
+예를 들어 템플릿의 레이블 또는 컨테이너 이미지를 업데이트 하는 경우가 있다.
 디플로이먼트의 스케일링과 같은 다른 업데이트시 디플로이먼트 수정 버전은 생성되지 않으며 수동-스케일링 또는 자동-스케일링을 동시에 수행할 수 있다.
 이는 이전 수정 버전으로 롤백을 하는 경우에 디플로이먼트 파드 템플릿 부분만
 롤백된다는 것을 의미한다.
@@ -372,30 +392,32 @@ API 버전 `apps/v1` 에서 디플로이먼트의 레이블 셀렉터는 생성 
 
 * 디플로이먼트를 업데이트하는 동안 이미지 이름을 `nginx:1.16.1` 이 아닌 `nginx:1.161` 로 입력해서 오타를 냈다고 가정한다.
 
-    ```shell
-    kubectl set image deployment/nginx-deployment nginx=nginx:1.161 
-    ```
+  ```shell
+  kubectl set image deployment/nginx-deployment nginx=nginx:1.161 
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment image updated
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployment.apps/nginx-deployment image updated
+  ```
 
 * 롤아웃이 고착 된다. 고착된 롤아웃 상태를 확인할 수 있다.
 
+  ```shell
+  kubectl rollout status deployment/nginx-deployment
+  ```
 
-    ```shell
-    kubectl rollout status deployment/nginx-deployment
-    ```
+  이와 유사하게 출력된다.
+  ```
+  Waiting for rollout to finish: 1 out of 3 new replicas have been updated...
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    Waiting for rollout to finish: 1 out of 3 new replicas have been updated...
-    ```
+* Ctrl-C 를 눌러 위의 롤아웃 상태 보기를 중지한다. 고착된 롤아웃 상태에 대한 자세한 정보는 
+[해당 내용을 더 읽어본다](#디플로이먼트-상태).
 
-* Ctrl-C 를 눌러 위의 롤아웃 상태 보기를 중지한다. 고착된 롤아웃 상태에 대한 자세한 정보는 [이 것을 더 읽어본다](#디플로이먼트-상태).
-
-* 이전 레플리카는 2개(`nginx-deployment-1564180365` 과 `nginx-deployment-2035384211`), 새 레플리카는 1개(nginx-deployment-3066724191)임을 알 수 있다.
+* 이전 레플리카는 2개(
+`nginx-deployment-1564180365` 과 `nginx-deployment-2035384211`), 
+새 레플리카는 1개(nginx-deployment-3066724191)임을 알 수 있다.
 
     ```shell
     kubectl get rs
@@ -411,68 +433,68 @@ API 버전 `apps/v1` 에서 디플로이먼트의 레이블 셀렉터는 생성 
 
 * 생성된 파드를 보면, 새로운 레플리카셋에 생성된 1개의 파드가 이미지 풀 루프(pull loop)에서 고착된 것을 볼 수 있다.
 
-    ```shell
-    kubectl get pods
-    ```
+  ```shell
+  kubectl get pods
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME                                READY     STATUS             RESTARTS   AGE
-    nginx-deployment-1564180365-70iae   1/1       Running            0          25s
-    nginx-deployment-1564180365-jbqqo   1/1       Running            0          25s
-    nginx-deployment-1564180365-hysrc   1/1       Running            0          25s
-    nginx-deployment-3066724191-08mng   0/1       ImagePullBackOff   0          6s
-    ```
+  이와 유사하게 출력된다.
+  ```
+  NAME                                READY     STATUS             RESTARTS   AGE
+  nginx-deployment-1564180365-70iae   1/1       Running            0          25s
+  nginx-deployment-1564180365-jbqqo   1/1       Running            0          25s
+  nginx-deployment-1564180365-hysrc   1/1       Running            0          25s
+  nginx-deployment-3066724191-08mng   0/1       ImagePullBackOff   0          6s
+  ```
 
-    {{< note >}}
-    디플로이먼트 컨트롤러가 잘못된 롤아웃을 자동으로 중지하고, 새로운 레플리카셋의 스케일 업을 중지한다. 이는 지정한 롤링 업데이트의 파라미터(구체적으로 `maxUnavailable`)에 따라 달라진다. 쿠버네티스는 기본값으로 25%를 설정한다.
-    {{< /note >}}
+  {{< note >}}
+  디플로이먼트 컨트롤러가 잘못된 롤아웃을 자동으로 중지하고, 새로운 레플리카셋의 스케일 업을 중지한다. 이는 지정한 롤링 업데이트의 파라미터(구체적으로 `maxUnavailable`)에 따라 달라진다. 쿠버네티스는 기본값으로 25%를 설정한다.
+  {{< /note >}}
 
 * 디플로이먼트에 대한 설명 보기
-    ```shell
-    kubectl describe deployment
-    ```
+  ```shell
+  kubectl describe deployment
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    Name:           nginx-deployment
-    Namespace:      default
-    CreationTimestamp:  Tue, 15 Mar 2016 14:48:04 -0700
-    Labels:         app=nginx
-    Selector:       app=nginx
-    Replicas:       3 desired | 1 updated | 4 total | 3 available | 1 unavailable
-    StrategyType:       RollingUpdate
-    MinReadySeconds:    0
-    RollingUpdateStrategy:  25% max unavailable, 25% max surge
-    Pod Template:
-      Labels:  app=nginx
-      Containers:
-       nginx:
-        Image:        nginx:1.161
-        Port:         80/TCP
-        Host Port:    0/TCP
-        Environment:  <none>
-        Mounts:       <none>
-      Volumes:        <none>
-    Conditions:
-      Type           Status  Reason
-      ----           ------  ------
-      Available      True    MinimumReplicasAvailable
-      Progressing    True    ReplicaSetUpdated
-    OldReplicaSets:     nginx-deployment-1564180365 (3/3 replicas created)
-    NewReplicaSet:      nginx-deployment-3066724191 (1/1 replicas created)
-    Events:
-      FirstSeen LastSeen    Count   From                    SubObjectPath   Type        Reason              Message
-      --------- --------    -----   ----                    -------------   --------    ------              -------
-      1m        1m          1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-2035384211 to 3
-      22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 1
-      22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 2
-      22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 2
-      21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 1
-      21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 3
-      13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 0
-      13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-3066724191 to 1
-    ```
+  이와 유사하게 출력된다.
+  ```
+  Name:           nginx-deployment
+  Namespace:      default
+  CreationTimestamp:  Tue, 15 Mar 2016 14:48:04 -0700
+  Labels:         app=nginx
+  Selector:       app=nginx
+  Replicas:       3 desired | 1 updated | 4 total | 3 available | 1 unavailable
+  StrategyType:       RollingUpdate
+  MinReadySeconds:    0
+  RollingUpdateStrategy:  25% max unavailable, 25% max surge
+  Pod Template:
+    Labels:  app=nginx
+    Containers:
+      nginx:
+      Image:        nginx:1.161
+      Port:         80/TCP
+      Host Port:    0/TCP
+      Environment:  <none>
+      Mounts:       <none>
+    Volumes:        <none>
+  Conditions:
+    Type           Status  Reason
+    ----           ------  ------
+    Available      True    MinimumReplicasAvailable
+    Progressing    True    ReplicaSetUpdated
+  OldReplicaSets:     nginx-deployment-1564180365 (3/3 replicas created)
+  NewReplicaSet:      nginx-deployment-3066724191 (1/1 replicas created)
+  Events:
+    FirstSeen LastSeen    Count   From                    SubObjectPath   Type        Reason              Message
+    --------- --------    -----   ----                    -------------   --------    ------              -------
+    1m        1m          1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-2035384211 to 3
+    22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 1
+    22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 2
+    22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 2
+    21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 1
+    21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 3
+    13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 0
+    13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-3066724191 to 1
+  ```
 
   이 문제를 해결하려면 디플로이먼트를 안정적인 이전 수정 버전으로 롤백해야 한다.
 
@@ -481,131 +503,134 @@ API 버전 `apps/v1` 에서 디플로이먼트의 레이블 셀렉터는 생성 
 다음 순서에 따라 롤아웃 기록을 확인한다.
 
 1. 먼저 이 디플로이먼트의 수정 사항을 확인한다.
-    ```shell
-    kubectl rollout history deployment/nginx-deployment
-    ```
-    이와 유사하게 출력된다.
-    ```
-    deployments "nginx-deployment"
-    REVISION    CHANGE-CAUSE
-    1           kubectl apply --filename=https://k8s.io/examples/controllers/nginx-deployment.yaml
-    2           kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
-    3           kubectl set image deployment/nginx-deployment nginx=nginx:1.161
-    ```
+   ```shell
+   kubectl rollout history deployment/nginx-deployment
+   ```
+   이와 유사하게 출력된다.
+   ```
+   deployments "nginx-deployment"
+   REVISION    CHANGE-CAUSE
+   1           <none>
+   2           <none>
+   3           <none>
+   ```
 
-    `CHANGE-CAUSE` 는 수정 생성시 디플로이먼트 주석인 `kubernetes.io/change-cause` 에서 복사한다. 다음에 대해 `CHANGE-CAUSE` 메시지를 지정할 수 있다.
+   `CHANGE-CAUSE`는 수정 버전 생성 시 디플로이먼트 어노테이션 `kubernetes.io/change-cause`에서 해당 수정 버전으로 복사된다. 다음과 같이 `CHANGE-CAUSE` 메시지를 지정할 수 있다.
 
-    * 디플로이먼트에 `kubectl annotate deployment/nginx-deployment kubernetes.io/change-cause="image updated to 1.16.1"` 로 주석을 단다.
-    * 수동으로 리소스 매니페스트 편집.
+   * `kubectl annotate deployment/nginx-deployment kubernetes.io/change-cause="image updated to 1.16.1"`로 디플로이먼트에 어노테이션을 추가한다.
+   * 리소스 매니페스트를 수동으로 편집한다.
+   * 어노테이션을 자동으로 설정하는 도구를 사용한다.
+
+   {{< note >}}
+   이전 버전의 쿠버네티스에서는 kubectl 명령에 `--record` 플래그를 사용하여 `CHANGE-CAUSE` 필드를 자동으로 채울 수 있었다. 이 플래그는 사용 중단(deprecated)되었으며 향후 릴리스에서 제거될 예정이다.
+   {{< /note >}}
 
 2. 각 수정 버전의 세부 정보를 보려면 다음을 실행한다.
-    ```shell
-    kubectl rollout history deployment/nginx-deployment --revision=2
-    ```
+   ```shell
+   kubectl rollout history deployment/nginx-deployment --revision=2
+   ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployments "nginx-deployment" revision 2
-      Labels:       app=nginx
-              pod-template-hash=1159050644
-      Annotations:  kubernetes.io/change-cause=kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
-      Containers:
+   이와 유사하게 출력된다.
+   ```
+   deployments "nginx-deployment" revision 2
+     Labels:       app=nginx
+             pod-template-hash=1159050644
+     Containers:
        nginx:
-        Image:      nginx:1.16.1
-        Port:       80/TCP
+       Image:      nginx:1.16.1
+       Port:       80/TCP
          QoS Tier:
-            cpu:      BestEffort
-            memory:   BestEffort
-        Environment Variables:      <none>
-      No volumes.
-    ```
+           cpu:      BestEffort
+           memory:   BestEffort
+       Environment Variables:      <none>
+     No volumes.
+  ```
 
 ### 이전 수정 버전으로 롤백
 다음 단계에 따라 디플로이먼트를 현재 버전에서 이전 버전인 버전 2로 롤백한다.
 
 1. 이제 현재 롤아웃의 실행 취소 및 이전 수정 버전으로 롤백 하기로 결정했다.
-    ```shell
-    kubectl rollout undo deployment/nginx-deployment
-    ```
+   ```shell
+   kubectl rollout undo deployment/nginx-deployment
+   ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment rolled back
-    ```
-    Alternatively, you can rollback to a specific revision by specifying it with `--to-revision`:
+   이와 유사하게 출력된다.
+   ```
+   deployment.apps/nginx-deployment rolled back
+   ```
+   또는 특정 수정 버전으로 롤백하려면 `--to-revision` 옵션에 해당 수정 버전을 명시한다.
+ 
+   ```shell
+   kubectl rollout undo deployment/nginx-deployment --to-revision=2
+   ```
+ 
+   이와 유사하게 출력된다.
+   ```
+   deployment.apps/nginx-deployment rolled back
+   ```
 
-    ```shell
-    kubectl rollout undo deployment/nginx-deployment --to-revision=2
-    ```
+   롤아웃 관련 명령에 대한 자세한 내용은 [`kubectl rollout`](/docs/reference/generated/kubectl/kubectl-commands#rollout)을 참조한다.
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment rolled back
-    ```
-
-    롤아웃 관련 명령에 대한 자세한 내용은 [`kubectl rollout`](/docs/reference/generated/kubectl/kubectl-commands#rollout)을 참조한다.
-
-    이제 디플로이먼트가 이전 안정 수정 버전으로 롤백 된다. 버전 2로 롤백하기 위해 `DeploymentRollback` 이벤트가
-    디플로이먼트 컨트롤러에서 생성되는 것을 볼 수 있다.
+   이제 디플로이먼트가 이전 안정 수정 버전으로 롤백 된다. 버전 2로 롤백하기 위해 `DeploymentRollback` 이벤트가
+   디플로이먼트 컨트롤러에서 생성되는 것을 볼 수 있다.
 
 2. 만약 롤백에 성공하고, 디플로이먼트가 예상대로 실행되는지 확인하려면 다음을 실행한다.
-    ```shell
-    kubectl get deployment nginx-deployment
-    ```
+   ```shell
+   kubectl get deployment nginx-deployment
+   ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME               READY   UP-TO-DATE   AVAILABLE   AGE
-    nginx-deployment   3/3     3            3           30m
-    ```
+   이와 유사하게 출력된다.
+   ```
+   NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+   nginx-deployment   3/3     3            3           30m
+   ```
 3. 디플로이먼트의 설명 가져오기.
-    ```shell
-    kubectl describe deployment nginx-deployment
-    ```
-    이와 유사하게 출력된다.
-    ```
-    Name:                   nginx-deployment
-    Namespace:              default
-    CreationTimestamp:      Sun, 02 Sep 2018 18:17:55 -0500
-    Labels:                 app=nginx
-    Annotations:            deployment.kubernetes.io/revision=4
-                            kubernetes.io/change-cause=kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
-    Selector:               app=nginx
-    Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
-    StrategyType:           RollingUpdate
-    MinReadySeconds:        0
-    RollingUpdateStrategy:  25% max unavailable, 25% max surge
-    Pod Template:
-      Labels:  app=nginx
-      Containers:
+   ```shell
+   kubectl describe deployment nginx-deployment
+   ```
+   이와 유사하게 출력된다.
+   ```
+   Name:                   nginx-deployment
+   Namespace:              default
+   CreationTimestamp:      Sun, 02 Sep 2018 18:17:55 -0500
+   Labels:                 app=nginx
+   Annotations:            deployment.kubernetes.io/revision=4
+   Selector:               app=nginx
+   Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+   StrategyType:           RollingUpdate
+   MinReadySeconds:        0
+   RollingUpdateStrategy:  25% max unavailable, 25% max surge
+   Pod Template:
+     Labels:  app=nginx
+     Containers:
        nginx:
-        Image:        nginx:1.16.1
-        Port:         80/TCP
-        Host Port:    0/TCP
-        Environment:  <none>
-        Mounts:       <none>
-      Volumes:        <none>
-    Conditions:
-      Type           Status  Reason
-      ----           ------  ------
-      Available      True    MinimumReplicasAvailable
-      Progressing    True    NewReplicaSetAvailable
-    OldReplicaSets:  <none>
-    NewReplicaSet:   nginx-deployment-c4747d96c (3/3 replicas created)
-    Events:
-      Type    Reason              Age   From                   Message
-      ----    ------              ----  ----                   -------
-      Normal  ScalingReplicaSet   12m   deployment-controller  Scaled up replica set nginx-deployment-75675f5897 to 3
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 1
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 2
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 2
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 1
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 3
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 0
-      Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-595696685f to 1
-      Normal  DeploymentRollback  15s   deployment-controller  Rolled back deployment "nginx-deployment" to revision 2
-      Normal  ScalingReplicaSet   15s   deployment-controller  Scaled down replica set nginx-deployment-595696685f to 0
-    ```
+       Image:        nginx:1.16.1
+       Port:         80/TCP
+       Host Port:    0/TCP
+       Environment:  <none>
+       Mounts:       <none>
+     Volumes:        <none>
+   Conditions:
+     Type           Status  Reason
+     ----           ------  ------
+     Available      True    MinimumReplicasAvailable
+     Progressing    True    NewReplicaSetAvailable
+   OldReplicaSets:  <none>
+   NewReplicaSet:   nginx-deployment-c4747d96c (3/3 replicas created)
+   Events:
+     Type    Reason              Age   From                   Message
+     ----    ------              ----  ----                   -------
+     Normal  ScalingReplicaSet   12m   deployment-controller  Scaled up replica set nginx-deployment-75675f5897 to 3
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 1
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set  nginx-deployment-75675f5897 to 2
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 2
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 1
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 3
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 0
+     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-595696685f to 1
+     Normal  DeploymentRollback  15s   deployment-controller  Rolled back deployment "nginx-deployment" to revision 2
+     Normal  ScalingReplicaSet   15s   deployment-controller  Scaled down replica set nginx-deployment-595696685f to 0
+   ```
 
 ## 디플로이먼트 스케일링
 
@@ -619,12 +644,12 @@ kubectl scale deployment/nginx-deployment --replicas=10
 deployment.apps/nginx-deployment scaled
 ```
 
-가령 클러스터에서 [horizontal Pod autoscaling](/ko/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/)를 설정
+가령 클러스터에서 [horizontal Pod autoscaling](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)을 설정
 한 경우 디플로이먼트에 대한 오토스케일러를 설정할 수 있다. 그리고 기존 파드의 CPU 사용률을 기준으로
 실행할 최소 파드 및 최대 파드의 수를 선택할 수 있다.
 
 ```shell
-kubectl autoscale deployment/nginx-deployment --min=10 --max=15 --cpu-percent=80
+kubectl autoscale deployment/nginx-deployment --min=10 --max=15 --cpu-percent=80%
 ```
 이와 유사하게 출력된다.
 ```
@@ -652,26 +677,26 @@ deployment.apps/nginx-deployment scaled
   ```
 
 * 클러스터 내부에서 확인할 수 없는 새 이미지로 업데이트 된다.
-    ```shell
-    kubectl set image deployment/nginx-deployment nginx=nginx:sometag
-    ```
+  ```shell
+  kubectl set image deployment/nginx-deployment nginx=nginx:sometag
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment image updated
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployment.apps/nginx-deployment image updated
+  ```
 
 * 이미지 업데이트는 레플리카셋 nginx-deployment-1989198191 으로 새로운 롤 아웃이 시작하지만,
 위에서 언급한 `maxUnavailable` 의 요구 사항으로 인해 차단된다. 롤아웃 상태를 확인한다.
-    ```shell
-    kubectl get rs
-    ```
-      이와 유사하게 출력된다.
-    ```
-    NAME                          DESIRED   CURRENT   READY     AGE
-    nginx-deployment-1989198191   5         5         0         9s
-    nginx-deployment-618515232    8         8         8         1m
-    ```
+  ```shell
+  kubectl get rs
+  ```
+    이와 유사하게 출력된다.
+  ```
+  NAME                          DESIRED   CURRENT   READY     AGE
+  nginx-deployment-1989198191   5         5         0         9s
+  nginx-deployment-618515232    8         8         8         1m
+  ```
 
 * 그 다음 디플로이먼트에 대한 새로운 스케일링 요청이 함께 따라온다. 오토스케일러는 디플로이먼트 레플리카를 15로 증가시킨다.
 디플로이먼트 컨트롤러는 새로운 5개의 레플리카의 추가를 위한 위치를 결정해야 한다.
@@ -735,103 +760,103 @@ nginx-deployment-618515232    11        11        11        7m
   ```
 
 * 다음 명령을 사용해서 일시 중지한다.
-    ```shell
-    kubectl rollout pause deployment/nginx-deployment
-    ```
+  ```shell
+  kubectl rollout pause deployment/nginx-deployment
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment paused
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployment.apps/nginx-deployment paused
+  ```
 
 * 그런 다음 디플로이먼트의 이미지를 업데이트 한다.
-    ```shell
-    kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
-    ```
+  ```shell
+  kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment image updated
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployment.apps/nginx-deployment image updated
+  ```
 
 * 새로운 롤아웃이 시작되지 않는다.
-    ```shell
-    kubectl rollout history deployment/nginx-deployment
-    ```
+  ```shell
+  kubectl rollout history deployment/nginx-deployment
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployments "nginx"
-    REVISION  CHANGE-CAUSE
-    1   <none>
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployments "nginx"
+  REVISION  CHANGE-CAUSE
+  1   <none>
+  ```
 * 기존 레플리카셋이 변경되지 않았는지 확인하기 위해 롤아웃 상태를 출력한다.
-    ```shell
-    kubectl get rs
-    ```
+  ```shell
+  kubectl get rs
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME               DESIRED   CURRENT   READY     AGE
-    nginx-2142116321   3         3         3         2m
-    ```
+  이와 유사하게 출력된다.
+  ```
+  NAME               DESIRED   CURRENT   READY     AGE
+  nginx-2142116321   3         3         3         2m
+  ```
 
 * 예를 들어 사용할 리소스를 업데이트하는 것처럼 원하는 만큼 업데이트할 수 있다.
-    ```shell
-    kubectl set resources deployment/nginx-deployment -c=nginx --limits=cpu=200m,memory=512Mi
-    ```
+  ```shell
+  kubectl set resources deployment/nginx-deployment -c=nginx --limits=cpu=200m,memory=512Mi
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment resource requirements updated
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployment.apps/nginx-deployment resource requirements updated
+  ```
 
-    디플로이먼트 롤아웃을 일시 중지하기 전 디플로이먼트의 초기 상태는 해당 기능을 지속한다.
-    그러나 디플로이먼트 롤아웃이 일시 중지한 상태에서는 디플로이먼트의 새 업데이트에 영향을 주지 않는다.
+  디플로이먼트 롤아웃을 일시 중지하기 전 디플로이먼트의 초기 상태는 해당 기능을 지속한다.
+  그러나 디플로이먼트 롤아웃이 일시 중지한 상태에서는 디플로이먼트의 새 업데이트에 영향을 주지 않는다.
 
 * 결국, 디플로이먼트 롤아웃을 재개하고 새로운 레플리카셋이 새로운 업데이트를 제공하는 것을 관찰한다.
-    ```shell
-    kubectl rollout resume deployment/nginx-deployment
-    ```
+  ```shell
+  kubectl rollout resume deployment/nginx-deployment
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    deployment.apps/nginx-deployment resumed
-    ```
-* 롤아웃이 완료될 때까지 상태를 관찰한다.
-    ```shell
-    kubectl get rs -w
-    ```
+  이와 유사하게 출력된다.
+  ```
+  deployment.apps/nginx-deployment resumed
+  ```
+* 롤아웃이 완료될 때까지 상태를 {{< glossary_tooltip text="관찰" term_id="watch" >}}한다.
+  ```shell
+  kubectl get rs --watch
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME               DESIRED   CURRENT   READY     AGE
-    nginx-2142116321   2         2         2         2m
-    nginx-3926361531   2         2         0         6s
-    nginx-3926361531   2         2         1         18s
-    nginx-2142116321   1         2         2         2m
-    nginx-2142116321   1         2         2         2m
-    nginx-3926361531   3         2         1         18s
-    nginx-3926361531   3         2         1         18s
-    nginx-2142116321   1         1         1         2m
-    nginx-3926361531   3         3         1         18s
-    nginx-3926361531   3         3         2         19s
-    nginx-2142116321   0         1         1         2m
-    nginx-2142116321   0         1         1         2m
-    nginx-2142116321   0         0         0         2m
-    nginx-3926361531   3         3         3         20s
-    ```
+  이와 유사하게 출력된다.
+  ```
+  NAME               DESIRED   CURRENT   READY     AGE
+  nginx-2142116321   2         2         2         2m
+  nginx-3926361531   2         2         0         6s
+  nginx-3926361531   2         2         1         18s
+  nginx-2142116321   1         2         2         2m
+  nginx-2142116321   1         2         2         2m
+  nginx-3926361531   3         2         1         18s
+  nginx-3926361531   3         2         1         18s
+  nginx-2142116321   1         1         1         2m
+  nginx-3926361531   3         3         1         18s
+  nginx-3926361531   3         3         2         19s
+  nginx-2142116321   0         1         1         2m
+  nginx-2142116321   0         1         1         2m
+  nginx-2142116321   0         0         0         2m
+  nginx-3926361531   3         3         3         20s
+  ```
 * 롤아웃 최신 상태를 가져온다.
-    ```shell
-    kubectl get rs
-    ```
+  ```shell
+  kubectl get rs
+  ```
 
-    이와 유사하게 출력된다.
-    ```
-    NAME               DESIRED   CURRENT   READY     AGE
-    nginx-2142116321   0         0         0         2m
-    nginx-3926361531   3         3         3         28s
-    ```
+  이와 유사하게 출력된다.
+  ```
+  NAME               DESIRED   CURRENT   READY     AGE
+  nginx-2142116321   0         0         0         2m
+  nginx-3926361531   3         3         3         28s
+  ```
 {{< note >}}
 일시 중지된 디플로이먼트를 재개할 때까지 롤백할 수 없다.
 {{< /note >}}
@@ -1064,20 +1089,35 @@ echo $?
 디플로이먼트는 롤백할 수 없게 된다.
 {{< /note >}}
 
+디플로이먼트가 오직 [완료 상태](/docs/concepts/workloads/controllers/deployment/#디플로이먼트-완료)에
+도달한 **이후**에 초기화는 시작된다.
+`.spec.revisionHistoryLimit` 값을 0으로 설정하더라도, 롤아웃이 발생하면 쿠버네티스가 
+이전 레플리카셋을 제거하기 전에 반드시 새로운 레플리카셋을 먼저 생성한다.
+
+`.spec.revisionHistoryLimit` 값을 0이 아닌 값으로 설정하더라도, 
+실제 레플리카셋 개수가 설정한 제한을 초과할 수 있다. 예를 들어, 파드가 무한 충돌(crash looping)상태에 빠지고, 
+시간이 지나면서 여러 번 롤링 업데이트 이벤트가 발생하면, 디플로이먼트가 완전한 상태에 도달하지 못하기 때문에 
+`.spec.revisionHistoryLimit` 값보다 더 많은 레플리카셋이 생성될 수 있다.
+
 ## 카나리 디플로이먼트
 
 만약 디플로이먼트를 이용해서 일부 사용자 또는 서버에 릴리스를 롤아웃 하기 위해서는
-[리소스 관리](/ko/docs/concepts/cluster-administration/manage-deployment/#카나리-canary-디플로이먼트)에
+[리소스 관리](/docs/concepts/workloads/management/#카나리아-배포)에
 설명된 카나리 패던에 따라 각 릴리스 마다 하나씩 여러 디플로이먼트를 생성할 수 있다.
 
 ## 디플로이먼트 사양 작성
 
 다른 모든 쿠버네티스 설정과 마찬가지로 디플로이먼트에는 `.apiVersion`, `.kind` 그리고 `.metadata` 필드가 필요하다.
 설정 파일 작업에 대한 일반적인 내용은
-[애플리케이션 배포하기](/ko/docs/tasks/run-application/run-stateless-application-deployment/),
-컨테이너 구성하기 그리고 [kubectl을 사용해서 리소스 관리하기](/ko/docs/concepts/overview/working-with-objects/object-management/) 문서를 참조한다.
-디플로이먼트 오브젝트의 이름은 유효한
-[DNS 서브도메인 이름](/ko/docs/concepts/overview/working-with-objects/names/#dns-서브도메인-이름)이어야 한다.
+[애플리케이션 배포하기](/docs/tasks/run-application/run-stateless-application-deployment/),
+컨테이너 구성하기 그리고 [kubectl을 사용해서 리소스 관리하기](/docs/concepts/overview/working-with-objects/object-management/) 문서를 참조한다.
+
+컨트롤 플레인이 디플로이먼트를 위해 새로운 파드를 생성할 때, 디플로이먼트의 
+`.metadata.name`은 해당 파드의 이름을 짓는 기준의 일부가 된다. 디플로이먼트 오브젝트의 이름은 유효한
+[DNS 서브도메인](/docs/concepts/overview/working-with-objects/names/#dns-서브도메인-이름)
+값이어야 한다. 그렇지 않으면 파드 호스트네임을 위한 예상치못한 결과를 초래할 수 있다. 최상의 호환성을 위해,
+이름은 보다 제한적인 규칙을 따르는
+[DNS 라벨](/docs/concepts/overview/working-with-objects/names#dns-label-names) 형식을 따르는 것이 좋다.
 
 디플로이먼트에는 [`.spec` 섹션](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status)도 필요하다.
 
@@ -1085,12 +1125,12 @@ echo $?
 
 `.spec.template` 과 `.spec.selector` 은 `.spec` 에서 유일한 필수 필드이다.
 
-`.spec.template` 는 [파드 템플릿](/ko/docs/concepts/workloads/pods/#파드-템플릿)이다. 이것은 {{< glossary_tooltip text="파드" term_id="pod" >}}와 정확하게 동일한 스키마를 가지고 있고, 중첩된 것을 제외하면 `apiVersion` 과 `kind` 를 가지고 있지 않는다.
+`.spec.template` 는 [파드 템플릿](/docs/concepts/workloads/pods/#파드-템플릿)이다. 이것은 중첩되어 있고 `apiVersion` 이나 `kind` 를 가지고 있지 않다는 점을 제외하면, {{< glossary_tooltip text="파드" term_id="pod" >}}와 정확하게 동일한 스키마를 가지고 있다.
 
 파드에 필요한 필드 외에 디플로이먼트 파드 템플릿은 적절한 레이블과 적절한 재시작 정책을 명시해야 한다.
 레이블의 경우 다른 컨트롤러와 겹치지 않도록 해야 한다. 자세한 것은 [셀렉터](#셀렉터)를 참조한다.
 
-[`.spec.template.spec.restartPolicy`](/ko/docs/concepts/workloads/pods/pod-lifecycle/#재시작-정책) 에는 오직 `Always` 만 허용되고,
+[`.spec.template.spec.restartPolicy`](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) 에는 오직 `Always` 만 허용되고,
 명시되지 않으면 기본값이 된다.
 
 ### 레플리카
@@ -1102,7 +1142,7 @@ echo $?
 매니페스트를 이용하여 디플로이먼트를 업데이트하면(예: `kubectl apply -f deployment.yaml` 실행), 
 수동으로 설정했던 디플로이먼트의 크기가 오버라이드된다.
 
-[HorizontalPodAutoscaler](/ko/docs/tasks/run-application/horizontal-pod-autoscale/)(또는 수평 스케일링을 위한 유사 API)가 
+[HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)(또는 수평 스케일링을 위한 유사 API)가
 디플로이먼트 크기를 관리하고 있다면, `.spec.replicas` 를 설정해서는 안 된다.
 
 대신, 쿠버네티스 
@@ -1111,7 +1151,7 @@ echo $?
 
 ### 셀렉터
 
-`.spec.selector` 는 디플로이먼트의 대상이 되는 파드에 대해 [레이블 셀렉터](/ko/docs/concepts/overview/working-with-objects/labels/)를
+`.spec.selector` 는 디플로이먼트의 대상이 되는 파드에 대해 [레이블 셀렉터](/docs/concepts/overview/working-with-objects/labels/)를
 지정하는 필수 필드이다.
 
 `.spec.selector` 는 `.spec.template.metadata.labels` 과 일치해야 하며, 그렇지 않으면 API에 의해 거부된다.
@@ -1147,7 +1187,7 @@ API 버전 `apps/v1` 에서는 `.spec.selector` 와 `.metadata.labels` 이 설�
 완료되기를 대기한다. 파드를 수동으로 삭제하면, 라이프사이클은 레플리카셋에 의해
 제어되며(이전 파드가 여전히 종료 상태에 있는 경우에도) 교체용 파드가 즉시 생성된다. 파드에
 대해 "최대" 보장이 필요한 경우
-[스테이트풀셋](/ko/docs/concepts/workloads/controllers/statefulset/)의 사용을 고려해야 한다.
+[스테이트풀셋](/docs/concepts/workloads/controllers/statefulset/)의 사용을 고려해야 한다.
 {{< /note >}}
 
 #### 디플로이먼트 롤링 업데이트
@@ -1180,14 +1220,112 @@ API 버전 `apps/v1` 에서는 `.spec.selector` 와 `.metadata.labels` 이 설�
 기존 파드가 죽으면 새로운 래플리카셋은 스케일 업할 수 있으며,
 업데이트하는 동안 항상 실행하는 총 파드의 수는 최대 의도한 파드의 수의 130%가 되도록 보장한다.
 
+다음은 `maxUnavailable` 및 `maxSurge` 값을 사용하는 롤링 업데이트 디플로이먼트 예시이다.
+
+{{< tabs name="tab_with_md" >}}
+{{% tab name="Max Unavailable" %}}
+
+ ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+ ```
+
+{{% /tab %}}
+{{% tab name="Max Surge" %}}
+
+ ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+ ```
+
+{{% /tab %}}
+{{% tab name="Hybrid" %}}
+
+ ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+ ```
+
+{{% /tab %}}
+{{< /tabs >}}
+
 ### 진행 기한 시간(초)
 
-`.spec.progressDeadlineSeconds` 는 디플로어먼트가 표면적으로 `type: Progressing`, `status: "False"`의
-상태 그리고 리소스가 `reason: ProgressDeadlineExceeded` 상태로 [진행 실패](#디플로이먼트-실패)를 보고하기 전에
-디플로이먼트가 진행되는 것을 대기시키는 시간(초)를 명시하는 선택적 필드이다.
-디플로이먼트 컨트롤러는 디플로이먼트를 계속 재시도 한다. 기본값은 600(초)이다.
-미래에 자동화된 롤백이 구현된다면 디플로이먼트 컨트롤러는 상태를 관찰하고,
-그 즉시 디플로이먼트를 롤백할 것이다.
+`.spec.progressDeadlineSeconds`는 디플로이먼트가 진행되기를 기다리는 시간(초)을
+지정하는 선택적 필드이며, 시스템은 지정된 시간 안에 디플로이먼트가 진행되지 않으면
+[진행 실패](#디플로이먼트-실패)를 `type: Progressing`, `status: "False"`인 컨디션으로 나타낸다.
+그리고 리소스 상태에 `reason: ProgressDeadlineExceeded`를 표시한다. 디플로이먼트 컨트롤러는 디플로이먼트를 계속
+재시도한다. 기본값은 600이다.
 
 만약 명시된다면 이 필드는 `.spec.minReadySeconds` 보다 커야 한다.
 
@@ -1196,7 +1334,20 @@ API 버전 `apps/v1` 에서는 `.spec.selector` 와 `.metadata.labels` 이 설�
 `.spec.minReadySeconds` 는 새롭게 생성된 파드의 컨테이너가 어떤 것과도 충돌하지 않고 사
 용할 수 있도록 준비되어야 하는 최소 시간(초)을 지정하는 선택적 필드이다.
 이 기본 값은 0이다(파드는 준비되는 즉시 사용할 수 있는 것으로 간주됨).
-파드가 준비되었다고 간주되는 시기에 대한 자세한 내용은 [컨테이너 프로브](/ko/docs/concepts/workloads/pods/pod-lifecycle/#컨테이너-프로브-probe)를 참조한다.
+파드가 준비되었다고 간주되는 시기에 대한 자세한 내용은 [컨테이너 프로브](/docs/concepts/workloads/pods/pod-lifecycle/#컨테이너-프로브-probe)를 참조한다.
+
+### 파드 종료
+
+{{< feature-state feature_gate_name="DeploymentReplicaSetTerminatingReplicas" >}}
+
+종료 중인 파드는 `DeploymentReplicaSetTerminatingReplicas`
+[기능 게이트](/docs/reference/command-line-tools-reference/feature-gates/)가 활성화된 경우에만 확인할 수 있다.
+이 기능 게이트는 [API 서버](/docs/reference/command-line-tools-reference/kube-apiserver/)
+및 [kube-controller-manager](/docs/reference/command-line-tools-reference/kube-controller-manager/)에서 활성화해야 한다.
+
+삭제나 스케일 다운으로 인해 Terminating 상태가 된 파드는 종료까지 오랜 시간이 걸릴 수 있으며, 
+그 기간 동안 추가적인 리소스를 사용할 수 있다. 그 결과 전체 파드 수가 일시적으로 
+`.spec.replicas` 값을 초과할 수 있다. 종료 중인 상태의 파드는 디플로이먼트의 `.status.terminatingReplicas` 필드를 통해 추적할 수 있다.
 
 ### 수정 버전 기록 제한
 
@@ -1217,11 +1368,9 @@ API 버전 `apps/v1` 에서는 `.spec.selector` 와 `.metadata.labels` 이 설�
 
 ## {{% heading "whatsnext" %}}
 
-* [파드](/ko/docs/concepts/workloads/pods)에 대해 배운다.
-* [디플로이먼트를 사용해서 상태를 유지하지 않는 애플리케이션을 구동한다](/ko/docs/tasks/run-application/run-stateless-application-deployment/).
-* `Deployment`는 쿠버네티스 REST API에서 상위-수준 리소스이다.
-  디플로이먼트 API를 이해하기 위해서
-  {{< api-reference page="workload-resources/deployment-v1" >}}
-  오브젝트 정의를 읽는다.
-* [PodDisruptionBudget](/ko/docs/concepts/workloads/pods/disruptions/)과
+* [파드](/docs/concepts/workloads/pods)에 대해 배운다.
+* [디플로이먼트로 스테이트리스 애플리케이션 실행하기](/docs/tasks/run-application/run-stateless-application-deployment/).
+* 디플로이먼트 API를 이해하기 위해서 {{< api-reference page="apps/deployment-v1" >}} 오브젝트 정의를 읽는다.
+* [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/)과
   이를 사용해서 어떻게 중단 중에 애플리케이션 가용성을 관리할 수 있는지에 대해 읽는다.
+* kubectl을 사용하여 [디플로이먼트 생성하기](/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/).

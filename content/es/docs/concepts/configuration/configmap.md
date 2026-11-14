@@ -140,7 +140,7 @@ Lo importante es como los {{< glossary_tooltip text="Pods" term_id="pod" >}} y o
 Para este ejemplo, definimos un {{< glossary_tooltip text="Volumen" term_id="volume" >}} y lo montamos dentro del contenedor
 `demo` como `/config` creando dos ficheros,
 `/config/game.properties` y `/config/user-interface.properties`,
-aunque haya cuatro claves en el ConfigMap. Esto es debido a que enla definición
+aunque haya cuatro claves en el ConfigMap. Esto es debido a que en la definición
 del {{< glossary_tooltip text="Pod" term_id="pod" >}} se especifica el array `items` en la sección `volumes`.
 Si quieres omitir el array `items` entero, cada clave del ConfigMap se convierte en
 un fichero con el mismo nombre que la clave, y tienes 4 ficheros.
@@ -204,7 +204,7 @@ Cuando un ConfigMap está siendo utilizado en un {{< glossary_tooltip text="volu
 El {{< glossary_tooltip text="kubelet" term_id="kubelet" >}} comprueba si el ConfigMap montado está actualizado cada periodo de sincronización.
 Sin embargo, el {{< glossary_tooltip text="kubelet" term_id="kubelet" >}} utiliza su caché local para obtener el valor actual del ConfigMap.
 El tipo de caché es configurable usando el campo `ConfigMapAndSecretChangeDetectionStrategy` en el
-[KubeletConfiguration struct](https://github.com/kubernetes/kubernetes/blob/{{< param "docsbranch" >}}/staging/src/k8s.io/kubelet/config/v1beta1/types.go).
+[KubeletConfiguration struct](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubelet/config/v1beta1/types.go).
 Un ConfigMap puede ser propagado por vista (default), ttl-based, o simplemente redirigiendo
 todas las consultas directamente a la API.
 Como resultado, el retraso total desde el momento que el ConfigMap es actualizado hasta el momento

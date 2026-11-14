@@ -15,8 +15,8 @@ including metrics for CPU and memory.  If you deploy the Metrics API into your c
 the Kubernetes API can then query for this information, and you can use Kubernetes' access control
 mechanisms to manage permissions to do so.
 
-The [HorizontalPodAutoscaler](/docs/tasks/run-application/horizontal-pod-autoscale/)  (HPA) and
-[VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#readme) (VPA)
+The [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)  (HPA) and
+[VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/) (VPA)
 use data from the metrics API to adjust workload replicas and resources to meet customer demand.
 
 You can also view the resource metrics using the
@@ -50,7 +50,7 @@ P[pod data] -.- C
 end
 L[API<br>server]
 W[HPA]
-C ---->|Summary<br>API| A -->|metrics<br>API| L --> W
+C ---->|node level<br>resource metrics| A -->|metrics<br>API| L --> W
 end
 L ---> K[kubectl<br>top]
 classDef box fill:#fff,stroke:#000,stroke-width:1px,color:#000;
@@ -67,11 +67,11 @@ The architecture components, from right to left in the figure, consist of the fo
 
 * [cAdvisor](https://github.com/google/cadvisor): Daemon for collecting, aggregating and exposing
   container metrics included in Kubelet.
-* [kubelet](/docs/concepts/overview/components/#kubelet): Node agent for managing container
+* [kubelet](/docs/concepts/architecture/#kubelet): Node agent for managing container
   resources. Resource metrics are accessible using the `/metrics/resource` and `/stats` kubelet
   API endpoints.
-* [Summary API](#summary-api-source): API provided by the kubelet for discovering and retrieving
-  per-node summarized stats available through the `/stats` endpoint.
+* [node level resource metrics](/docs/reference/instrumentation/node-metrics): API provided by the kubelet for discovering and retrieving
+  per-node summarized stats available through the `/metrics/resource` endpoint.
 * [metrics-server](#metrics-server): Cluster addon component that collects and aggregates resource
   metrics pulled from each kubelet. The API server serves Metrics API for use by HPA, VPA, and by
   the `kubectl top` command. Metrics Server is a reference implementation of the Metrics API.
@@ -83,14 +83,14 @@ The architecture components, from right to left in the figure, consist of the fo
   cAdvisor supports reading metrics from cgroups, which works with typical container runtimes on Linux.
   If you use a container runtime that uses another resource isolation mechanism, for example
   virtualization, then that container runtime must support
-  [CRI Container Metrics](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-node/cri-container-stats.md)
+  [CRI Container Metrics](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-node/cri-container-stats.md)
   in order for metrics to be available to the kubelet.
   {{< /note >}}
 
 <!-- body -->
 
 ## Metrics API
-{{< feature-state for_k8s_version="1.8" state="beta" >}}
+{{< feature-state for_k8s_version="1.37" state="stable" >}}
 
 The metrics-server implements the Metrics API. This API allows you to access CPU and memory usage
 for the nodes and pods in your cluster. Its primary role is to feed resource usage metrics to K8s
@@ -100,13 +100,13 @@ Here is an example of the Metrics API request for a `minikube` node piped throug
 reading:
 
 ```shell
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes/minikube" | jq '.'
+kubectl get --raw "/apis/metrics.k8s.io/v1/nodes/minikube" | jq '.'
 ```
 
 Here is the same API call using `curl`:
 
 ```shell
-curl http://localhost:8080/apis/metrics.k8s.io/v1beta1/nodes/minikube
+curl http://localhost:8080/apis/metrics.k8s.io/v1/nodes/minikube
 ```
 
 Sample response:
@@ -114,10 +114,10 @@ Sample response:
 ```json
 {
   "kind": "NodeMetrics",
-  "apiVersion": "metrics.k8s.io/v1beta1",
+  "apiVersion": "metrics.k8s.io/v1",
   "metadata": {
     "name": "minikube",
-    "selfLink": "/apis/metrics.k8s.io/v1beta1/nodes/minikube",
+    "selfLink": "/apis/metrics.k8s.io/v1/nodes/minikube",
     "creationTimestamp": "2022-01-27T18:48:43Z"
   },
   "timestamp": "2022-01-27T18:48:33Z",
@@ -133,13 +133,13 @@ Here is an example of the Metrics API request for a `kube-scheduler-minikube` po
 `kube-system` namespace and piped through `jq` for easier reading:
 
 ```shell
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/kube-scheduler-minikube" | jq '.'
+kubectl get --raw "/apis/metrics.k8s.io/v1/namespaces/kube-system/pods/kube-scheduler-minikube" | jq '.'
 ```
 
 Here is the same API call using `curl`:
 
 ```shell
-curl http://localhost:8080/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/kube-scheduler-minikube
+curl http://localhost:8080/apis/metrics.k8s.io/v1/namespaces/kube-system/pods/kube-scheduler-minikube
 ```
 
 Sample response:
@@ -147,11 +147,11 @@ Sample response:
 ```json
 {
   "kind": "PodMetrics",
-  "apiVersion": "metrics.k8s.io/v1beta1",
+  "apiVersion": "metrics.k8s.io/v1",
   "metadata": {
     "name": "kube-scheduler-minikube",
     "namespace": "kube-system",
-    "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/kube-scheduler-minikube",
+    "selfLink": "/apis/metrics.k8s.io/v1/namespaces/kube-system/pods/kube-scheduler-minikube",
     "creationTimestamp": "2022-01-27T19:25:00Z"
   },
   "timestamp": "2022-01-27T19:24:31Z",
@@ -232,6 +232,8 @@ to collect metrics from each node. Depending on the metrics-server version it us
 * Metrics resource endpoint `/metrics/resource` in version v0.6.0+ or
 * Summary API endpoint `/stats/summary` in older versions
 
+## {{% heading "whatsnext" %}}
+
 To learn more about the metrics-server, see the
 [metrics-server repository](https://github.com/kubernetes-sigs/metrics-server).
 
@@ -243,26 +245,5 @@ You can also check out the following:
 * [metrics-server releases](https://github.com/kubernetes-sigs/metrics-server/releases)
 * [Horizontal Pod Autoscaling](/docs/tasks/run-application/horizontal-pod-autoscale/)
 
-### Summary API source
-
-The [kubelet](/docs/reference/command-line-tools-reference/kubelet/) gathers stats at the node,
-volume, pod and container level, and emits this information in
-the [Summary API](https://github.com/kubernetes/kubernetes/blob/7d309e0104fedb57280b261e5677d919cb2a0e2d/staging/src/k8s.io/kubelet/pkg/apis/stats/v1alpha1/types.go)
-for consumers to read.
-
-Here is an example of a Summary API request for a `minikube` node:
-
-```shell
-kubectl get --raw "/api/v1/nodes/minikube/proxy/stats/summary"
-```
-
-Here is the same API call using `curl`:
-
-```shell
-curl http://localhost:8080/api/v1/nodes/minikube/proxy/stats/summary
-```
-
-{{< note >}}
-The summary API `/stats/summary` endpoint will be replaced by the `/metrics/resource` endpoint
-beginning with metrics-server 0.6.x.
-{{< /note >}}
+To learn about how the kubelet serves node metrics, and how you can access those via
+the Kubernetes API, read [Node Metrics Data](/docs/reference/instrumentation/node-metrics).

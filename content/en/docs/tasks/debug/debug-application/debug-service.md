@@ -22,7 +22,7 @@ For many steps here you will want to see what a Pod running in the cluster
 sees.  The simplest way to do this is to run an interactive busybox Pod:
 
 ```none
-kubectl run -it --rm --restart=Never busybox --image=gcr.io/google-containers/busybox sh
+kubectl run -it --rm --restart=Never busybox --image=registry.k8s.io/busybox:1.27.2 sh
 ```
 
 {{< note >}}
@@ -417,7 +417,7 @@ kubectl get service hostnames -o json
 * If you meant to use a named port, do your Pods expose a port with the same name?
 * Is the port's `protocol` correct for your Pods?
 
-## Does the Service have any Endpoints?
+## Does the Service have any EndpointSlices?
 
 If you got this far, you have confirmed that your Service is correctly
 defined and is resolved by DNS.  Now let's check that the Pods you ran are
@@ -445,16 +445,16 @@ restarted.  Frequent restarts could lead to intermittent connectivity issues.
 If the restart count is high, read more about how to [debug pods](/docs/tasks/debug/debug-application/debug-pods).
 
 Inside the Kubernetes system is a control loop which evaluates the selector of
-every Service and saves the results into a corresponding Endpoints object.
+every Service and saves the results into one or more EndpointSlice objects.
 
 ```shell
-kubectl get endpoints hostnames
+kubectl get endpointslices -l kubernetes.io/service-name=hostnames
 
-NAME        ENDPOINTS
-hostnames   10.244.0.5:9376,10.244.0.6:9376,10.244.0.7:9376
+NAME              ADDRESSTYPE   PORTS   ENDPOINTS
+hostnames-ytpni   IPv4          9376    10.244.0.5,10.244.0.6,10.244.0.7
 ```
 
-This confirms that the endpoints controller has found the correct Pods for
+This confirms that the EndpointSlice controller has found the correct Pods for
 your Service.  If the `ENDPOINTS` column is `<none>`, you should check that
 the `spec.selector` field of your Service actually selects for
 `metadata.labels` values on your Pods.  A common mistake is to have a typo or
@@ -490,13 +490,13 @@ hostnames-632524106-ly40y
 hostnames-632524106-tlaok
 ```
 
-You expect each Pod in the Endpoints list to return its own hostname.  If
+You expect each Pod in the endpoints list to return its own hostname.  If
 this is not what happens (or whatever the correct behavior is for your own
 Pods), you should investigate what's happening there.
 
 ## Is the kube-proxy working?
 
-If you get here, your Service is running, has Endpoints, and your Pods
+If you get here, your Service is running, has EndpointSlices, and your Pods
 are actually serving.  At this point, the whole Service proxy mechanism is
 suspect.  Let's confirm it, piece by piece.
 
@@ -527,7 +527,6 @@ should see something like:
 ```none
 I1027 22:14:53.995134    5063 server.go:200] Running in resource-only container "/kube-proxy"
 I1027 22:14:53.998163    5063 server.go:247] Using iptables Proxier.
-I1027 22:14:53.999055    5063 server.go:255] Tearing down userspace rules. Errors here are acceptable.
 I1027 22:14:54.038140    5063 proxier.go:352] Setting endpoints for "kube-system/kube-dns:dns-tcp" to [10.244.1.3:53]
 I1027 22:14:54.038164    5063 proxier.go:352] Setting endpoints for "kube-system/kube-dns:dns" to [10.244.1.3:53]
 I1027 22:14:54.038209    5063 proxier.go:352] Setting endpoints for "default/kubernetes:https" to [10.240.0.2:443]
@@ -540,17 +539,9 @@ I1027 22:14:54.040223    5063 proxier.go:294] Adding new service "kube-system/ku
 If you see error messages about not being able to contact the master, you
 should double-check your Node configuration and installation steps.
 
-One of the possible reasons that `kube-proxy` cannot run correctly is that the
-required `conntrack` binary cannot be found. This may happen on some Linux
-systems, depending on how you are installing the cluster, for example, you are
-installing Kubernetes from scratch. If this is the case, you need to manually
-install the `conntrack` package (e.g. `sudo apt install conntrack` on Ubuntu)
-and then retry.
-
 Kube-proxy can run in one of a few modes.  In the log listed above, the
 line `Using iptables Proxier` indicates that kube-proxy is running in
-"iptables" mode.  The most common other mode is "ipvs".  The older "userspace"
-mode has largely been replaced by these.
+"iptables" mode.  The most common other mode is "ipvs".
 
 #### Iptables mode
 
@@ -602,24 +593,6 @@ endpoint, it will create corresponding real servers. In this example, service
 hostnames(`10.0.1.175:80`) has 3 endpoints(`10.244.0.5:9376`,
 `10.244.0.6:9376`, `10.244.0.7:9376`).
 
-#### Userspace mode
-
-In rare cases, you may be using "userspace" mode.  From your Node:
-
-```shell
-iptables-save | grep hostnames
-```
-```none
--A KUBE-PORTALS-CONTAINER -d 10.0.1.175/32 -p tcp -m comment --comment "default/hostnames:default" -m tcp --dport 80 -j REDIRECT --to-ports 48577
--A KUBE-PORTALS-HOST -d 10.0.1.175/32 -p tcp -m comment --comment "default/hostnames:default" -m tcp --dport 80 -j DNAT --to-destination 10.240.115.247:48577
-```
-
-There should be 2 rules for each port of your Service (only one in this
-example) - a "KUBE-PORTALS-CONTAINER" and a "KUBE-PORTALS-HOST".
-
-Almost nobody should be using the "userspace" mode any more, so you won't spend
-more time on it here.
-
 ### Is kube-proxy proxying?
 
 Assuming you do see one the above cases, try again to access your Service by
@@ -630,20 +603,6 @@ curl 10.0.1.175:80
 ```
 ```none
 hostnames-632524106-bbpiw
-```
-
-If this fails and you are using the userspace proxy, you can try accessing the
-proxy directly.  If you are using the iptables proxy, skip this section.
-
-Look back at the `iptables-save` output above, and extract the
-port number that `kube-proxy` is using for your Service.  In the above
-examples it is "48577".  Now connect to that:
-
-```shell
-curl localhost:48577
-```
-```none
-hostnames-632524106-tlaok
 ```
 
 If this still fails, look at the `kube-proxy` logs for specific lines like:
@@ -722,7 +681,7 @@ UP BROADCAST RUNNING PROMISC MULTICAST  MTU:1460  Metric:1
 ## Seek help
 
 If you get this far, something very strange is happening.  Your Service is
-running, has Endpoints, and your Pods are actually serving.  You have DNS
+running, has EndpointSlices, and your Pods are actually serving.  You have DNS
 working, and `kube-proxy` does not seem to be misbehaving.  And yet your
 Service is not working.  Please let us know what is going on, so we can help
 investigate!

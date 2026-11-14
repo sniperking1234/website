@@ -18,9 +18,9 @@ El uso de la última versión de kubectl ayuda a evitar problemas imprevistos.
 
 Existen los siguientes métodos para instalar kubectl en macOS:
 
-- [Instalar el binario de kubectl con curl en macOS](#install-kubectl-binary-with-curl-on-macos)
-- [Instalar con Homebrew en macOS](#install-with-homebrew-on-macos)
-- [Instalar con Macports en macOS](#install-with-macports-on-macos)
+- [Instalar el binario de kubectl con curl en macOS](#instalar-el-binario-de-kubectl-con-curl-en-macos)
+- [Instalar con Homebrew en macOS](#instalar-con-homebrew-en-macos)
+- [Instalar con Macports en macOS](#instalar-con-macports-en-macos)
 
 ### Instalar el binario de kubectl con curl en macOS
 
@@ -38,16 +38,16 @@ Existen los siguientes métodos para instalar kubectl en macOS:
    {{< note >}}
    Para descargar una versión específica, reemplace el `$(curl -L -s https://dl.k8s.io/release/stable.txt)` parte del comando con la versión específica.
 
-   Por ejemplo, para descargar la versión {{< param "fullversion" >}} en Intel macOS, escriba:
+   Por ejemplo, para descargar la versión {{< skew currentPatchVersion >}} en Intel macOS, escriba:
 
    ```bash
-   curl -LO "https://dl.k8s.io/release/{{< param "fullversion" >}}/bin/darwin/amd64/kubectl"
+   curl -LO "https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/darwin/amd64/kubectl"
    ```
 
    Y para macOS en Apple Silicon, escriba:
 
    ```bash
-   curl -LO "https://dl.k8s.io/release/{{< param "fullversion" >}}/bin/darwin/arm64/kubectl"
+   curl -LO "https://dl.k8s.io/release/v{{< skew currentPatchVersion >}}/bin/darwin/arm64/kubectl"
    ```
 
    {{< /note >}}

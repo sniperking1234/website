@@ -1,6 +1,6 @@
 ---
 title: Extending Kubernetes
-weight: 110
+weight: 999 # this section should come last
 description: Different ways to change the behavior of your Kubernetes cluster.
 reviewers:
 - erictune
@@ -128,7 +128,7 @@ clients that access it.
 
 1. The Kubernetes scheduler [decides](/docs/concepts/scheduling-eviction/assign-pod-node/)
    which nodes to place pods on. There are several ways to extend scheduling, which are
-   described in the [scheduler extensions](#scheduler-extensions) section.
+   described in the [Scheduling extensions](#scheduling-extensions) section.
 
 1. Much of the behavior of Kubernetes is implemented by programs called
    {{< glossary_tooltip term_id="controller" text="controllers" >}}, that are
@@ -157,7 +157,7 @@ several types of extensions.
 
 <!-- image source for flowchart: https://docs.google.com/drawings/d/1sdviU6lDz4BpnzJNHfNpQrqI9F19QZ07KnhnxVrp2yg/edit -->
 
-{{< figure src="/docs/concepts/extend-kubernetes/flowchart.png"
+{{< figure src="/docs/concepts/extend-kubernetes/flowchart.svg"
     alt="Flowchart with questions about use cases and guidance for implementers. Green circles indicate yes; red circles indicate no."
     class="diagram-large" caption="Flowchart guide to select an extension approach" >}}
 
@@ -185,7 +185,8 @@ For more about Custom Resources, see the
 ### API aggregation layer
 
 You can use Kubernetes' [API Aggregation Layer](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/)
-to integrate the Kubernetes API with additional services such as for [metrics](/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/).
+to integrate the Kubernetes API with additional services such as the
+[Metrics API](/docs/concepts/cluster-administration/observability/#metrics-api).
 
 ### Combining new APIs with automation
 
@@ -272,7 +273,7 @@ you run a Pod that relies on FlexVolume storage, the kubelet calls a binary plug
 The archived [FlexVolume](https://git.k8s.io/design-proposals-archive/storage/flexvolume-deployment.md)
 design proposal has more detail on this approach.
 
-The [Kubernetes Volume Plugin FAQ for Storage Vendors](https://github.com/kubernetes/community/blob/master/sig-storage/volume-plugin-faq.md#kubernetes-volume-plugin-faq-for-storage-vendors)
+The [Kubernetes Volume Plugin FAQ for Storage Vendors](https://github.com/kubernetes/community/blob/main/sig-storage/volume-plugin-faq.md#kubernetes-volume-plugin-faq-for-storage-vendors)
 includes general information on storage plugins.
 
 ### Network plugins
@@ -282,6 +283,20 @@ and to support other aspects of the Kubernetes network model.
 
 [Network Plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/)
 allow Kubernetes to work with different networking topologies and technologies.
+
+### Kubelet image credential provider plugins
+
+{{< feature-state for_k8s_version="v1.26" state="stable" >}}
+Kubelet image credential providers are plugins for the kubelet to dynamically retrieve image registry
+credentials. The credentials are then used when pulling images from container image registries that
+match the configuration.
+
+The plugins can communicate with external services or use local files to obtain credentials. This way,
+the kubelet does not need to have static credentials for each registry, and can support various
+authentication methods and protocols.
+
+For plugin configuration details, see
+[Configure a kubelet image credential provider](/docs/tasks/administer-cluster/kubelet-credential-provider/).
 
 ## Scheduling extensions
 

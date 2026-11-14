@@ -13,7 +13,7 @@ description: >-
 This page shows how to set minimum and maximum values for the CPU resources used by containers
 and Pods in a {{< glossary_tooltip text="namespace" term_id="namespace" >}}. You specify minimum
 and maximum CPU values in a
-[LimitRange](/docs/reference/kubernetes-api/policy-resources/limit-range-v1/)
+[LimitRange](/docs/reference/kubernetes-api/core/limit-range-v1/)
 object. If a Pod does not meet the constraints imposed by the LimitRange, it cannot be created
 in the namespace.
 
@@ -47,7 +47,7 @@ kubectl create namespace constraints-cpu-example
 
 Here's a manifest for an example {{< glossary_tooltip text="LimitRange" term_id="limitrange" >}}:
 
-{{< codenew file="admin/resource/cpu-constraints.yaml" >}}
+{{% code_sample file="admin/resource/cpu-constraints.yaml" %}}
 
 Create the LimitRange:
 
@@ -98,7 +98,7 @@ Here's a manifest for a Pod that has one container. The container manifest
 specifies a CPU request of 500 millicpu and a CPU limit of 800 millicpu. These satisfy the
 minimum and maximum CPU constraints imposed by the LimitRange for this namespace.
 
-{{< codenew file="admin/resource/cpu-constraints-pod.yaml" >}}
+{{% code_sample file="admin/resource/cpu-constraints-pod.yaml" %}}
 
 Create the Pod:
 
@@ -140,7 +140,7 @@ kubectl delete pod constraints-cpu-demo --namespace=constraints-cpu-example
 Here's a manifest for a Pod that has one container. The container specifies a
 CPU request of 500 millicpu and a cpu limit of 1.5 cpu.
 
-{{< codenew file="admin/resource/cpu-constraints-pod-2.yaml" >}}
+{{% code_sample file="admin/resource/cpu-constraints-pod-2.yaml" %}}
 
 Attempt to create the Pod:
 
@@ -161,7 +161,7 @@ pods "constraints-cpu-demo-2" is forbidden: maximum cpu usage per Container is 8
 Here's a manifest for a Pod that has one container. The container specifies a
 CPU request of 100 millicpu and a CPU limit of 800 millicpu.
 
-{{< codenew file="admin/resource/cpu-constraints-pod-3.yaml" >}}
+{{% code_sample file="admin/resource/cpu-constraints-pod-3.yaml" %}}
 
 Attempt to create the Pod:
 
@@ -183,7 +183,7 @@ pods "constraints-cpu-demo-3" is forbidden: minimum cpu usage per Container is 2
 Here's a manifest for a Pod that has one container. The container does not
 specify a CPU request, nor does it specify a CPU limit.
 
-{{< codenew file="admin/resource/cpu-constraints-pod-4.yaml" >}}
+{{% code_sample file="admin/resource/cpu-constraints-pod-4.yaml" %}}
 
 Create the Pod:
 
@@ -231,6 +231,13 @@ The maximum and minimum CPU constraints imposed on a namespace by a LimitRange a
 when a Pod is created or updated. If you change the LimitRange, it does not affect
 Pods that were created previously.
 
+{{< note >}}
+When using [in-place Pod resize](/docs/tasks/configure-pod-container/resize-container-resources/),
+the CPU constraints are also enforced. If a resize would cause the Pod's CPU values
+to violate the LimitRange constraints (either exceeding the maximum or falling below the minimum),
+the resize will be rejected and the Pod's resources remain at their previous values.
+{{< /note >}}
+
 ## Motivation for minimum and maximum CPU constraints
 
 As a cluster administrator, you might want to impose restrictions on the CPU resources that Pods can use.
@@ -276,6 +283,8 @@ kubectl delete namespace constraints-cpu-example
 * [Assign Memory Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-memory-resource/)
 
 * [Assign CPU Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-cpu-resource/)
+
+* [Assign Pod-level CPU and memory resources](/docs/tasks/configure-pod-container/assign-pod-level-resources/)
 
 * [Configure Quality of Service for Pods](/docs/tasks/configure-pod-container/quality-service-pod/)
 

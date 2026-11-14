@@ -59,7 +59,8 @@ Towards the end of the twelve month, the following will happen:
 During the two-month maintenance mode period, Release Managers may cut
 additional maintenance releases to resolve:
 
-- CVEs (under the advisement of the Security Response Committee)
+- [Vulnerabilities](/docs/reference/issues-security/official-cve-feed/) that have an assigned
+  CVE ID (under the advisement of the Security Response Committee)
 - dependency issues (including base image updates)
 - critical core component issues
 
@@ -76,12 +77,7 @@ Timelines may vary with the severity of bug fixes, but for easier planning we
 will target the following monthly release points. Unplanned, critical
 releases may also occur in between these.
 
-| Monthly Patch Release | Cherry Pick Deadline | Target date |
-| --------------------- | -------------------- | ----------- |
-| September 2022        | 2022-09-09           | 2022-09-14  |
-| October 2022          | 2022-10-07           | 2022-10-12  |
-| November 2022         | 2022-11-11           | 2022-11-16  |
-| December 2022         | 2022-12-09           | 2022-12-14  |
+{{< upcoming-releases >}}
 
 ## Detailed Release History for Active Branches
 
@@ -93,7 +89,7 @@ These releases are no longer supported.
 
 {{< eol-releases >}}
 
-[cherry-picks]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-release/cherry-picks.md
+[cherry-picks]: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-release/cherry-picks.md
 [release-managers]: /releases/release-managers
 [release process description]: /releases/release
 [yearly-support]: https://git.k8s.io/enhancements/keps/sig-release/1498-kubernetes-yearly-support-period/README.md

@@ -24,7 +24,7 @@ Podを作成するとき、そのPodで実行するコンテナに環境変数�
 
 この演習では、1つのコンテナを実行するPodを作成します。Podの設定ファイルには、名前 `DEMO_GREETING`、値 `"Hello from the environment"`を持つ環境変数が定義されています。Podの設定マニフェストを以下に示します:
 
-{{< codenew file="pods/inject/envars.yaml" >}}
+{{% code_sample file="pods/inject/envars.yaml" %}}
 
 1. マニフェストに基づいてPodを作成します:
 
@@ -76,7 +76,7 @@ Podを作成するとき、そのPodで実行するコンテナに環境変数�
 {{< /note >}}
 
 {{< note >}}
-環境変数は相互に参照でき、循環して使用可能です。使用する前に順序に注意してください。
+環境変数は互いに参照することができますが、順序が重要です。同じコンテキストで定義されている他の変数を使用する場合は、その変数をリストの後に配置する必要があります。同様に、循環参照は避けてください。
 {{< /note >}}
 
 ## 設定の中で環境変数を使用する {#using-environment-variables-inside-of-your-config}

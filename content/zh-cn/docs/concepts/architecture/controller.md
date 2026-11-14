@@ -4,6 +4,12 @@ content_type: concept
 weight: 30
 ---
 
+<!-- 
+title: Controllers
+content_type: concept
+weight: 30
+-->
+
 <!-- overview -->
 <!--
 In robotics and automation, a _control loop_ is
@@ -31,7 +37,7 @@ closer to the desired state, by turning equipment on or off.
 ## Controller pattern
 
 A controller tracks at least one Kubernetes resource type.
-These [objects](/docs/concepts/overview/working-with-objects/kubernetes-objects/#kubernetes-objects)
+These {{< glossary_tooltip text="objects" term_id="object" >}}
 have a spec field that represents the desired state. The
 controller(s) for that resource are responsible for making the current
 state come closer to that desired state.
@@ -50,7 +56,7 @@ detail.
 ## 控制器模式 {#controller-pattern}
 
 一个控制器至少追踪一种类型的 Kubernetes 资源。这些
-[对象](/zh-cn/docs/concepts/overview/working-with-objects/kubernetes-objects/#kubernetes-objects)
+{{< glossary_tooltip text="对象" term_id="object" >}}
 有一个代表期望状态的 `spec` 字段。
 该资源的控制器负责确保其当前状态接近期望状态。
 
@@ -97,7 +103,7 @@ and eventually the work is done.
 Job 是一种 Kubernetes 资源，它运行一个或者多个 {{< glossary_tooltip term_id="pod" >}}，
 来执行一个任务然后停止。
 （一旦[被调度了](/zh-cn/docs/concepts/scheduling-eviction/)，对 `kubelet` 来说 Pod
-对象就会变成了期望状态的一部分）。
+对象就会变成期望状态的一部分）。
 
 在集群中，当 Job 控制器拿到新任务时，它会保证一组 Node 节点上的 `kubelet`
 可以运行正确数量的 Pod 来完成工作。
@@ -127,7 +133,7 @@ indicate that your room is now at the temperature you set).
 <!--
 ### Direct control
 
-By contrast with Job, some controllers need to make changes to
+In contrast with Job, some controllers need to make changes to
 things outside of your cluster.
 
 For example, if you use a control loop to make sure there
@@ -158,11 +164,11 @@ that horizontally scales the nodes in your cluster.)
 可以水平地扩展集群中的节点。）
 
 <!--
-The important point here is that the controller makes some change to bring about
-your desired state, and then reports current state back to your cluster's API server.
+The important point here is that the controller makes some changes to bring about
+your desired state, and then reports the current state back to your cluster's API server.
 Other control loops can observe that reported data and take their own actions.
 -->
-这里，很重要的一点是，控制器做出了一些变更以使得事物更接近你的期望状态，
+这里的重点是，控制器做出了一些变更以使得事物更接近你的期望状态，
 之后将当前状态报告给集群的 API 服务器。
 其他控制回路可以观测到所汇报的数据的这种变化并采取其各自的行动。
 
@@ -280,16 +286,17 @@ Kubernetes 允许你运行一个稳定的控制平面，这样即使某些内置
 
 ## {{% heading "whatsnext" %}}
 <!--
-* Read about the [Kubernetes control plane](/docs/concepts/overview/components/#control-plane-components)
-* Discover some of the basic [Kubernetes objects](/docs/concepts/overview/working-with-objects/kubernetes-objects/)
+* Read about the [Kubernetes control plane](/docs/concepts/architecture/#control-plane-components)
+* Discover some of the basic [Kubernetes objects](/docs/concepts/overview/working-with-objects/)
 * Learn more about the [Kubernetes API](/docs/concepts/overview/kubernetes-api/)
 * If you want to write your own controller, see
-  [Extension Patterns](/docs/concepts/extend-kubernetes/#extension-patterns)
-  in Extending Kubernetes.
+  [Kubernetes extension patterns](/docs/concepts/extend-kubernetes/#extension-patterns)
+  and the [sample-controller](https://github.com/kubernetes/sample-controller) repository.
 -->
-* 阅读 [Kubernetes 控制平面组件](/zh-cn/docs/concepts/overview/components/#control-plane-components)
-* 了解 [Kubernetes 对象](/zh-cn/docs/concepts/overview/working-with-objects/kubernetes-objects/)
+* 阅读 [Kubernetes 控制平面组件](/zh-cn/docs/concepts/architecture/#control-plane-components)
+* 了解 [Kubernetes 对象](/zh-cn/docs/concepts/overview/working-with-objects/)
   的一些基本知识
 * 进一步学习 [Kubernetes API](/zh-cn/docs/concepts/overview/kubernetes-api/)
-* 如果你想编写自己的控制器，请看 Kubernetes 的
-  [扩展模式](/zh-cn/docs/concepts/extend-kubernetes/#extension-patterns)。
+* 如果你想编写自己的控制器，请查看
+  [Kubernetes 扩展模式](/zh-cn/docs/concepts/extend-kubernetes/#extension-patterns)
+  以及[控制器样例](https://github.com/kubernetes/sample-controller)。

@@ -12,7 +12,7 @@ Sin embargo, el script de finalización de kubectl depende de [**bash-completion
 
 {{< warning>}}
 Hay dos versiones de bash-complete, v1 y v2. V1 es para Bash 3.2 (
-que es el predeterminado en macOS), y v2 es para Bash 4.1+. El script de completado de kubectl **no funciona** correctamente con bash-complete v1 y Bash 3.2. Requiere **bash-complete v2** y **Bash 4.1+**. Por lo tanto, para poder usar correctamente la finalización de kubectl en macOS, debe instalar y usar Bash 4.1+ ([*instrucciones*](https://itnext.io/upgrading-bash-on-macos-7138bd1066ba)). Las siguientes instrucciones asumen que usa Bash 4.1+ (es decir, cualquier versión de Bash de 4.1 o posterior).
+que es el predeterminado en macOS), y v2 es para Bash 4.1+. El script de completado de kubectl **no funciona** correctamente con bash-complete v1 y Bash 3.2. Requiere **bash-complete v2** y **Bash 4.1+**. Por lo tanto, para poder usar correctamente la finalización de kubectl en macOS, debe instalar y usar Bash 4.1+ ([*instrucciones*](https://apple.stackexchange.com/a/292760)). Las siguientes instrucciones asumen que usa Bash 4.1+ (es decir, cualquier versión de Bash de 4.1 o posterior).
 {{< /warning >}}
 
 ### Actualizar Bash
@@ -50,8 +50,7 @@ brew install bash-completion@2
 Como se indica en el resultado de este comando, agregue lo siguiente a su archivo `~/.bash_profile`:
 
 ```bash
-export BASH_COMPLETION_COMPAT_DIR="/usr/local/etc/bash_completion.d"
-[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+brew_etc="$(brew --prefix)/etc" && [[ -r "${brew_etc}/profile.d/bash_completion.sh" ]] && . "${brew_etc}/profile.d/bash_completion.sh"
 ```
 
 Vuelva a cargar su shell y verifique que bash-complete v2 esté instalado correctamente con `type _init_completion`.

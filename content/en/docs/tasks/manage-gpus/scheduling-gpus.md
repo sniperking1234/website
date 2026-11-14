@@ -8,10 +8,11 @@ description: Configure and schedule GPUs for use as a resource by nodes in a clu
 
 <!-- overview -->
 
-{{< feature-state state="beta" for_k8s_version="v1.10" >}}
+{{< feature-state state="stable" for_k8s_version="v1.26" >}}
 
-Kubernetes includes **experimental** support for managing GPUs
-(graphical processing units) across several nodes.
+Kubernetes includes **stable** support for managing AMD and NVIDIA GPUs
+(graphical processing units) across different nodes in your cluster, using
+{{< glossary_tooltip text="device plugins" term_id="device-plugin" >}}.
 
 This page describes how users can consume GPUs, and outlines
 some of the limitations in the implementation.
@@ -20,8 +21,7 @@ some of the limitations in the implementation.
 
 ## Using device plugins
 
-Kubernetes implements {{< glossary_tooltip text="device plugins" term_id="device-plugin" >}}
-to let Pods access specialized hardware features such as GPUs.
+Kubernetes implements device plugins to let Pods access specialized hardware features such as GPUs.
 
 {{% thirdparty-content %}}
 
@@ -29,7 +29,8 @@ As an administrator, you have to install GPU drivers from the corresponding
 hardware vendor on the nodes and run the corresponding device plugin from the
 GPU vendor. Here are some links to vendors' instructions:
 
-* [AMD](https://github.com/RadeonOpenCompute/k8s-device-plugin#deployment)
+* [AMD](https://github.com/ROCm/k8s-device-plugin#deployment)
+* [Intel](https://intel.github.io/intel-device-plugins-for-kubernetes/cmd/gpu_plugin/README.html)
 * [NVIDIA](https://github.com/NVIDIA/k8s-device-plugin#quick-start)
 
 Once you have installed the plugin, your cluster exposes a custom schedulable resource such as `amd.com/gpu` or `nvidia.com/gpu`.
@@ -63,7 +64,7 @@ spec:
           gpu-vendor.example/example-gpu: 1 # requesting 1 GPU
 ```
 
-## Clusters containing different types of GPUs
+## Manage clusters with different types of GPUs
 
 If different nodes in your cluster have different types of GPUs, then you
 can use [Node Labels and Node Selectors](/docs/tasks/configure-pod-container/assign-pods-nodes/)
@@ -82,70 +83,46 @@ a different label key if you prefer.
 
 ## Automatic node labelling {#node-labeller}
 
-If you're using AMD GPU devices, you can deploy
-[Node Labeller](https://github.com/RadeonOpenCompute/k8s-device-plugin/tree/master/cmd/k8s-node-labeller).
-Node Labeller is a {{< glossary_tooltip text="controller" term_id="controller" >}} that automatically
-labels your nodes with GPU device properties.
+As an administrator, you can automatically discover and label all your GPU enabled nodes
+by deploying Kubernetes [Node Feature Discovery](https://github.com/kubernetes-sigs/node-feature-discovery) (NFD).
+NFD detects the hardware features that are available on each node in a Kubernetes cluster.
+Typically, NFD is configured to advertise those features as node labels, but NFD can also add extended resources, annotations, and node taints.
+NFD is compatible with all [supported versions](/releases/version-skew-policy/#supported-versions) of Kubernetes.
+By default NFD create the [feature labels](https://kubernetes-sigs.github.io/node-feature-discovery/master/usage/features.html) for the detected features.
+Administrators can leverage NFD to also taint nodes with specific features, so that only pods that request those features can be scheduled on those nodes.
 
-At the moment, that controller can add labels for:
+You also need a plugin for NFD that adds appropriate labels to your nodes; these might be generic
+labels or they could be vendor specific. Your GPU vendor may provide a third party
+plugin for NFD; check their documentation for more details.
 
-* Device ID (-device-id)
-* VRAM Size (-vram)
-* Number of SIMD (-simd-count)
-* Number of Compute Unit (-cu-count)
-* Firmware and Feature Versions (-firmware)
-* GPU Family, in two letters acronym (-family)
-  * SI - Southern Islands
-  * CI - Sea Islands
-  * KV - Kaveri
-  * VI - Volcanic Islands
-  * CZ - Carrizo
-  * AI - Arctic Islands
-  * RV - Raven
-
-```shell
-kubectl describe node cluster-node-23
-```
-
-```
-Name:               cluster-node-23
-Roles:              <none>
-Labels:             beta.amd.com/gpu.cu-count.64=1
-                    beta.amd.com/gpu.device-id.6860=1
-                    beta.amd.com/gpu.family.AI=1
-                    beta.amd.com/gpu.simd-count.256=1
-                    beta.amd.com/gpu.vram.16G=1
-                    kubernetes.io/arch=amd64
-                    kubernetes.io/os=linux
-                    kubernetes.io/hostname=cluster-node-23
-Annotations:        node.alpha.kubernetes.io/ttl: 0
-…
-```
-
-With the Node Labeller in use, you can specify the GPU type in the Pod spec:
-
-```yaml
+{{< highlight yaml "linenos=false,hl_lines=7-18" >}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: cuda-vector-add
+  name: example-vector-add
 spec:
   restartPolicy: OnFailure
-  containers:
-    - name: cuda-vector-add
-      # https://github.com/kubernetes/kubernetes/blob/v1.7.11/test/images/nvidia-cuda/Dockerfile
-      image: "registry.k8s.io/cuda-vector-add:v0.1"
-      resources:
-        limits:
-          nvidia.com/gpu: 1
+  # You can use Kubernetes node affinity to schedule this Pod onto a node
+  # that provides the kind of GPU that its container needs in order to work
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
-        – matchExpressions:
-          – key: beta.amd.com/gpu.family.AI # Arctic Islands GPU family
-            operator: Exist
-```
+        - matchExpressions:
+          - key: "gpu.gpu-vendor.example/installed-memory"
+            operator: Gt # (greater than)
+            values: ["40535"]
+          - key: "feature.node.kubernetes.io/pci-10.present" # NFD Feature label
+            values: ["true"] # (optional) only schedule on nodes with PCI device 10
+  containers:
+    - name: example-vector-add
+      image: "registry.example/example-vector-add:v42"
+      resources:
+        limits:
+          gpu-vendor.example/example-gpu: 1 # requesting 1 GPU
+{{< /highlight >}}
 
-This ensures that the Pod will be scheduled to a node that has the GPU type
-you specified.
+#### GPU vendor implementations
+
+- [Intel](https://intel.github.io/intel-device-plugins-for-kubernetes/cmd/gpu_plugin/README.html)
+- [NVIDIA](https://github.com/NVIDIA/k8s-device-plugin)

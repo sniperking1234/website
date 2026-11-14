@@ -12,7 +12,6 @@ auto_generated: true
 
 - [WebhookAdmission](#apiserver-config-k8s-io-v1-WebhookAdmission)
   
-    
 
 ## `WebhookAdmission`     {#apiserver-config-k8s-io-v1-WebhookAdmission}
     
@@ -34,6 +33,19 @@ auto_generated: true
 </td>
 <td>
    <p>KubeConfigFile is the path to the kubeconfig file.</p>
+</td>
+</tr>
+<tr><td><code>staticManifestsDir</code><br/>
+<code>string</code>
+</td>
+<td>
+   <p>StaticManifestsDir is the path to a directory containing static webhook
+configurations to be loaded at startup. Files with extensions .yaml,
+.yml, and .json are read. Only admissionregistration.k8s.io/v1
+ValidatingWebhookConfiguration and MutatingWebhookConfiguration
+resources are supported.
+Using this field requires the ManifestBasedAdmissionControlConfig
+feature gate to be enabled.</p>
 </td>
 </tr>
 </tbody>

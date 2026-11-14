@@ -1,6 +1,7 @@
 ---
 title: Configure Quotas for API Objects
 content_type: task
+weight: 130
 ---
 
 
@@ -39,7 +40,7 @@ kubectl create namespace quota-object-example
 
 Here is the configuration file for a ResourceQuota object:
 
-{{< codenew file="admin/resource/quota-objects.yaml" >}}
+{{% code_sample file="admin/resource/quota-objects.yaml" %}}
 
 Create the ResourceQuota:
 
@@ -73,7 +74,7 @@ status:
 
 Here is the configuration file for a PersistentVolumeClaim object:
 
-{{< codenew file="admin/resource/quota-objects-pvc.yaml" >}}
+{{% code_sample file="admin/resource/quota-objects-pvc.yaml" %}}
 
 Create the PersistentVolumeClaim:
 
@@ -98,7 +99,7 @@ pvc-quota-demo   Pending
 
 Here is the configuration file for a second PersistentVolumeClaim:
 
-{{< codenew file="admin/resource/quota-objects-pvc-2.yaml" >}}
+{{% code_sample file="admin/resource/quota-objects-pvc-2.yaml" %}}
 
 Attempt to create the second PersistentVolumeClaim:
 
@@ -165,6 +166,8 @@ kubectl delete namespace quota-object-example
 * [Assign Memory Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-memory-resource/)
 
 * [Assign CPU Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-cpu-resource/)
+
+* [Assign Pod-level CPU and memory resources](/docs/tasks/configure-pod-container/assign-pod-level-resources/)
 
 * [Configure Quality of Service for Pods](/docs/tasks/configure-pod-container/quality-service-pod/)
 

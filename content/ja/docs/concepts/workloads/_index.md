@@ -1,6 +1,6 @@
 ---
 title: "ワークロード"
-weight: 50
+weight: 55
 description: >
   Kubernetesにおけるデプロイ可能な最小のオブジェクトであるPodと、高レベルな抽象化がPodの実行を助けることを理解します。
 no_list: true
@@ -17,7 +17,7 @@ Podには定義されたライフサイクルがあります。たとえば、�
 
 * [Deployment](/ja/docs/concepts/workloads/controllers/deployment/)と[ReplicaSet](/ja/docs/concepts/workloads/controllers/replicaset/)(レガシーなリソース{{< glossary_tooltip text="ReplicationController" term_id="replication-controller" >}}を置き換えるものです)
 * [StatefulSet](/ja/docs/concepts/workloads/controllers/statefulset/)
-* [DaemonSet](/ja/docs/concepts/workloads/controllers/daemonset/)(ストレージドライバやネットワークプラグインなど、ノードローカルな機能を提供するためのPodを実行するために使われます)
+* [DaemonSet](/ja/docs/concepts/workloads/controllers/daemonset/)(ストレージドライバーやネットワークプラグインなど、ノードローカルな機能を提供するためのPodを実行するために使われます)
 * [Job](/docs/concepts/workloads/controllers/job/)と[CronJob](/ja/docs/concepts/workloads/controllers/cron-jobs/)(実行後に完了するようなタスクのために使われます)
 
 多少関連のある2種類の補助的な概念もあります。

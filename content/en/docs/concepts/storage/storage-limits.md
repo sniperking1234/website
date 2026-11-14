@@ -6,6 +6,7 @@ reviewers:
 - msau42
 title: Node-specific Volume Limits
 content_type: concept
+weight: 90
 ---
 
 <!-- overview -->
@@ -33,19 +34,6 @@ that can be attached to a Node:
   <tr><td><a href="https://cloud.google.com/persistent-disk/">Google Persistent Disk</a></td><td>16</td></tr>
   <tr><td><a href="https://azure.microsoft.com/en-us/services/storage/main-disks/">Microsoft Azure Disk Storage</a></td><td>16</td></tr>
 </table>
-
-## Custom limits
-
-You can change these limits by setting the value of the
-`KUBE_MAX_PD_VOLS` environment variable, and then starting the scheduler.
-CSI drivers might have a different procedure, see their documentation
-on how to customize their limits.
-
-Use caution if you set a limit that is higher than the default limit. Consult
-the cloud provider's documentation to make sure that Nodes can actually support
-the limit you set.
-
-The limit applies to the entire cluster, so it affects all Nodes.
 
 ## Dynamic volume limits
 
@@ -78,4 +66,71 @@ Refer to the [CSI specifications](https://github.com/container-storage-interface
 
 * For volumes managed by in-tree plugins that have been migrated to a CSI driver, the maximum number of volumes will be the one reported by the CSI driver.
 
+### Mutable CSI Node Allocatable Count
 
+{{< feature-state feature_gate_name="MutableCSINodeAllocatableCount" >}}
+
+CSI drivers can dynamically adjust the maximum number of volumes that can be attached to a Node at runtime. This enhances scheduling accuracy and reduces pod scheduling failures due to changes in resource availability.
+
+To use this feature, you must enable the `MutableCSINodeAllocatableCount` feature gate on the following components:
+
+- `kube-apiserver`
+- `kubelet`
+
+#### Periodic Updates
+
+When enabled, CSI drivers can request periodic updates to their volume limits by setting the `nodeAllocatableUpdatePeriodSeconds` field in the `CSIDriver` specification. For example:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: hostpath.csi.k8s.io
+spec:
+  nodeAllocatableUpdatePeriodSeconds: 60
+```
+
+Kubelet will periodically call the corresponding CSI driver’s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.
+
+If a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state.
+
+### Preventing Pod placement without CSI driver
+
+{{< feature-state feature_gate_name="VolumeLimitScaling" >}}
+
+The `VolumeLimitScaling`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates#VolumeLimitScaling)
+is enabled by default in Kubernetes v1.37. 
+
+However, preventing pod placement on nodes without a CSI driver requires explicit opt-in
+via the `spec.preventPodSchedulingIfMissing` field of the `CSIDriver` object.
+
+The `preventPodSchedulingIfMissing` field defaults to `false` and must be set to `true`
+if you do not want pods to be scheduled on nodes without a CSI driver. This decision
+to default to `false` was made for backward compatibility reasons and compatibility
+with [Cluster AutoScaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler)
+which may not be aware of CSI volume limits during the autoscaling
+phase (see section below).
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: hostpath.csi.k8s.io
+spec:
+  preventPodSchedulingIfMissing: true
+```
+
+
+### CSI volume attach limits and cluster autoscaler
+
+[Cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) can account for CSI 
+volume limits when
+`--enable-csi-node-aware-scheduling=true`. This option is independent of the
+`VolumeLimitScaling` feature gate.
+
+If you use cluster autoscaler, only set `spec.preventPodSchedulingIfMissing` to
+`true` when cluster autoscaler is configured with
+`--enable-csi-node-aware-scheduling=true`. Otherwise, its scheduling simulations
+do not include the required `CSINode` information for new nodes, and cluster
+autoscaler might fail to scale up for pending Pods that use CSI volumes.

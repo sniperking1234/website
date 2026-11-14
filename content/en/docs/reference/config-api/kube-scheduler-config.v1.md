@@ -10,6 +10,7 @@ auto_generated: true
 
 
 - [DefaultPreemptionArgs](#kubescheduler-config-k8s-io-v1-DefaultPreemptionArgs)
+- [DynamicResourcesArgs](#kubescheduler-config-k8s-io-v1-DynamicResourcesArgs)
 - [InterPodAffinityArgs](#kubescheduler-config-k8s-io-v1-InterPodAffinityArgs)
 - [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
 - [NodeAffinityArgs](#kubescheduler-config-k8s-io-v1-NodeAffinityArgs)
@@ -19,6 +20,182 @@ auto_generated: true
 - [VolumeBindingArgs](#kubescheduler-config-k8s-io-v1-VolumeBindingArgs)
   
     
+    
+
+## `ClientConnectionConfiguration`     {#ClientConnectionConfiguration}
+    
+
+**Appears in:**
+
+- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
+
+
+<p>ClientConnectionConfiguration contains details for constructing a client.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>kubeconfig</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>kubeconfig is the path to a KubeConfig file.</p>
+</td>
+</tr>
+<tr><td><code>acceptContentTypes</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>acceptContentTypes defines the Accept header sent by clients when connecting to a server, overriding the
+default value of 'application/json'. This field will control all connections to the server used by a particular
+client.</p>
+</td>
+</tr>
+<tr><td><code>contentType</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>contentType is the content type used when sending data to the server from this client.</p>
+</td>
+</tr>
+<tr><td><code>qps</code> <B>[Required]</B><br/>
+<code>float32</code>
+</td>
+<td>
+   <p>qps controls the number of queries per second allowed for this connection.</p>
+</td>
+</tr>
+<tr><td><code>burst</code> <B>[Required]</B><br/>
+<code>int32</code>
+</td>
+<td>
+   <p>burst allows extra queries to accumulate when a client is exceeding its rate.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `DebuggingConfiguration`     {#DebuggingConfiguration}
+    
+
+**Appears in:**
+
+- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
+
+
+<p>DebuggingConfiguration holds configuration for Debugging related features.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>enableProfiling</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>enableProfiling enables profiling via web interface host:port/debug/pprof/</p>
+</td>
+</tr>
+<tr><td><code>enableContentionProfiling</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>enableContentionProfiling enables block profiling, if
+enableProfiling is true.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `LeaderElectionConfiguration`     {#LeaderElectionConfiguration}
+    
+
+**Appears in:**
+
+- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
+
+
+<p>LeaderElectionConfiguration defines the configuration of leader election
+clients for components that can run with leader election enabled.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>leaderElect</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>leaderElect enables a leader election client to gain leadership
+before executing the main loop. Enable this when running replicated
+components for high availability.</p>
+</td>
+</tr>
+<tr><td><code>leaseDuration</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>leaseDuration is the duration that non-leader candidates will wait
+after observing a leadership renewal until attempting to acquire
+leadership of a led but unrenewed leader slot. This is effectively the
+maximum duration that a leader can be stopped before it is replaced
+by another candidate. This is only applicable if leader election is
+enabled.</p>
+</td>
+</tr>
+<tr><td><code>renewDeadline</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>renewDeadline is the interval between attempts by the acting master to
+renew a leadership slot before it stops leading. This must be less
+than or equal to the lease duration. This is only applicable if leader
+election is enabled.</p>
+</td>
+</tr>
+<tr><td><code>retryPeriod</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>retryPeriod is the duration the clients should wait between attempting
+acquisition and renewal of a leadership. This is only applicable if
+leader election is enabled.</p>
+</td>
+</tr>
+<tr><td><code>resourceLock</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>resourceLock indicates the resource object type that will be used to lock
+during leader election cycles.</p>
+</td>
+</tr>
+<tr><td><code>resourceName</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>resourceName indicates the name of resource object that will be used to lock
+during leader election cycles.</p>
+</td>
+</tr>
+<tr><td><code>resourceNamespace</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>resourceName indicates the namespace of resource object that will be used to lock
+during leader election cycles.</p>
+</td>
+</tr>
+</tbody>
+</table>
+  
 
 ## `DefaultPreemptionArgs`     {#kubescheduler-config-k8s-io-v1-DefaultPreemptionArgs}
     
@@ -62,6 +239,91 @@ that play a role in the number of candidates shortlisted. Must be at least
 </tbody>
 </table>
 
+## `DynamicResourcesArgs`     {#kubescheduler-config-k8s-io-v1-DynamicResourcesArgs}
+    
+
+
+<p>DynamicResourcesArgs holds arguments used to configure the DynamicResources plugin.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+<tr><td><code>apiVersion</code><br/>string</td><td><code>kubescheduler.config.k8s.io/v1</code></td></tr>
+<tr><td><code>kind</code><br/>string</td><td><code>DynamicResourcesArgs</code></td></tr>
+    
+  
+<tr><td><code>filterTimeout</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>FilterTimeout limits the amount of time that the filter operation may
+take per node to search for devices that can be allocated to scheduler
+a pod to that node.</p>
+<p>In typical scenarios, this operation should complete in 10 to 200
+milliseconds, but could also be longer depending on the number of
+requests per ResourceClaim, number of ResourceClaims, number of
+published devices in ResourceSlices, and the complexity of the
+requests. Other checks besides CEL evaluation also take time (usage
+checks, match attributes, etc.).</p>
+<p>Therefore the scheduler plugin applies this timeout. If the timeout
+is reached, the Pod is considered unschedulable for the node.
+If filtering succeeds for some other node(s), those are picked instead.
+If filtering fails for all of them, the Pod is placed in the
+unschedulable queue. It will get checked again if changes in
+e.g. ResourceSlices or ResourceClaims indicate that
+another scheduling attempt might succeed. If this fails repeatedly,
+exponential backoff slows down future attempts.</p>
+<p>The default is 10 seconds.
+This is sufficient to prevent worst-case scenarios while not impacting normal
+usage of DRA. However, slow filtering can slow down Pod scheduling
+also for Pods not using DRA. Administators can reduce the timeout
+after checking the
+<code>scheduler_framework_extension_point_duration_seconds</code> metrics.</p>
+<p>Setting it to zero completely disables the timeout.</p>
+</td>
+</tr>
+<tr><td><code>bindingTimeout</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>BindingTimeout limits how long the PreBind extension point may wait for
+ResourceClaim device BindingConditions to become satisfied when such
+conditions are present. While waiting, the scheduler periodically checks
+device status. If the timeout elapses before all required conditions are
+true (or any bindingFailureConditions become true), the allocation is
+cleared and the Pod re-enters scheduling queue. Note that the same or other node may be
+chosen if feasible; otherwise the Pod is placed in the unschedulable queue and
+retried based on cluster changes and backoff.</p>
+<p>Defaults &amp; feature gates:</p>
+<ul>
+<li>Defaults to 10 minutes when the DRADeviceBindingConditions feature gate is enabled.</li>
+<li>Has effect only when BOTH DRADeviceBindingConditions and
+DRAResourceClaimDeviceStatus are enabled; otherwise omit this field.</li>
+<li>When DRADeviceBindingConditions is disabled, setting this field is considered an error.</li>
+</ul>
+<p>Valid values:</p>
+<ul>
+<li>
+<blockquote>
+<p>=1s (non-zero). No upper bound is enforced.</p>
+</blockquote>
+</li>
+</ul>
+<p>Tuning guidance:</p>
+<ul>
+<li>Lower values reduce time-to-retry when devices aren’t ready but can
+increase churn if drivers typically need longer to report readiness.</li>
+<li>Review scheduler latency metrics (e.g. PreBind duration in
+<code>scheduler_framework_extension_point_duration_seconds</code>) and driver
+readiness behavior before tightening this timeout.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+
 ## `InterPodAffinityArgs`     {#kubescheduler-config-k8s-io-v1-InterPodAffinityArgs}
     
 
@@ -83,6 +345,14 @@ that play a role in the number of candidates shortlisted. Must be at least
 <td>
    <p>HardPodAffinityWeight is the scoring weight for existing pods with a
 matching hard affinity to the incoming pod.</p>
+</td>
+</tr>
+<tr><td><code>ignorePreferredTermsOfExistingPods</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>IgnorePreferredTermsOfExistingPods configures the scheduler to ignore existing pods' preferred affinity
+rules when scoring candidate nodes, unless the incoming pod has inter-pod affinities.</p>
 </td>
 </tr>
 </tbody>
@@ -128,7 +398,7 @@ settings for the proxy server to use when communicating with the apiserver.</p>
 <tr><td><code>DebuggingConfiguration</code> <B>[Required]</B><br/>
 <a href="#DebuggingConfiguration"><code>DebuggingConfiguration</code></a>
 </td>
-<td>(Members of <code>DebuggingConfiguration</code> are embedded into this type.)
+<td>
    <p>DebuggingConfiguration holds configuration for Debugging related features
 TODO: We might wanna make this a substruct like Debugging componentbaseconfigv1alpha1.DebuggingConfiguration</p>
 </td>
@@ -144,7 +414,7 @@ at least &quot;minFeasibleNodesToFind&quot; feasible nodes no matter what the va
 Example: if the cluster size is 500 nodes and the value of this flag is 30,
 then scheduler stops finding further feasible nodes once it finds 150 feasible ones.
 When the value is 0, default percentage (5%--50% based on the size of the cluster) of the
-nodes will be scored.</p>
+nodes will be scored. It is overridden by profile level PercentageOfNodesToScore.</p>
 </td>
 </tr>
 <tr><td><code>podInitialBackoffSeconds</code> <B>[Required]</B><br/>
@@ -183,6 +453,16 @@ with the &quot;default-scheduler&quot; profile, if present here.</p>
 with the extender. These extenders are shared by all scheduler profiles.</p>
 </td>
 </tr>
+<tr><td><code>delayCacheUntilActive</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>DelayCacheUntilActive specifies when to start caching. If this is true and leader election is enabled,
+the scheduler will wait to fill informer caches until it is the leader. Doing so will have slower
+failover with the benefit of lower memory overhead while waiting to become leader.
+Defaults to false.</p>
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -202,7 +482,7 @@ with the extender. These extenders are shared by all scheduler profiles.</p>
     
   
 <tr><td><code>addedAffinity</code><br/>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core"><code>core/v1.NodeAffinity</code></a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#nodeaffinity-v1-core"><code>core/v1.NodeAffinity</code></a>
 </td>
 <td>
    <p>AddedAffinity is applied to all Pods additionally to the NodeAffinity
@@ -301,7 +581,7 @@ The default strategy is LeastAllocated with an equal &quot;cpu&quot; and &quot;m
     
   
 <tr><td><code>defaultConstraints</code><br/>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#topologyspreadconstraint-v1-core"><code>[]core/v1.TopologySpreadConstraint</code></a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#topologyspreadconstraint-v1-core"><code>[]core/v1.TopologySpreadConstraint</code></a>
 </td>
 <td>
    <p>DefaultConstraints defines topology spread constraints to be applied to
@@ -358,16 +638,16 @@ If this value is nil, the default value (600) will be used.</p>
 </td>
 <td>
    <p>Shape specifies the points defining the score function shape, which is
-used to score nodes based on the utilization of statically provisioned
-PVs. The utilization is calculated by dividing the total requested
+used to score nodes based on the utilization of provisioned PVs.
+The utilization is calculated by dividing the total requested
 storage of the pod by the total capacity of feasible PVs on each node.
 Each point contains utilization (ranges from 0 to 100) and its
 associated score (ranges from 0 to 10). You can turn the priority by
 specifying different scores for different utilization numbers.
 The default shape points are:</p>
 <ol>
-<li>0 for 0 utilization</li>
-<li>10 for 100 utilization
+<li>10 for 0 utilization</li>
+<li>0 for 100 utilization
 All points must be sorted in increasing order by utilization.</li>
 </ol>
 </td>
@@ -635,6 +915,21 @@ If SchedulerName matches with the pod's &quot;spec.schedulerName&quot;, then the
 is scheduled with this profile.</p>
 </td>
 </tr>
+<tr><td><code>percentageOfNodesToScore</code> <B>[Required]</B><br/>
+<code>int32</code>
+</td>
+<td>
+   <p>PercentageOfNodesToScore is the percentage of all nodes that once found feasible
+for running a pod, the scheduler stops its search for more feasible nodes in
+the cluster. This helps improve scheduler's performance. Scheduler always tries to find
+at least &quot;minFeasibleNodesToFind&quot; feasible nodes no matter what the value of this flag is.
+Example: if the cluster size is 500 nodes and the value of this flag is 30,
+then scheduler stops finding further feasible nodes once it finds 150 feasible ones.
+When the value is 0, default percentage (5%--50% based on the size of the cluster) of the
+nodes will be scored. It will override global PercentageOfNodesToScore. If it is empty,
+global PercentageOfNodesToScore will be used.</p>
+</td>
+</tr>
 <tr><td><code>plugins</code> <B>[Required]</B><br/>
 <a href="#kubescheduler-config-k8s-io-v1-Plugins"><code>Plugins</code></a>
 </td>
@@ -669,7 +964,7 @@ for that plugin.</p>
 - [PluginSet](#kubescheduler-config-k8s-io-v1-PluginSet)
 
 
-<p>Plugin specifies a plugin name and its weight when applicable. Weight is used only for Score plugins.</p>
+<p>Plugin specifies a plugin name and its weight when applicable. Weight is used only for Score and PlacementScore plugins.</p>
 
 
 <table class="table">
@@ -688,7 +983,7 @@ for that plugin.</p>
 <code>int32</code>
 </td>
 <td>
-   <p>Weight defines the weight of plugin, only used for Score plugins.</p>
+   <p>Weight defines the weight of plugin, only used for Score and PlacementScore plugins.</p>
 </td>
 </tr>
 </tbody>
@@ -787,6 +1082,13 @@ be invoked before default plugins, default plugins must be disabled and re-enabl
 <tbody>
     
   
+<tr><td><code>preEnqueue</code> <B>[Required]</B><br/>
+<a href="#kubescheduler-config-k8s-io-v1-PluginSet"><code>PluginSet</code></a>
+</td>
+<td>
+   <p>PreEnqueue is a list of plugins that should be invoked before adding pods to the scheduling queue.</p>
+</td>
+</tr>
 <tr><td><code>queueSort</code> <B>[Required]</B><br/>
 <a href="#kubescheduler-config-k8s-io-v1-PluginSet"><code>PluginSet</code></a>
 </td>
@@ -887,6 +1189,28 @@ set in both <code>multiPoint.Enabled</code> and <code>multiPoint.Disabled</code>
 including <code>multiPoint.Disabled = '*'</code> and <code>multiPoint.Enabled = pluginA</code> will still register that specific
 plugin through MultiPoint. This follows the same behavior as all other extension point configurations.</li>
 </ol>
+</td>
+</tr>
+<tr><td><code>placementGenerate</code> <B>[Required]</B><br/>
+<a href="#kubescheduler-config-k8s-io-v1-PluginSet"><code>PluginSet</code></a>
+</td>
+<td>
+   <p>PlacementGenerate is a list of plugins that should be invoked during pod group scheduling cycle when determining placements for a pod group.</p>
+</td>
+</tr>
+<tr><td><code>placementScore</code> <B>[Required]</B><br/>
+<a href="#kubescheduler-config-k8s-io-v1-PluginSet"><code>PluginSet</code></a>
+</td>
+<td>
+   <p>PlacementScore is a list of plugins that should be invoked during workload scheduling cycle when ranking pod group assignments.</p>
+</td>
+</tr>
+<tr><td><code>podGroupPostFilter</code> <B>[Required]</B><br/>
+<a href="#kubescheduler-config-k8s-io-v1-PluginSet"><code>PluginSet</code></a>
+</td>
+<td>
+   <p>PodGroupPostFilter is a list of plugins that are invoked after the workload scheduling phase,
+but only when the PodGroup cannot be scheduled (equivalent to PostFilter for single pods).</p>
 </td>
 </tr>
 </tbody>
@@ -1060,191 +1384,3 @@ Weight defaults to 1 if not specified or explicitly set to 0.</p>
 </tbody>
 </table>
   
-  
-    
-
-## `ClientConnectionConfiguration`     {#ClientConnectionConfiguration}
-    
-
-**Appears in:**
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1beta2-KubeSchedulerConfiguration)
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1beta3-KubeSchedulerConfiguration)
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
-
-
-<p>ClientConnectionConfiguration contains details for constructing a client.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>kubeconfig</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>kubeconfig is the path to a KubeConfig file.</p>
-</td>
-</tr>
-<tr><td><code>acceptContentTypes</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>acceptContentTypes defines the Accept header sent by clients when connecting to a server, overriding the
-default value of 'application/json'. This field will control all connections to the server used by a particular
-client.</p>
-</td>
-</tr>
-<tr><td><code>contentType</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>contentType is the content type used when sending data to the server from this client.</p>
-</td>
-</tr>
-<tr><td><code>qps</code> <B>[Required]</B><br/>
-<code>float32</code>
-</td>
-<td>
-   <p>qps controls the number of queries per second allowed for this connection.</p>
-</td>
-</tr>
-<tr><td><code>burst</code> <B>[Required]</B><br/>
-<code>int32</code>
-</td>
-<td>
-   <p>burst allows extra queries to accumulate when a client is exceeding its rate.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `DebuggingConfiguration`     {#DebuggingConfiguration}
-    
-
-**Appears in:**
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1beta2-KubeSchedulerConfiguration)
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1beta3-KubeSchedulerConfiguration)
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
-
-
-<p>DebuggingConfiguration holds configuration for Debugging related features.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>enableProfiling</code> <B>[Required]</B><br/>
-<code>bool</code>
-</td>
-<td>
-   <p>enableProfiling enables profiling via web interface host:port/debug/pprof/</p>
-</td>
-</tr>
-<tr><td><code>enableContentionProfiling</code> <B>[Required]</B><br/>
-<code>bool</code>
-</td>
-<td>
-   <p>enableContentionProfiling enables lock contention profiling, if
-enableProfiling is true.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `LeaderElectionConfiguration`     {#LeaderElectionConfiguration}
-    
-
-**Appears in:**
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1beta2-KubeSchedulerConfiguration)
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1beta3-KubeSchedulerConfiguration)
-
-- [KubeSchedulerConfiguration](#kubescheduler-config-k8s-io-v1-KubeSchedulerConfiguration)
-
-
-<p>LeaderElectionConfiguration defines the configuration of leader election
-clients for components that can run with leader election enabled.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>leaderElect</code> <B>[Required]</B><br/>
-<code>bool</code>
-</td>
-<td>
-   <p>leaderElect enables a leader election client to gain leadership
-before executing the main loop. Enable this when running replicated
-components for high availability.</p>
-</td>
-</tr>
-<tr><td><code>leaseDuration</code> <B>[Required]</B><br/>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
-</td>
-<td>
-   <p>leaseDuration is the duration that non-leader candidates will wait
-after observing a leadership renewal until attempting to acquire
-leadership of a led but unrenewed leader slot. This is effectively the
-maximum duration that a leader can be stopped before it is replaced
-by another candidate. This is only applicable if leader election is
-enabled.</p>
-</td>
-</tr>
-<tr><td><code>renewDeadline</code> <B>[Required]</B><br/>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
-</td>
-<td>
-   <p>renewDeadline is the interval between attempts by the acting master to
-renew a leadership slot before it stops leading. This must be less
-than or equal to the lease duration. This is only applicable if leader
-election is enabled.</p>
-</td>
-</tr>
-<tr><td><code>retryPeriod</code> <B>[Required]</B><br/>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
-</td>
-<td>
-   <p>retryPeriod is the duration the clients should wait between attempting
-acquisition and renewal of a leadership. This is only applicable if
-leader election is enabled.</p>
-</td>
-</tr>
-<tr><td><code>resourceLock</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>resourceLock indicates the resource object type that will be used to lock
-during leader election cycles.</p>
-</td>
-</tr>
-<tr><td><code>resourceName</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>resourceName indicates the name of resource object that will be used to lock
-during leader election cycles.</p>
-</td>
-</tr>
-<tr><td><code>resourceNamespace</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>resourceName indicates the namespace of resource object that will be used to lock
-during leader election cycles.</p>
-</td>
-</tr>
-</tbody>
-</table>

@@ -3,9 +3,9 @@ reviewers:
 - bsalamat
 title: Scheduler Performance Tuning
 content_type: concept
-weight: 100
+weight: 70
 ---
-
+ 
 <!-- overview -->
 
 {{< feature-state for_k8s_version="v1.14" state="beta" >}}
@@ -43,7 +43,7 @@ If you set `percentageOfNodesToScore` above 100, kube-scheduler acts as if you
 had set a value of 100.
 
 To change the value, edit the
-[kube-scheduler configuration file](/docs/reference/config-api/kube-scheduler-config.v1beta3/)
+[kube-scheduler configuration file](/docs/reference/config-api/kube-scheduler-config.v1/)
 and then restart the scheduler.
 In many cases, the configuration file can be found at `/etc/kubernetes/config/kube-scheduler.yaml`.
 
@@ -77,7 +77,7 @@ If you don't specify a threshold, Kubernetes calculates a figure using a
 linear formula that yields 50% for a 100-node cluster and yields 10%
 for a 5000-node cluster. The lower bound for the automatic value is 5%.
 
-This means that, the kube-scheduler always scores at least 5% of your cluster no
+This means that the kube-scheduler always scores at least 5% of your cluster no
 matter how large the cluster is, unless you have explicitly set
 `percentageOfNodesToScore` to be smaller than 5.
 
@@ -103,9 +103,9 @@ percentageOfNodesToScore: 50
 
 `percentageOfNodesToScore` must be a value between 1 and 100 with the default
 value being calculated based on the cluster size. There is also a hardcoded
-minimum value of 50 nodes.
+minimum value of 100 nodes.
 
-{{< note >}}In clusters with less than 50 feasible nodes, the scheduler still
+{{< note >}}In clusters with less than 100 feasible nodes, the scheduler still
 checks all the nodes because there are not enough feasible nodes to stop
 the scheduler's search early.
 
@@ -159,7 +159,44 @@ Node 1, Node 5, Node 2, Node 6, Node 3, Node 4
 
 After going over all the Nodes, it goes back to Node 1.
 
+## Enabling Opportunistic Batching
+
+{{< feature-state feature_gate_name="OpportunisticBatching" >}}
+
+When scheduling large workloads, Pods often have equivalent scheduling constraints and require the scheduler
+to perform the same operations over and over again. The [Opportunistic Batching](/docs/reference/command-line-tools-reference/feature-gates/#OpportunisticBatching)
+feature allows the scheduler to reuse the filtering and scoring results between scheduling cycles
+which greatly speeds up the scheduling process.
+
+With rescoring, the scheduler can continue batching in that situation. When the next Pod can still fit on
+the previously chosen Node, the scheduler updates that Node's score and puts it back into the cached candidate list.
+If rescoring does not succeed, the scheduler falls back to the existing behavior and flushes the cache.
+
+Basically, this feature works like:
+1. The scheduler schedules pod-1 and caches the scheduling result.
+1. The scheduler schedules pod-2, 3, ... with the cached results.
+1. The cache expires after 0.5 second. The scheduler schedules the next pod which builds a new cache.
+
+Pods with equivalent scheduling constraints have to come to the scheduling cycle back to back. When the scheduler schedules a pod with different constraints, the cache is not used, but replaced with a new one.
+
+We apply this batching scheduling to specific pods that:
+1. Don't have inter pod affinity/anti-affinity
+1. Don't have topology spread constraints
+1. Don't have DRA (i.e., don't have any Resource Claims)
+1. Don't request extended resources that are backed by DRA
+
+Also, to enable this feature, the scheduler configuration needs to:
+1. Disable [default topology spread](/docs/concepts/scheduling-eviction/topology-spread-constraints/#internal-default-constraints) (set empty)
+1. Set `IgnorePreferredTermsOfExistingPods` of [InterPodAffinityArgs](/docs/reference/config-api/kube-scheduler-config.v1/#kubescheduler-config-k8s-io-v1-InterPodAffinityArgs)
+to `true` to make the batching more efficient
+
+Note that whenever:
+1. Existing pods use pod affinity constraints that match any of the scheduled pods' labels, the feature may bring no benefit
+1. Custom plugins are used, they need to implement the Signature extension point
+
+The restrictions and conditions are expected to evolve in future releases.
+
 ## {{% heading "whatsnext" %}}
 
-* Check the [kube-scheduler configuration reference (v1beta3)](/docs/reference/config-api/kube-scheduler-config.v1beta3/)
-
+* Check the [kube-scheduler configuration reference (v1)](/docs/reference/config-api/kube-scheduler-config.v1/)
+ 

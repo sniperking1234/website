@@ -50,11 +50,11 @@ PVは静的か動的どちらかでプロビジョニングされます。
 
 ストレージクラスに基づいたストレージの動的プロビジョニングを有効化するには、クラスター管理者が`DefaultStorageClass`[アドミッションコントローラー](/docs/reference/access-authn-authz/admission-controllers/#defaultstorageclass)をAPIサーバーで有効化する必要があります。
 これは例えば、`DefaultStorageClass`がAPIサーバーコンポーネントの`--enable-admission-plugins`フラグのコンマ区切りの順序付きリストの中に含まれているかで確認できます。
-APIサーバーのコマンドラインフラグの詳細については[kube-apiserver](/docs/admin/kube-apiserver/)のドキュメントを参照してください。
+APIサーバーのコマンドラインフラグの詳細については[kube-apiserver](/docs/reference/command-line-tools-reference/kube-apiserver/)のドキュメントを参照してください。
 
 ### バインディング
 
-ユーザは、特定のサイズのストレージとアクセスモードを指定した上でPersistentVolumeClaimを作成します（動的プロビジョニングの場合は、すでに作られています）。マスター内のコントロールループは、新しく作られるPVCをウォッチして、それにマッチするPVが見つかったときに、それらを紐付けます。PVが新しいPVC用に動的プロビジョニングされた場合、コントロールループは常にPVをそのPVCに紐付けます。そうでない場合、ユーザーは常に少なくとも要求したサイズ以上のボリュームを取得しますが、ボリュームは要求されたサイズを超えている可能性があります。一度紐付けされると、どのように紐付けられたかに関係なくPersistentVolumeClaimの紐付けは排他的（決められた特定のPVとしか結びつかない状態）になります。PVCからPVへの紐付けは、PersistentVolumeとPersistentVolumeClaim間の双方向の紐付けであるClaimRefを使用した1対1のマッピングになっています。
+ユーザーは、特定のサイズのストレージとアクセスモードを指定した上でPersistentVolumeClaimを作成します（動的プロビジョニングの場合は、すでに作られています）。マスター内のコントロールループは、新しく作られるPVCをウォッチして、それにマッチするPVが見つかったときに、それらを紐付けます。PVが新しいPVC用に動的プロビジョニングされた場合、コントロールループは常にPVをそのPVCに紐付けます。そうでない場合、ユーザーは常に少なくとも要求したサイズ以上のボリュームを取得しますが、ボリュームは要求されたサイズを超えている可能性があります。一度紐付けされると、どのように紐付けられたかに関係なくPersistentVolumeClaimの紐付けは排他的（決められた特定のPVとしか結びつかない状態）になります。PVCからPVへの紐付けは、PersistentVolumeとPersistentVolumeClaim間の双方向の紐付けであるClaimRefを使用した1対1のマッピングになっています。
 
 一致するボリュームが存在しない場合、クレームはいつまでも紐付けされないままになります。一致するボリュームが利用可能になると、クレームがバインドされます。たとえば、50GiのPVがいくつもプロビジョニングされているクラスターだとしても、100Giを要求するPVCとは一致しません。100GiのPVがクラスターに追加されると、PVCを紐付けできます。
 
@@ -154,7 +154,7 @@ spec:
       path: /any/path/it/will/be/replaced
   containers:
   - name: pv-recycler
-    image: "k8s.gcr.io/busybox"
+    image: "registry.k8s.io/busybox"
     command: ["/bin/sh", "-c", "test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z \"$(ls -A /scrub)\" || exit 1"]
     volumeMounts:
     - name: vol
@@ -207,7 +207,7 @@ spec:
 
 ### 永続ボリュームクレームの拡大
 
-{{< feature-state for_k8s_version="v1.11" state="beta" >}}
+{{< feature-state for_k8s_version="v1.24" state="stable" >}}
 
 PersistentVolumeClaim(PVC)の拡大はデフォルトで有効です。次のボリュームの種類で拡大できます。
 
@@ -243,7 +243,7 @@ PVCに対してさらに大きなボリュームを要求するには、PVCオ�
 
 #### CSIボリュームの拡張
 
-{{< feature-state for_k8s_version="v1.16" state="beta" >}}
+{{< feature-state for_k8s_version="v1.24" state="stable" >}}
 
 CSIボリュームの拡張のサポートはデフォルトで有効になっていますが、ボリューム拡張をサポートするにはボリューム拡張を利用できるCSIドライバーも必要です。詳細については、それぞれのCSIドライバーのドキュメントを参照してください。
 
@@ -253,7 +253,7 @@ CSIボリュームの拡張のサポートはデフォルトで有効になっ�
 
 ボリュームにファイルシステムが含まれる場合、新しいPodが`PersistentVolumeClaim`でReadWriteモードを使用している場合にのみ、ファイルシステムのサイズが変更されます。ファイルシステムの拡張は、Podの起動時、もしくはPodの実行時で基盤となるファイルシステムがオンラインの拡張をサポートする場合に行われます。
 
-FlexVolumesでは、ドライバの`RequiresFSResize`機能がtrueに設定されている場合、サイズを変更できます。
+FlexVolumesでは、ドライバーの`RequiresFSResize`機能がtrueに設定されている場合、サイズを変更できます。
 FlexVolumeは、Podの再起動時にサイズ変更できます。
 
 #### 使用中の永続ボリュームクレームのリサイズ
@@ -367,7 +367,7 @@ KubernetesはPersistentVolumesの2つの`volumeModes`をサポートしていま
 
 `volumeMode`の値を`Block`に設定してボリュームをRAWブロックデバイスとして使用します。  
 このようなボリュームは、ファイルシステムを持たないブロックデバイスとしてPodに提示されます。  
-このモードは、Podとボリュームの間のファイルシステムレイヤなしにボリュームにアクセスする可能な限り最速の方法をPodに提供するのに便利です。一方で、Pod上で実行しているアプリケーションはRAWブロックデバイスの扱い方を知っていなければなりません。  
+このモードは、Podとボリュームの間のファイルシステムレイヤーなしにボリュームにアクセスする可能な限り最速の方法をPodに提供するのに便利です。一方で、Pod上で実行しているアプリケーションはRAWブロックデバイスの扱い方を知っていなければなりません。  
 Pod内で`volumeMode: Block`とともにボリュームを使用する例としては、[Raw Block Volume Support](#raw-block-volume-support)を参照してください。
 
 ### アクセスモード
@@ -386,7 +386,7 @@ PersistentVolumeは、リソースプロバイダーがサポートする方法�
 : ボリュームは多数のNodeで読み取り/書き込みとしてマウントできます
 
 `ReadWriteOncePod`
-: ボリュームは、単一のPodで読み取り/書き込みとしてマウントできます。クラスタ全体で1つのPodのみがそのPVCの読み取りまたは書き込みを行えるようにする場合は、ReadWriteOncePodアクセスモードを使用します。これは、CSIボリュームとKubernetesバージョン1.22以降でのみサポートされます。
+: ボリュームは、単一のPodで読み取り/書き込みとしてマウントできます。クラスター全体で1つのPodのみがそのPVCの読み取りまたは書き込みを行えるようにする場合は、ReadWriteOncePodアクセスモードを使用します。これは、CSIボリュームとKubernetesバージョン1.22以降でのみサポートされます。
 
 これについてはブログ[Introducing Single Pod Access Mode for PersistentVolumes](/blog/2021/09/13/read-write-once-pod-access-mode-alpha/)に詳細が記載されています。
 
@@ -655,7 +655,7 @@ spec:
 ```
 
 {{< note >}}
-Podにrawブロックデバイスを追加する場合は、マウントパスの代わりにコンテナーでデバイスパスを指定します。
+Podにrawブロックデバイスを追加する場合は、マウントパスの代わりにコンテナでデバイスパスを指定します。
 {{< /note >}}
 
 ### ブロックボリュームのバインド
@@ -678,7 +678,7 @@ Podにrawブロックデバイスを追加する場合は、マウントパス�
 アルファリリースでは、静的にプロビジョニングされたボリュームのみがサポートされます。管理者は、rawブロックデバイスを使用する場合、これらの値を考慮するように注意する必要があります。
 {{< /note >}}
 
-## ボリュームのスナップショットとスナップショットからのボリュームの復元のサポート
+## ボリュームのスナップショットとスナップショットからのボリュームの復元のサポート {#volume-snapshot-and-restore-volume-from-snapshot-support}
 
 {{< feature-state for_k8s_version="v1.17" state="beta" >}}
 

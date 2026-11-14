@@ -27,8 +27,8 @@ You can set up an HA cluster:
 - With stacked control plane nodes, where etcd nodes are colocated with control plane nodes
 - With external etcd nodes, where etcd runs on separate nodes from the control plane
 -->
- - 使用堆叠（stacked）控制平面节点，其中 etcd 节点与控制平面节点共存
- - 使用外部 etcd 节点，其中 etcd 在与控制平面不同的节点上运行
+- 使用堆叠（stacked）控制平面节点，其中 etcd 节点与控制平面节点共存
+- 使用外部 etcd 节点，其中 etcd 在与控制平面不同的节点上运行
 
 <!--
 You should carefully consider the advantages and disadvantages of each topology before setting up an HA cluster.
@@ -37,7 +37,8 @@ You should carefully consider the advantages and disadvantages of each topology 
 
 {{< note >}}
 <!--
-kubeadm bootstraps the etcd cluster statically. Read the etcd [Clustering Guide](https://github.com/etcd-io/etcd/blob/release-3.4/Documentation/op-guide/clustering.md#static)
+kubeadm bootstraps the etcd cluster statically. Read the etcd
+[Clustering Guide](https://github.com/etcd-io/etcd/blob/release-3.4/Documentation/op-guide/clustering.md#static)
 for more details.
 -->
 kubeadm 静态引导 etcd 集群。
@@ -103,7 +104,7 @@ on control plane nodes when using `kubeadm init` and `kubeadm join --control-pla
 <!--
 ![Stacked etcd topology](/images/kubeadm/kubeadm-ha-topology-stacked-etcd.svg)
 -->
-![堆叠的 etcd 拓扑](/images/kubeadm/kubeadm-ha-topology-stacked-etcd.svg)
+![堆叠的 etcd 拓扑](/zh-cn/docs/images/kubeadm-ha-topology-stacked-etcd.svg)
 
 <!--
 ## External etcd topology
@@ -111,13 +112,19 @@ on control plane nodes when using `kubeadm init` and `kubeadm join --control-pla
 ## 外部 etcd 拓扑    {#external-etcd-topology}
 
 <!--
-An HA cluster with external etcd is a [topology](https://en.wikipedia.org/wiki/Network_topology) where the distributed data storage cluster provided by etcd is external to the cluster formed by the nodes that run control plane components.
+An HA cluster with external etcd is a [topology](https://en.wikipedia.org/wiki/Network_topology)
+where the distributed data storage cluster provided by etcd is external to the cluster formed by
+the nodes that run control plane components.
 -->
 具有外部 etcd 的 HA 集群是一种这样的[拓扑](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E6%8B%93%E6%89%91)，
 其中 etcd 分布式数据存储集群在独立于控制平面节点的其他节点上运行。
 
 <!--
-Like the stacked etcd topology, each control plane node in an external etcd topology runs an instance of the `kube-apiserver`, `kube-scheduler`, and `kube-controller-manager`. And the `kube-apiserver` is exposed to worker nodes using a load balancer. However, etcd members run on separate hosts, and each etcd host communicates with the `kube-apiserver` of each control plane node.
+Like the stacked etcd topology, each control plane node in an external etcd topology runs
+an instance of the `kube-apiserver`, `kube-scheduler`, and `kube-controller-manager`.
+And the `kube-apiserver` is exposed to worker nodes using a load balancer. However,
+etcd members run on separate hosts, and each etcd host communicates with the
+`kube-apiserver` of each control plane node.
 -->
 就像堆叠的 etcd 拓扑一样，外部 etcd 拓扑中的每个控制平面节点都会运行
 `kube-apiserver`、`kube-scheduler` 和 `kube-controller-manager` 实例。
@@ -134,7 +141,8 @@ the cluster redundancy as much as the stacked HA topology.
 
 <!--
 However, this topology requires twice the number of hosts as the stacked HA topology.
-A minimum of three hosts for control plane nodes and three hosts for etcd nodes are required for an HA cluster with this topology.
+A minimum of three hosts for control plane nodes and three hosts for etcd nodes are
+required for an HA cluster with this topology.
 -->
 但此拓扑需要两倍于堆叠 HA 拓扑的主机数量。
 具有此拓扑的 HA 集群至少需要三个用于控制平面节点的主机和三个用于 etcd 节点的主机。
@@ -142,7 +150,7 @@ A minimum of three hosts for control plane nodes and three hosts for etcd nodes 
 <!--
 ![External etcd topology](/images/kubeadm/kubeadm-ha-topology-external-etcd.svg)
 -->
-![外部 etcd 拓扑](/images/kubeadm/kubeadm-ha-topology-external-etcd.svg)
+![外部 etcd 拓扑](/zh-cn/docs/images/kubeadm-ha-topology-external-etcd.svg)
 
 ## {{% heading "whatsnext" %}}
 
@@ -150,5 +158,3 @@ A minimum of three hosts for control plane nodes and three hosts for etcd nodes 
 - [Set up a highly available cluster with kubeadm](/docs/setup/production-environment/tools/kubeadm/high-availability/)
 -->
 - [使用 kubeadm 设置高可用集群](/zh-cn/docs/setup/production-environment/tools/kubeadm/high-availability/)
-
-

@@ -3,6 +3,7 @@ title: kubectl Usage Conventions
 reviewers:
 - janetkuo
 content_type: concept
+weight: 60
 ---
 
 <!-- overview -->
@@ -21,9 +22,12 @@ For a stable output in a script:
 
 ## Subresources
 
-* You can use the `--subresource` alpha flag for kubectl commands like `get`, `patch`,
-`edit` and `replace` to fetch and update subresources for all resources that
-support them. Currently, only the `status` and `scale` subresources are supported.
+* You can use the `--subresource` argument for kubectl subcommands such as `get`, `patch`,
+`edit`, `apply` and `replace` to fetch and update subresources for all resources that
+support them. In Kubernetes version {{< skew currentVersion >}}, only the `status`, `scale`
+and `resize` subresources are supported.
+  * For `kubectl edit`, the `scale` subresource is not supported. If you use  `--subresource` with
+    `kubectl edit` and specify `scale` as the subresource, the command will error out.
 * The API contract against a subresource is identical to a full resource. While updating the
 `status` subresource to a new value, keep in mind that the subresource could be potentially
 reconciled by a controller to a different value.
@@ -35,11 +39,28 @@ reconciled by a controller to a different value.
 
 For `kubectl run` to satisfy infrastructure as code:
 
-* Tag the image with a version-specific tag and don't move that tag to a new version. For example, use `:v1234`, `v1.2.3`, `r03062016-1-4`, rather than `:latest` (For more information, see [Best Practices for Configuration](/docs/concepts/configuration/overview/#container-images)).
+* Tag the image with a version-specific tag and don't move that tag to a new version. For example, use `:v1234`, `v1.2.3`, `r03062016-1-4`, rather than `:latest` (For more information, see [Kubernetes Configuration Good Practices](/blog/2025/11/25/configuration-good-practices/)).
 * Check in the script for an image that is heavily parameterized.
 * Switch to configuration files checked into source control for features that are needed, but not expressible via `kubectl run` flags.
 
 You can use the `--dry-run=client` flag to preview the object that would be sent to your cluster, without really submitting it.
+
+### `kubectl proxy`
+
+{{< caution >}}
+Browsing untrusted pod or service endpoints through `kubectl proxy` is dangerous,
+as the served content has implicit access to the Kubernetes API using the proxy's
+credentials. Use caution and avoid accessing untrusted endpoints while using
+privileged credentials.
+
+To reduce risk:
+
+* Avoid browsing to untrusted pods or services through `kubectl proxy`.
+* Use `--reject-methods='POST,PUT,PATCH,DELETE'` to restrict the proxy to
+  read-only operations when you only need to view resources.
+* Use `--reject-paths` to limit which API paths the proxy exposes.
+* Do not run `kubectl proxy` with cluster-admin credentials unless necessary.
+{{< /caution >}}
 
 ### `kubectl apply`
 

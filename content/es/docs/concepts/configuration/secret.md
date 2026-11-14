@@ -20,7 +20,7 @@ es más seguro y más flexible que ponerlo en la definición de un {{< glossary_
 
 ## Introducción a Secrets
 
-Un Secret es un objeto que contiene una pequeña cantidad de datos confidenciales como contraseñas, un token, o una llave.  Tal información podría ser puesta en la especificación de un Pod o en una imagen; poniendolo en un objeto de tipo Secret permite mayor control sobre como se usa, y reduce el riesgo de exposicición accidental.
+Un Secret es un objeto que contiene una pequeña cantidad de datos confidenciales como contraseñas, un token, o una llave.  Tal información podría ser puesta en la especificación de un Pod o en una imagen; poniéndolo en un objeto de tipo Secret permite mayor control sobre como se usa, y reduce el riesgo de exposición accidental.
 
 Los usuarios pueden crear Secrets, y el sistema también puede crearlos.
 
@@ -237,7 +237,7 @@ Donde `YWRtaW5pc3RyYXRvcg==` decodifica a `administrator`.
 Las llaves de data y stringData deben consistir en caracteres alfanuméricos,
 '-', '_' or '.'.
 
-**Nota de codificación:** Los valores serializados JSON y YAML  de los datos secretos estan codificadas como cadenas base64.  Las nuevas lineas no son válidas dentro de esa cadena y debe ser omitido.  Al usar `base64` en Darwin/macOS, los usuarios deben evitar el uso de la opción `-b` para dividir líneas largas. Por lo contratio los usuarios de Linux *deben* añadir la opción `-w 0` a los comandos `base64` o al pipeline `base64 | tr -d '\n'` si la opción `-w` no esta disponible.
+**Nota de codificación:** Los valores serializados JSON y YAML  de los datos secretos están codificadas como cadenas base64.  Las nuevas líneas no son válidas dentro de esa cadena y debe ser omitido.  Al usar `base64` en Darwin/macOS, los usuarios deben evitar el uso de la opción `-b` para dividir líneas largas. Por lo contrario los usuarios de Linux *deben* añadir la opción `-w 0` a los comandos `base64` o al pipeline `base64 | tr -d '\n'` si la opción `-w` no está disponible.
 
 #### Creando un Secret a partir de Generador
 Kubectl soporta [managing objects using Kustomize](/docs/tasks/manage-kubernetes-objects/kustomization/)
@@ -417,7 +417,7 @@ Lo que sucederá:
 * El Secret `username` se almacena bajo el archivo `/etc/foo/my-group/my-username` en lugar de `/etc/foo/username`.
 * El Secret `password` no se proyecta
 
-Si se utiliza `.spec.volumes[].secret.items` , solo se proyectan las llaves específicadas en los `items`.
+Si se utiliza `.spec.volumes[].secret.items` , solo se proyectan las llaves especificadas en los `items`.
 Para consumir todas las llaves del Secret, Todas deben ser enumeradas en el campo `items`.
 Todas las llaves enumeradas deben existir en el Secret correspondiente. De lo contrario, el volumen no se crea.
 
@@ -520,7 +520,7 @@ Cuando se actualiza un Secret que ya se está consumiendo en un volumen, las cla
 Kubelet está verificando si el Secret montado esta actualizado en cada sincronización periódica.
 Sin embargo, está usando su caché local para obtener el valor actual del Secret.
 El tipo de caché es configurable usando el  (campo `ConfigMapAndSecretChangeDetectionStrategy`  en
-[KubeletConfiguration struct](https://github.com/kubernetes/kubernetes/blob/{{< param "docsbranch" >}}/staging/src/k8s.io/kubelet/config/v1beta1/types.go)).
+[KubeletConfiguration struct](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubelet/config/v1beta1/types.go)).
 Puede ser propagado por el reloj (default), ttl-based, o simplemente redirigiendo
 todas las solicitudes a kube-apiserver directamente.
 Como resultado, el retraso total desde el momento en que se actualiza el Secret hasta el momento en que se proyectan las nuevas claves en el Pod puede ser tan largo como el periodo de sincronización de kubelet + retraso de 
@@ -593,7 +593,7 @@ Una imagePullSecret es una forma de pasar a kubelet un Secret que contiene las c
 
 **Especificar manualmente una imagePullSecret**
 
-El uso de imagePullSecrets se desccriben en la documentación de las imágenes [images documentation](/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod)
+El uso de imagePullSecrets se describe en la documentación de las imágenes [images documentation](/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod)
 
 ### Organización de imagePullSecrets para que se Adjunte Automáticamente
 
@@ -605,7 +605,7 @@ Ver [Agregar ImagePullSecrets a una cuenta de servicio](/docs/tasks/configure-po
 
 ### Montaje Automatico de Secrets Creados Manualmente
 
-Secrets creados Manualmente, (por ejemplo uno que contiene un token para acceder a una cuenta github) se puede conectar automáticamente a los pods según su cuenta de servicio. Vea [ Inyección de infromación en pods usando un a PodPreset](/docs/tasks/inject-data-application/podpreset/)  para una explicación detallada de este proceso.
+Secrets creados Manualmente, (por ejemplo uno que contiene un token para acceder a una cuenta github) se puede conectar automáticamente a los pods según su cuenta de servicio. Vea [ Inyección de información en pods usando una PodPreset](/docs/tasks/inject-data-application/podpreset/)  para una explicación detallada de este proceso.
 
 ## Detalles
 
@@ -619,7 +619,7 @@ Solo pueden ser referenciados por pods en el mismo namespace.
 Los `Secrets` individuales estan limitados a 1MiB de tamaño.  Esto es para desalentar la creación de `Secrets` muy grandes que agotarían la memoria del apiserver y de kubelet.
 Sin embargo la creación de muchos Secrets más pequeños también podría agotar la memoria. Límites más completos en el uso de memoria debido a `Secret` es una característica planificada.
 
-Kubelet solo admite el uso de `Secret` para Pods que obtiene del API server. Esto incluye cualquier pods creado usando kubectl, o indirectamente a través de un contralador de replicación.
+Kubelet solo admite el uso de `Secret` para Pods que obtiene del API server. Esto incluye cualquier pods creado usando kubectl, o indirectamente a través de un controlador de replicación.
 No incluye pods creados a través de los kubelets 
 `--manifest-url` flag, its `--config` flag, o su REST API (estas no son formas comunes de crear pods.)
 
@@ -638,13 +638,13 @@ LASTSEEN   FIRSTSEEN   COUNT     NAME            KIND      SUBOBJECT            
 
 ### Interacción del Secret y Pod de por vida
 
-Cuando se crea un Pod a través de la API, no se verifica que exista un recreto referenciado. 
+Cuando se crea un Pod a través de la API, no se verifica que exista un secreto referenciado. 
 Una vez que se programa el Pod, kubelet intentará obtener el valor del Secret.
 Si el Secret no se puede recuperar será por que no existe o por una falla 
 temporal de conexión al servidor API, kubelet volverá a intentarlo periodicamente.
 Enviará un evento sobre el pod explicando las razones por la que aún no se inició.
 Una vez que el Secret es encontrado, kubelet creará y montará el volumen que lo contiene.
-Ninguno de los contenedorees del pod se iniciará hasta que se monten todos los volúmes del pod.
+Ninguno de los contenedores del pod se iniciará hasta que se monten todos los volúmenes del pod.
 
 ## Casos de uso
 
@@ -840,7 +840,7 @@ spec:
       secretName: dotfile-secret
   containers:
   - name: dotfile-test-container
-    image: k8s.gcr.io/busybox
+    image: registry.k8s.io/busybox
     command:
     - ls
     - "-l"
@@ -899,7 +899,7 @@ Un Secret solo se envía a un nodo si un pod en ese nodo lo requiere. Kubelet al
 
 Puede haber Secrets para varios Pods en el mismo nodo. Sin embargo, solo los Secrets que solicita un Pod son potencialmente visibles dentro de sus contenedores. Por lo tanto, un Pod no tiene acceso a los Secrets de otro Pod.
 
-Puede haver varios contenedores en un Pod. Sin embargo, cada contenedor en un pod tiene que solicitar el volumen del Secret en su 
+Puede haber varios contenedores en un Pod. Sin embargo, cada contenedor en un pod tiene que solicitar el volumen del Secret en su 
 `volumeMounts` para que sea visible dentro del contenedor. Esto se puede usar para construir particiones de seguridad útiles en el Pod level](#use-case-secret-visible-to-one-container-in-a-pod).
 
 En la mayoría de las distribuciones Kubernetes-project-maintained, la comunicación entre usuario a el apiserver, y del apiserver a kubelets, ista protegido por SSL/TLS.

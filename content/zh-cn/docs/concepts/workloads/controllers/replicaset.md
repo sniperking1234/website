@@ -1,16 +1,36 @@
 ---
 title: ReplicaSet
+api_metadata:
+- apiVersion: "apps/v1"
+  kind: "ReplicaSet"
 content_type: concept
+description: >-
+  ReplicaSet 的作用是维持在任何给定时间运行的一组稳定的副本 Pod。
+  通常，你会定义一个 Deployment，并用这个 Deployment 自动管理 ReplicaSet。
 weight: 20
+hide_summary: true # 在章节索引中单独列出
 ---
 <!--
+# NOTE TO LOCALIZATION TEAMS
+#
+# If updating front matter for your localization because there is still
+# a "feature" key in this page, then you also need to update
+# content/??/docs/concepts/architecture/self-healing.md (which is where
+# it moved to)
 reviewers:
 - Kashomon
 - bprashanth
 - madhusudancs
 title: ReplicaSet
+api_metadata:
+- apiVersion: "apps/v1"
+  kind: "ReplicaSet"
 content_type: concept
+description: >-
+  A ReplicaSet's purpose is to maintain a stable set of replica Pods running at any given time.
+  Usually, you define a Deployment and let that Deployment manage ReplicaSets automatically.
 weight: 20
+hide_summary: true # Listed separately in section index
 -->
 
 <!-- overview -->
@@ -19,7 +39,6 @@ weight: 20
 A ReplicaSet's purpose is to maintain a stable set of replica Pods running at any given time. As such, it is often
 used to guarantee the availability of a specified number of identical Pods.
 -->
-
 ReplicaSet 的目的是维护一组在任何时候都处于运行状态的 Pod 副本的稳定集合。
 因此，它通常用来保证给定数量的、完全相同的 Pod 的可用性。
 
@@ -42,13 +61,13 @@ ReplicaSet 是通过一组字段来定义的，包括一个用来识别可获得
 进而实现其存在价值。当 ReplicaSet 需要创建新的 Pod 时，会使用所提供的 Pod 模板。
 
 <!--
-A ReplicaSet is linked to its Pods via the Pods' [metadata.ownerReferences](/docs/concepts/architecture/garbage-collection/#owners-and-dependents)
+A ReplicaSet is linked to its Pods via the Pods' [metadata.ownerReferences](/docs/concepts/architecture/garbage-collection/#owners-dependents)
 field, which specifies what resource the current object is owned by. All Pods acquired by a ReplicaSet have their owning
 ReplicaSet's identifying information within their ownerReferences field. It's through this link that the ReplicaSet
 knows of the state of the Pods it is maintaining and plans accordingly.
 -->
 ReplicaSet 通过 Pod 上的
-[metadata.ownerReferences](/zh-cn/docs/concepts/architecture/garbage-collection/#owners-and-dependents)
+[metadata.ownerReferences](/zh-cn/docs/concepts/architecture/garbage-collection/#owners-dependents)
 字段连接到附属 Pod，该字段给出当前对象的属主资源。
 ReplicaSet 所获得的 Pod 都在其 ownerReferences 字段中包含了属主 ReplicaSet
 的标识信息。正是通过这一连接，ReplicaSet 知道它所维护的 Pod 集合的状态，
@@ -91,7 +110,7 @@ Deployment，并在 spec 部分定义你的应用。
 -->
 ## 示例    {#example}
 
-{{< codenew file="controllers/frontend.yaml" >}}
+{{% code_sample file="controllers/frontend.yaml" %}}
 
 <!--
 Saving this manifest into `frontend.yaml` and submitting it to a Kubernetes cluster will
@@ -143,15 +162,14 @@ Namespace:    default
 Selector:     tier=frontend
 Labels:       app=guestbook
               tier=frontend
-Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                {"apiVersion":"apps/v1","kind":"ReplicaSet","metadata":{"annotations":{},"labels":{"app":"guestbook","tier":"frontend"},"name":"frontend",...
+Annotations:  <none>
 Replicas:     3 current / 3 desired
 Pods Status:  3 Running / 0 Waiting / 0 Succeeded / 0 Failed
 Pod Template:
   Labels:  tier=frontend
   Containers:
    php-redis:
-    Image:        gcr.io/google_samples/gb-frontend:v3
+    Image:        us-docker.pkg.dev/google-samples/containers/gke/gb-frontend:v5
     Port:         <none>
     Host Port:    <none>
     Environment:  <none>
@@ -160,9 +178,9 @@ Pod Template:
 Events:
   Type    Reason            Age   From                   Message
   ----    ------            ----  ----                   -------
-  Normal  SuccessfulCreate  117s  replicaset-controller  Created pod: frontend-wtsmm
-  Normal  SuccessfulCreate  116s  replicaset-controller  Created pod: frontend-b2zdv
-  Normal  SuccessfulCreate  116s  replicaset-controller  Created pod: frontend-vcmts
+  Normal  SuccessfulCreate  13s   replicaset-controller  Created pod: frontend-gbgfx
+  Normal  SuccessfulCreate  13s   replicaset-controller  Created pod: frontend-rwz57
+  Normal  SuccessfulCreate  13s   replicaset-controller  Created pod: frontend-wkl7w
 ```
 
 <!--
@@ -181,9 +199,9 @@ You should see Pod information similar to:
 
 ```
 NAME             READY   STATUS    RESTARTS   AGE
-frontend-b2zdv   1/1     Running   0          6m36s
-frontend-vcmts   1/1     Running   0          6m36s
-frontend-wtsmm   1/1     Running   0          6m36s
+frontend-gbgfx   1/1     Running   0          10m
+frontend-rwz57   1/1     Running   0          10m
+frontend-wkl7w   1/1     Running   0          10m
 ```
 
 <!--
@@ -191,10 +209,10 @@ You can also verify that the owner reference of these pods is set to the fronten
 To do this, get the yaml of one of the Pods running:
 -->
 你也可以查看 Pod 的属主引用被设置为前端的 ReplicaSet。
-要实现这点，可取回运行中的某个 Pod 的 YAML：
+要实现这点，可获取运行中的某个 Pod 的 YAML：
 
 ```shell
-kubectl get pods frontend-b2zdv -o yaml
+kubectl get pods frontend-gbgfx -o yaml
 ```
 
 <!--
@@ -207,11 +225,11 @@ The output will look similar to this, with the frontend ReplicaSet's info set in
 apiVersion: v1
 kind: Pod
 metadata:
-  creationTimestamp: "2020-02-12T07:06:16Z"
+  creationTimestamp: "2024-02-28T22:30:44Z"
   generateName: frontend-
   labels:
     tier: frontend
-  name: frontend-b2zdv
+  name: frontend-gbgfx
   namespace: default
   ownerReferences:
   - apiVersion: apps/v1
@@ -219,7 +237,7 @@ metadata:
     controller: true
     kind: ReplicaSet
     name: frontend
-    uid: f391f6db-bb9b-4c09-ae74-6a1f77f3d5cf
+    uid: e129deca-f864-481b-bb16-b27abfd92292
 ...
 ```
 
@@ -239,7 +257,9 @@ Take the previous frontend ReplicaSet example, and the Pods specified in the fol
 ReplicaSet 的选择算符相匹配的标签。原因在于 ReplicaSet 并不仅限于拥有在其模板中设置的
 Pod，它还可以像前面小节中所描述的那样获得其他 Pod。
 
-{{< codenew file="pods/pod-rs.yaml" >}}
+以前面的 frontend ReplicaSet 为例，并在以下清单中指定这些 Pod：
+
+{{% code_sample file="pods/pod-rs.yaml" %}}
 
 <!--
 As those Pods do not have a Controller (or any object) as their owner reference and match the selector of the frontend
@@ -267,7 +287,7 @@ Fetching the Pods:
 新的 Pod 会被该 ReplicaSet 获取，并立即被 ReplicaSet 终止，
 因为它们的存在会使得 ReplicaSet 中 Pod 个数超出其期望值。
 
-取回 Pod：
+获取 Pod：
 
 
 ```shell
@@ -312,7 +332,7 @@ number of its new Pods and the original matches its desired count. As fetching t
 -->
 你会看到 ReplicaSet 已经获得了该 Pod，并仅根据其规约创建新的 Pod，
 直到新的 Pod 和原来的 Pod 的总数达到其预期个数。
-这时取回 Pod 列表：
+这时获取 Pod 列表：
 
 ```shell
 kubectl get pods
@@ -331,7 +351,7 @@ pod2             1/1     Running   0          36s
 ```
 
 <!--
-In this manner, a ReplicaSet can own a non-homogenous set of Pods
+In this manner, a ReplicaSet can own a non-homogeneous set of Pods
 -->
 采用这种方式，一个 ReplicaSet 中可以包含异质的 Pod 集合。
 
@@ -341,8 +361,12 @@ In this manner, a ReplicaSet can own a non-homogenous set of Pods
 As with all other Kubernetes API objects, a ReplicaSet needs the `apiVersion`, `kind`, and `metadata` fields.
 For ReplicaSets, the `kind` is always a ReplicaSet.
 
-The name of a ReplicaSet object must be a valid
-[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
+When the control plane creates new Pods for a ReplicaSet, the `.metadata.name` of the
+ReplicaSet is part of the basis for naming those Pods.  The name of a ReplicaSet must be a valid
+[DNS subdomain](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)
+value, but this can produce unexpected results for the Pod hostnames.  For best compatibility,
+the name should follow the more restrictive rules for a
+[DNS label](/docs/concepts/overview/working-with-objects/names#dns-label-names).
 
 A ReplicaSet also needs a [`.spec` section](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status).
 -->
@@ -351,12 +375,14 @@ A ReplicaSet also needs a [`.spec` section](https://git.k8s.io/community/contrib
 与所有其他 Kubernetes API 对象一样，ReplicaSet 也需要 `apiVersion`、`kind`、和 `metadata` 字段。
 对于 ReplicaSet 而言，其 `kind` 始终是 ReplicaSet。
 
-ReplicaSet 对象的名称必须是合法的
-[DNS 子域名](/zh-cn/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)。
+当控制平面为 ReplicaSet 创建新的 Pod 时，ReplicaSet
+的 `.metadata.name` 是命名这些 Pod 的部分基础。ReplicaSet 的名称必须是一个合法的
+[DNS 子域](/zh-cn/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names)值，
+但这可能对 Pod 的主机名产生意外的结果。为获得最佳兼容性，名称应遵循更严格的
+[DNS 标签](/zh-cn/docs/concepts/overview/working-with-objects/names#dns-label-names)规则。
 
 ReplicaSet 也需要
-[`.spec`](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status)
-部分。
+[`.spec` 部分](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status)。
 
 <!--
 ### Pod Template
@@ -505,6 +531,33 @@ ReplicaSets do not support a rolling update directly.
 资源，因为 ReplicaSet 并不直接支持滚动更新。
 
 <!--
+### Terminating Pods
+
+{{< feature-state feature_gate_name="DeploymentReplicaSetTerminatingReplicas" >}}
+
+You can enable this feature by setting the `DeploymentReplicaSetTerminatingReplicas`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
+on the [API server](/docs/reference/command-line-tools-reference/kube-apiserver/)
+and on the [kube-controller-manager](/docs/reference/command-line-tools-reference/kube-controller-manager/)
+
+Pods that become terminating due to deletion or scale down may take a long time to terminate, and may consume
+additional resources during that period. As a result, the total number of all pods can temporarily exceed
+`.spec.replicas`. Terminating pods can be tracked using the `.status.terminatingReplicas` field of the ReplicaSet.
+-->
+### 终止中的 Pod  {#terminating-pods}
+
+{{< feature-state feature_gate_name="DeploymentReplicaSetTerminatingReplicas" >}}
+
+你可以通过在 [API 服务器](/zh-cn/docs/reference/command-line-tools-reference/kube-apiserver/)
+和 [kube-controller-manager](/zh-cn/docs/reference/command-line-tools-reference/kube-controller-manager/)
+上启用 `DeploymentReplicaSetTerminatingReplicas`
+[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)来开启此功能。
+
+由于删除或缩减副本导致的终止中的 Pod 可能需要较长时间才能完成终止，且在此期间可能会消耗额外资源。
+因此，所有 Pod 的总数可能会暂时超过 `.spec.replicas` 指定的数量。
+可以通过 ReplicaSet 的 `.status.terminatingReplicas` 字段来跟踪终止中的 Pod。
+
+<!--
 ### Isolating Pods from a ReplicaSet
 
 You can remove Pods from a ReplicaSet by changing their labels. This technique may be used to remove Pods
@@ -523,7 +576,7 @@ assuming that the number of replicas is not also changed).
 A ReplicaSet can be easily scaled up or down by simply updating the `.spec.replicas` field. The ReplicaSet controller
 ensures that a desired number of Pods with a matching label selector are available and operational.
 -->
-### 扩缩 RepliaSet    {#scaling-a-replicaset}
+### 扩缩 ReplicaSet    {#scaling-a-replicaset}
 
 通过更新 `.spec.replicas` 字段，ReplicaSet 可以被轻松地进行扩缩。ReplicaSet
 控制器能确保匹配标签选择器的数量的 Pod 是可用的和可操作的。
@@ -541,16 +594,16 @@ prioritize scaling down pods based on the following general algorithm:
    the pod with the lower value will come first.
 1. Pods on nodes with more replicas come before pods on nodes with fewer replicas.
 1. If the pods' creation times differ, the pod that was created more recently
-   comes before the older pod (the creation times are bucketed on an integer log scale
-   when the `LogarithmicScaleDown` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled)
+   comes before the older pod (the creation times are bucketed on an integer log scale).
 -->
 1. 首先选择剔除悬决（Pending，且不可调度）的各个 Pod
 2. 如果设置了 `controller.kubernetes.io/pod-deletion-cost` 注解，则注解值较小的优先被裁减掉
 3. 所处节点上副本个数较多的 Pod 优先于所处节点上副本较少者
-4. 如果 Pod 的创建时间不同，最近创建的 Pod 优先于早前创建的 Pod 被裁减。
-   （当 `LogarithmicScaleDown` 这一[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)
-   被启用时，创建时间是按整数幂级来分组的）。
+4. 如果 Pod 的创建时间不同，最近创建的 Pod 优先于早前创建的 Pod 被裁减（创建时间是按整数幂级来分组的）。
 
+<!--
+If all of the above match, then selection is random.
+-->
 如果以上比较结果都相同，则随机选择。
 
 <!--
@@ -568,11 +621,11 @@ annotation, users can set a preference regarding which pods to remove first when
 注解，用户可以对 ReplicaSet 缩容时要先删除哪些 Pod 设置偏好。
 
 <!--
-The annotation should be set on the pod, the range is [-2147483647, 2147483647]. It represents the cost of
+The annotation should be set on the pod, the range is [-2147483648, 2147483647]. It represents the cost of
 deleting a pod compared to other pods belonging to the same ReplicaSet. Pods with lower deletion
 cost are preferred to be deleted before pods with higher deletion cost. 
 -->
-此注解要设置到 Pod 上，取值范围为 [-2147483647, 2147483647]。
+此注解要设置到 Pod 上，取值范围为 [-2147483648, 2147483647]。
 所代表的是删除同一 ReplicaSet 中其他 Pod 相比较而言的开销。
 删除开销较小的 Pod 比删除开销较高的 Pod 更容易被删除。
 
@@ -634,7 +687,7 @@ ReplicaSet 也可以作为[水平的 Pod 扩缩器 (HPA)](/zh-cn/docs/tasks/run-
 的目标。也就是说，ReplicaSet 可以被 HPA 自动扩缩。
 以下是 HPA 以我们在前一个示例中创建的副本集为目标的示例。
 
-{{< codenew file="controllers/hpa-rs.yaml" >}}
+{{% code_sample file="controllers/hpa-rs.yaml" %}}
 
 <!--
 Saving this manifest into `hpa-rs.yaml` and submitting it to a Kubernetes cluster should
@@ -655,7 +708,7 @@ Alternatively, you can use the `kubectl autoscale` command to accomplish the sam
 或者，可以使用 `kubectl autoscale` 命令完成相同的操作（而且它更简单！）
 
 ```shell
-kubectl autoscale rs frontend --max=10 --min=3 --cpu-percent=50
+kubectl autoscale rs frontend --max=10 --min=3 --cpu=50%
 ```
 
 <!--
@@ -665,7 +718,7 @@ kubectl autoscale rs frontend --max=10 --min=3 --cpu-percent=50
 
 [`Deployment`](/docs/concepts/workloads/controllers/deployment/) is an object which can own ReplicaSets and update
 them and their Pods via declarative, server-side rolling updates.
-While ReplicaSets can be used independently, today they're  mainly used by Deployments as a mechanism to orchestrate Pod
+While ReplicaSets can be used independently, today they're mainly used by Deployments as a mechanism to orchestrate Pod
 creation, deletion and updates. When you use Deployments you don't have to worry about managing the ReplicaSets that
 they create. Deployments own and manage their ReplicaSets.
 As such, it is recommended to use Deployments when you want ReplicaSets.
@@ -749,7 +802,7 @@ ReplicaSet 是 [ReplicationController](/zh-cn/docs/concepts/workloads/controller
 * [Run a Stateless Application Using a Deployment](/docs/tasks/run-application/run-stateless-application-deployment/),
   which relies on ReplicaSets to work.
 * `ReplicaSet` is a top-level resource in the Kubernetes REST API.
-  Read the {{< api-reference page="workload-resources/replica-set-v1" >}}
+  Read the {{< api-reference page="apps/replica-set-v1" >}}
   object definition to understand the API for replica sets.
 * Read about [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/) and how
   you can use it to manage application availability during disruptions.
@@ -759,7 +812,7 @@ ReplicaSet 是 [ReplicationController](/zh-cn/docs/concepts/workloads/controller
 * [使用 Deployment 运行一个无状态应用](/zh-cn/docs/tasks/run-application/run-stateless-application-deployment/)，
   它依赖于 ReplicaSet。
 * `ReplicaSet` 是 Kubernetes REST API 中的顶级资源。阅读
-  {{< api-reference page="workload-resources/replica-set-v1" >}}
+  {{< api-reference page="apps/replica-set-v1" >}}
   对象定义理解关于该资源的 API。
 * 阅读 [Pod 干扰预算（Disruption Budget）](/zh-cn/docs/concepts/workloads/pods/disruptions/)，
   了解如何在干扰下运行高度可用的应用。

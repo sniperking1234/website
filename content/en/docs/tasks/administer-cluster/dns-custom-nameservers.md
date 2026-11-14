@@ -5,6 +5,7 @@ reviewers:
 title: Customizing DNS Service
 content_type: task
 min-kubernetes-server-version: v1.12
+weight: 160
 ---
 
 <!-- overview -->
@@ -25,7 +26,7 @@ Your cluster must be running the CoreDNS add-on.
 ## Introduction
 
 DNS is a built-in Kubernetes service launched automatically
-using the _addon manager_ [cluster add-on](http://releases.k8s.io/master/cluster/addons/README.md).
+using the _addon manager_ [cluster add-on](https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/addon-manager/README.md).
 
 {{< note >}}
 The CoreDNS Service is named `kube-dns` in the `metadata.name` field.  
@@ -104,7 +105,7 @@ The Corefile configuration includes the following [plugins](https://coredns.io/p
 
 * [errors](https://coredns.io/plugins/errors/): Errors are logged to stdout.
 * [health](https://coredns.io/plugins/health/): Health of CoreDNS is reported to
-  `http://localhost:8080/health`. In this extended syntax `lameduck` will make theuprocess
+  `http://localhost:8080/health`. In this extended syntax `lameduck` will make the process
   unhealthy then wait for 5 seconds before the process is shut down.
 * [ready](https://coredns.io/plugins/ready/): An HTTP endpoint on port 8181 will return 200 OK,
   when all plugins that are able to signal readiness have done so.

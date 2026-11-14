@@ -50,7 +50,7 @@ function call in libc.
 The Pod name and namespace are available as environment variables through the
 [downward API](/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/).
 
-User defined environment variables from the Pod definition are also available to the Container,
+User-defined environment variables from the Pod definition are also available to the Container,
 as are any environment variables specified statically in the container image.
 -->
 ### 容器信息
@@ -70,7 +70,7 @@ Pod 定义中的用户所定义的环境变量也可在容器中使用，就像�
 A list of all services that were running when a Container was created is available to that Container as environment variables.
 This list is limited to services within the same namespace as the new Container's Pod and Kubernetes control plane services.
 
-For a service named *foo* that maps to a Container named *bar*,
+For a service named *foo* that exposes a set of Pods, each running a container named *bar*,
 the following variables are defined:
 -->
 ### 集群信息
@@ -78,7 +78,8 @@ the following variables are defined:
 创建容器时正在运行的所有服务都可用作该容器的环境变量。
 这里的服务仅限于新容器的 Pod 所在的名字空间中的服务，以及 Kubernetes 控制面的服务。
 
-对于名为 **foo** 的服务，当映射到名为 **bar** 的容器时，定义了以下变量：
+对于名为 **foo** 的服务，它公开一组 Pod，每个 Pod
+运行一个名为 **bar** 的容器，定义了以下变量：
 
 ```shell
 FOO_SERVICE_HOST=<其上服务正运行的主机>
@@ -87,10 +88,10 @@ FOO_SERVICE_PORT=<其上服务正运行的端口>
 
 <!--
 Services have dedicated IP addresses and are available to the Container via DNS,
-if [DNS addon](https://releases.k8s.io/{{< param "fullversion" >}}/cluster/addons/dns/) is enabled. 
+if [DNS addon](https://releases.k8s.io/v{{< skew currentPatchVersion >}}/cluster/addons/dns/) is enabled. 
 -->
 服务具有专用的 IP 地址。如果启用了
-[DNS 插件](https://releases.k8s.io/{{< param "fullversion" >}}/cluster/addons/dns/)，
+[DNS 插件](https://releases.k8s.io/v{{< skew currentPatchVersion >}}/cluster/addons/dns/)，
 可以在容器中通过 DNS 来访问服务。
 
 ## {{% heading "whatsnext" %}}

@@ -32,9 +32,9 @@ weight: 20
 
 ## Cgroup ड्राइवर 
 
-प्रक्रियाओं के लिए आवंटित संसाधनों को सीमित करने के लिए कण्ट्रोल ग्रुप का उपयोग किया जाता है।
+प्रक्रियाओं के लिए आवंटित संसाधनों को सीमित करने के लिए कंट्रोल ग्रुप का उपयोग किया जाता है।
 
-जब Linux वातावरण के लिए init सिस्टम, [systemd (https://www.freedesktop.org/wiki/Software/systemd/)
+जब Linux वातावरण के लिए init सिस्टम, [systemd](https://www.freedesktop.org/wiki/Software/systemd/)
 को चुना जाता है, तब init प्रक्रिया रुट(root) control group (`cgroup`) उत्पन्न करती है और उपभोग करती है तथा cgroup मैनेजर की तरह काम करता है।
 Systemd और cgroups एकीकृत हैं और प्रत्येक systemd यूनिट को एक cgroup आवंटित होता है। अपने कन्टैनर रनटाइम और kubelet को `cgroupfs` प्रयोग करने के लिए कॉन्फ़िगर करना संभव है। systemd के साथ `cgroupfs` प्रयोग करने के कारण दो अलग cgroup मैनेजर होंगे।
 
@@ -386,6 +386,6 @@ cgroup_manager = "cgroupfs"
 
 ### मिरांटिस कंटेनर रनटाइम {#mcr}
 
-[Mirantis Container Runtime](https://docs.mirantis.com/mcr/20.10/overview.html) (MCR) एक व्यावसायिक रूप से है उपलब्ध कंटेनर रनटाइम जिसे पहले डॉकर एंटरप्राइज एडिशन के नाम से जाना जाता था।
+[Mirantis Container Runtime](https://docs.mirantis.com/mcr/25.0/overview.html) (MCR) एक व्यावसायिक रूप से है उपलब्ध कंटेनर रनटाइम जिसे पहले डॉकर एंटरप्राइज एडिशन के नाम से जाना जाता था।
 
 आप खुले स्रोत का उपयोग करके कुबेरनेट्स के साथ मिरांटिस कंटेनर रनटाइम का उपयोग कर सकते हैं [`cri-dockerd`](https://github.com/Mirantis/cri-dockerd) घटक, MCR के साथ शामिल है।

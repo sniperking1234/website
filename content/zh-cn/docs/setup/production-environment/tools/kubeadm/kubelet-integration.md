@@ -44,8 +44,8 @@ kubeadm CLI 工具的生命周期与 [kubelet](/zh-cn/docs/reference/command-lin
 
 集群中涉及的所有 kubelet 的一些配置细节都必须相同，
 而其他配置方面则需要基于每个 kubelet 进行设置，以适应给定机器的不同特性（例如操作系统、存储和网络）。
-你可以手动地管理 kubelet 的配置，但是 kubeadm 现在提供一种 `KubeletConfiguration` API 类型
-用于[集中管理 kubelet 的配置](#configure-kubelets-using-kubeadm)。
+你可以手动地管理 kubelet 的配置，但是 kubeadm 现在提供一种 `KubeletConfiguration` API
+类型用于[集中管理 kubelet 的配置](#configure-kubelets-using-kubeadm)。
 
 <!-- body -->
 
@@ -95,7 +95,8 @@ a list of values to a camelCased key, illustrated by the following example:
 现在，可以从该子网分配服务的虚拟 IP。
 你还需要通过 kubelet 使用 `--cluster-dns` 标志设置 DNS 地址。
 在集群中的每个管理器和节点上的 kubelet 的设置需要相同。
-kubelet 提供了一个版本化的结构化 API 对象，该对象可以配置 kubelet 中的大多数参数，并将此配置推送到集群中正在运行的每个 kubelet 上。
+kubelet 提供了一个版本化的结构化 API 对象，该对象可以配置 kubelet
+中的大多数参数，并将此配置推送到集群中正在运行的每个 kubelet 上。
 此对象被称为 [`KubeletConfiguration`](/zh-cn/docs/reference/config-api/kubelet-config.v1beta1/)。
 `KubeletConfiguration` 允许用户指定标志，例如用骆峰值代表集群的 DNS IP 地址，如下所示：
 
@@ -154,7 +155,8 @@ The recommended way of applying such instance-specific configuration is by using
 
 - 要指定容器运行时，你必须用 `--container-runtime-endpoint=<path>` 标志来指定端点。
 
-应用此类特定于实例的配置的推荐方法是使用 [`KubeletConfiguration` 补丁](/zh-cn/docs/setup/production-environment/tools/kubeadm/control-plane-flags#patches)。
+应用此类特定于实例的配置的推荐方法是使用
+[`KubeletConfiguration` 补丁](/zh-cn/docs/setup/production-environment/tools/kubeadm/control-plane-flags#patches)。
 
 <!--
 ## Configure kubelets using kubeadm
@@ -188,8 +190,11 @@ for more details.
 
 <!--
 When you call `kubeadm init`, the kubelet configuration is marshalled to disk
-at `/var/lib/kubelet/config.yaml`, and also uploaded to a `kubelet-config` ConfigMap in the `kube-system`
-namespace of the cluster. A kubelet configuration file is also written to `/etc/kubernetes/kubelet.conf`
+at `/var/lib/kubelet/config.yaml`, and also uploaded to a `kubelet-config` 
+ConfigMap in the `kube-system` namespace of the cluster. 
+Additionally, the kubeadm tool detects the CRI socket on the node and writes its details
+(including the socket path) into a local configuration, `/var/lib/kubelet/instance-config.yaml`.
+A kubelet configuration file is also written to `/etc/kubernetes/kubelet.conf`
 with the baseline cluster-wide configuration for all kubelets in the cluster. This configuration file
 points to the client certificates that allow the kubelet to communicate with the API server. This
 addresses the need to
@@ -197,6 +202,8 @@ addresses the need to
 -->
 当调用 `kubeadm init` 时，kubelet 的配置会被写入磁盘 `/var/lib/kubelet/config.yaml`，
 并上传到集群 `kube-system` 命名空间的 `kubelet-config` ConfigMap。
+此外，kubeadm 工具会在节点上检测 CRI 套接字，
+并将其详细信息（包括套接字路径）写入本地配置文件 `/var/lib/kubelet/instance-config.yaml`。
 kubelet 配置信息也被写入 `/etc/kubernetes/kubelet.conf`，其中包含集群内所有 kubelet 的基线配置。
 此配置文件指向允许 kubelet 与 API 服务器通信的客户端证书。
 这解决了[将集群级配置传播到每个 kubelet](#propagating-cluster-level-configuration-to-each-kubelet) 的需求。
@@ -217,10 +224,9 @@ KUBELET_KUBEADM_ARGS="--flag1=value1 --flag2=value2 ..."
 
 <!--
 In addition to the flags used when starting the kubelet, the file also contains dynamic
-parameters such as the cgroup driver and whether to use a different container runtime socket
-(`--cri-socket`).
+parameters such as the cgroup driver.
 -->
-除了启动 kubelet 时所使用的标志外，该文件还包含动态参数，例如 cgroup 驱动程序以及是否使用其他容器运行时套接字（`--cri-socket`）。
+除了启动 kubelet 时所使用的标志外，该文件还包含诸如 CGroup 驱动程序等动态参数。
 
 <!--
 After marshalling these two files to disk, kubeadm attempts to run the following two
@@ -242,13 +248,17 @@ If the reload and restart are successful, the normal `kubeadm init` workflow con
 
 When you run `kubeadm join`, kubeadm uses the Bootstrap Token credential to perform
 a TLS bootstrap, which fetches the credential needed to download the
-`kubelet-config` ConfigMap and writes it to `/var/lib/kubelet/config.yaml`. The dynamic
-environment file is generated in exactly the same way as `kubeadm init`.
+`kubelet-config` ConfigMap and writes it to `/var/lib/kubelet/config.yaml`.
+Additionally, the kubeadm tool detects the CRI socket on the node and writes its details
+(including the socket path) into a local configuration, `/var/lib/kubelet/instance-config.yaml`.
+The dynamic environment file is generated in exactly the same way as `kubeadm init`.
 -->
 ### 使用 `kubeadm join` 时的工作流程    {#workflow-when-using-kubeadm-join}
 
 当运行 `kubeadm join` 时，kubeadm 使用 Bootstrap Token 证书执行 TLS 引导，该引导会获取一份证书，
 该证书需要下载 `kubelet-config` ConfigMap 并把它写入 `/var/lib/kubelet/config.yaml` 中。
+此外，kubeadm 会在节点上自动检测 CRI 套接字，
+并将其详细信息（包括套接字路径）写入本地配置文件 `/var/lib/kubelet/instance-config.yaml`。
 动态环境文件的生成方式恰好与 `kubeadm init` 完全相同。
 
 <!--
@@ -275,7 +285,7 @@ When the `/etc/kubernetes/kubelet.conf` file is written, the kubelet has finishe
 Kubeadm deletes the `/etc/kubernetes/bootstrap-kubelet.conf` file after completing the TLS Bootstrap.
 -->
 当 `/etc/kubernetes/kubelet.conf` 文件被写入后，kubelet 就完成了 TLS 引导过程。
-Kubeadm 在完成 TLS 引导过程后将删除 `/etc/kubernetes/bootstrap-kubelet.conf` 文件。
+kubeadm 在完成 TLS 引导过程后将删除 `/etc/kubernetes/bootstrap-kubelet.conf` 文件。
 
 <!--
 ##  The kubelet drop-in file for systemd
@@ -291,30 +301,40 @@ Note that the kubeadm CLI command never touches this drop-in file.
 
 <!--
 This configuration file installed by the `kubeadm`
-[DEB](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf) or
-[RPM package](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf) is written to
+[package](https://github.com/kubernetes/release/blob/cd53840/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf) is written to
 `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` and is used by systemd.
 It augments the basic
-[`kubelet.service` for RPM](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/rpm/kubelet/kubelet.service) or
-[`kubelet.service` for DEB](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service):
+[`kubelet.service`](https://github.com/kubernetes/release/blob/cd53840/cmd/krel/templates/latest/kubelet/kubelet.service).
 -->
-通过 `kubeadm` [DEB 包](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf)
-或者 [RPM 包](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf)
-安装的配置文件被写入 `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` 并由 systemd 使用。
-它对原来的 [RPM 版本 `kubelet.service`](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/rpm/kubelet/kubelet.service)
-或者 [DEB 版本 `kubelet.service`](https://github.com/kubernetes/release/blob/master/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service)
-作了增强：
+通过 `kubeadm` [包](https://github.com/kubernetes/release/blob/cd53840/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf) 
+安装的配置文件被写入 `/usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf`
+并由 systemd 使用。它对原来的
+[`kubelet.service`](https://github.com/kubernetes/release/blob/cd53840/cmd/krel/templates/latest/kubelet/kubelet.service) 作了增强。
 
 <!--
-{{< note >}}
-The contents below are just an example. If you don't want to use a package manager
-follow the guide outlined in the [Without a package manager](/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#k8s-install-2))
-section.
-{{< /note >}}
+If you want to override that further, you can make a directory `/etc/systemd/system/kubelet.service.d/`
+(not `/usr/lib/systemd/system/kubelet.service.d/`) and put your own customizations into a file there.
+For example, you might add a new local file `/etc/systemd/system/kubelet.service.d/local-overrides.conf`
+to override the unit settings configured by `kubeadm`.
+
+Here is what you are likely to find in `/usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf`:
 -->
+如果你想进一步覆盖它，可以创建一个目录`/etc/systemd/system/kubelet.service.d/`
+（而不是`/usr/lib/systemd/kubelet.service.d/`），并将你自己的自定义配置写入到该目录下的一个文件中。
+
+例如，您可以添加一个新的本地文件`/etc/systemd/system/kubelet.service.d/local-overrides.conf`
+以覆盖“kubeadm”配置的单元设置。
+
+以下是你可能在“/usr/lib/systemd/kubelet.service.d/10 kubeadm.conf”中找到的内容：
+
 {{< note >}}
+<!--
+The contents below are just an example. If you don't want to use a package manager
+follow the guide outlined in the ([Without a package manager](/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#k8s-install-2))
+section.
+-->
 下面的内容只是一个例子。如果你不想使用包管理器，
-请遵循[没有包管理器](/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#k8s-install-2))
+请遵循（[没有包管理器](/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#k8s-install-2)）
 章节的指南。
 {{< /note >}}
 
@@ -324,7 +344,7 @@ section.
 Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
 Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
 # This is a file that "kubeadm init" and "kubeadm join" generate at runtime, populating
-the KUBELET_KUBEADM_ARGS variable dynamically
+# the KUBELET_KUBEADM_ARGS variable dynamically
 EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
 # This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably,
 # the user should use the .NodeRegistration.KubeletExtraArgs object in the configuration files instead.
@@ -338,7 +358,8 @@ ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELE
 [Service]
 Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
 Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
-# 这是 "kubeadm init" 和 "kubeadm join" 运行时生成的文件，动态地填充 KUBELET_KUBEADM_ARGS 变量
+# 这是 "kubeadm init" 和 "kubeadm join" 运行时生成的文件，
+# 动态地填充 KUBELET_KUBEADM_ARGS 变量
 EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
 # 这是一个文件，用户在不得已下可以将其用作替代 kubelet args。
 # 用户最好使用 .NodeRegistration.KubeletExtraArgs 对象在配置文件中替代。

@@ -1,8 +1,7 @@
 ---
 title: Kubectl
 id: kubectl
-date: 2018-04-12
-full_link: /docs/user-guide/kubectl-overview/
+full_link: /docs/reference/kubectl/
 short_description: >
   A command line tool for communicating with a Kubernetes cluster.
 
@@ -20,3 +19,5 @@ using the Kubernetes API.
 
 You can use `kubectl` to create, inspect, update, and delete Kubernetes objects.
 
+<!-- localization note: OK to omit the rest of this entry -->
+In English, `kubectl` is (officially) pronounced /kjuːb/ /kənˈtɹəʊl/ (like "cube control").

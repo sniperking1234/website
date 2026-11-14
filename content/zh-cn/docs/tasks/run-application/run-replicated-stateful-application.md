@@ -30,54 +30,54 @@ replication.
 示例应用的拓扑结构有一个主服务器和多个副本，使用异步的基于行（Row-Based）
 的数据复制。
 
+{{< note >}}
 <!--
-**this is not a production configuration**.
-In particular, MySQL settings remain on insecure defaults to keep the focus
+**This is not a production configuration**. MySQL settings remain on insecure defaults to keep the focus
 on general patterns for running stateful applications in Kubernetes.
 -->
-{{< note >}}
-**这不是生产环境下配置**。
-尤其注意，MySQL 设置都使用的是不安全的默认值，这是因为我们想把重点放在 Kubernetes
+**这一配置不适合生产环境。**
+MySQL 设置都使用的是不安全的默认值，这是因为我们想把重点放在 Kubernetes
 中运行有状态应用程序的一般模式上。
 {{< /note >}}
 
 ## {{% heading "prerequisites" %}}
 
-* {{< include "task-tutorial-prereqs.md" >}}
-* {{< include "default-storage-class-prereqs.md" >}}
-
+- {{< include "task-tutorial-prereqs.md" >}}
+- {{< include "default-storage-class-prereqs.md" >}}
 <!--
-* This tutorial assumes you are familiar with
+- This tutorial assumes you are familiar with
   [PersistentVolumes](/docs/concepts/storage/persistent-volumes/)
   and [StatefulSets](/docs/concepts/workloads/controllers/statefulset/),
   as well as other core concepts like [Pods](/docs/concepts/workloads/pods/),
   [Services](/docs/concepts/services-networking/service/), and
   [ConfigMaps](/docs/tasks/configure-pod-container/configure-pod-configmap/).
-* Some familiarity with MySQL helps, but this tutorial aims to present
+- Some familiarity with MySQL helps, but this tutorial aims to present
   general patterns that should be useful for other systems.
-* You are using the default namespace or another namespace that does not contain any conflicting objects.
+- You are using the default namespace or another namespace that does not contain any conflicting objects.
+- You need to have a AMD64-compatible CPU.
 -->
-* 本教程假定你熟悉
+- 本教程假定你熟悉
   [PersistentVolumes](/zh-cn/docs/concepts/storage/persistent-volumes/)
-  与 [StatefulSet](/zh-cn/docs/concepts/workloads/controllers/statefulset/),
+  与 [StatefulSet](/zh-cn/docs/concepts/workloads/controllers/statefulset/)，
   以及其他核心概念，例如 [Pod](/zh-cn/docs/concepts/workloads/pods/)、
-  [服务](/zh-cn/docs/concepts/services-networking/service/) 与
-  [ConfigMap](/zh-cn/docs/tasks/configure-pod-container/configure-pod-configmap/).
-* 熟悉 MySQL 会有所帮助，但是本教程旨在介绍对其他系统应该有用的常规模式。
-* 你正在使用默认命名空间或不包含任何冲突对象的另一个命名空间。
+  [Service](/zh-cn/docs/concepts/services-networking/service/)与
+  [ConfigMap](/zh-cn/docs/tasks/configure-pod-container/configure-pod-configmap/)。
+- 熟悉 MySQL 会有所帮助，但是本教程旨在介绍对其他系统应该有用的常规模式。
+- 你正在使用默认命名空间或不包含任何冲突对象的另一个命名空间。
+- 你需要拥有一块兼容 AMD64 架构的 CPU。
 
 ## {{% heading "objectives" %}}
 
 <!--
-* Deploy a replicated MySQL topology with a StatefulSet.
-* Send MySQL client traffic.
-* Observe resistance to downtime.
-* Scale the StatefulSet up and down.
+- Deploy a replicated MySQL topology with a StatefulSet.
+- Send MySQL client traffic.
+- Observe resistance to downtime.
+- Scale the StatefulSet up and down.
 -->
-* 使用 StatefulSet 部署多副本 MySQL 拓扑架构。
-* 发送 MySQL 客户端请求
-* 观察对宕机的抵抗力
-* 扩缩 StatefulSet 的规模
+- 使用 StatefulSet 部署多副本 MySQL 拓扑架构。
+- 发送 MySQL 客户端请求。
+- 观察对宕机的抵抗力。
+- 扩缩 StatefulSet 的规模。
 
 <!-- lessoncontent -->
 
@@ -100,7 +100,7 @@ Create the ConfigMap from the following YAML configuration file:
 
 使用以下的 YAML 配置文件创建 ConfigMap ：
 
-{{< codenew file="application/mysql/mysql-configmap.yaml" >}}
+{{% code_sample file="application/mysql/mysql-configmap.yaml" %}}
 
 ```shell
 kubectl apply -f https://k8s.io/examples/application/mysql/mysql-configmap.yaml
@@ -110,7 +110,7 @@ kubectl apply -f https://k8s.io/examples/application/mysql/mysql-configmap.yaml
 This ConfigMap provides `my.cnf` overrides that let you independently control
 configuration on the primary MySQL server and its replicas.
 In this case, you want the primary server to be able to serve replication logs to replicas
-and you want repicas to reject any writes that don't come via replication. 
+and you want replicas to reject any writes that don't come via replication.
 -->
 这个 ConfigMap 提供 `my.cnf` 覆盖设置，使你可以独立控制 MySQL 主服务器和副本服务器的配置。
 在这里，你希望主服务器能够将复制日志提供给副本服务器，
@@ -120,7 +120,7 @@ and you want repicas to reject any writes that don't come via replication.
 There's nothing special about the ConfigMap itself that causes different
 portions to apply to different Pods.
 Each Pod decides which portion to look at as it's initializing,
-based on information provided by the StatefulSet controller. 
+based on information provided by the StatefulSet controller.
 -->
 ConfigMap 本身没有什么特别之处，因而也不会出现不同部分应用于不同的 Pod 的情况。
 每个 Pod 都会在初始化时基于 StatefulSet 控制器提供的信息决定要查看的部分。
@@ -134,7 +134,7 @@ Create the Services from the following YAML configuration file:
 
 使用以下 YAML 配置文件创建服务：
 
-{{< codenew file="application/mysql/mysql-services.yaml" >}}
+{{% code_sample file="application/mysql/mysql-services.yaml" %}}
 
 ```shell
 kubectl apply -f https://k8s.io/examples/application/mysql/mysql-services.yaml
@@ -146,7 +146,7 @@ The headless Service provides a home for the DNS entries that the StatefulSet
 Pod that's part of the set.
 Because the headless Service is named `mysql`, the Pods are accessible by
 resolving `<pod-name>.mysql` from within any other Pod in the same Kubernetes
-cluster and namespace. 
+cluster and namespace.
 -->
 这个无头 Service 给 StatefulSet {{< glossary_tooltip text="控制器" term_id="controller" >}}
 为集合中每个 Pod 创建的 DNS 条目提供了一个宿主。
@@ -157,7 +157,7 @@ cluster and namespace.
 The client Service, called `mysql-read`, is a normal Service with its own
 cluster IP that distributes connections across all MySQL Pods that report
 being Ready. The set of potential endpoints includes the primary MySQL server and all
-replicas. 
+replicas.
 -->
 客户端 Service 称为 `mysql-read`，是一种常规 Service，具有其自己的集群 IP。
 该集群 IP 在报告就绪的所有 MySQL Pod 之间分配连接。
@@ -167,7 +167,7 @@ replicas.
 Note that only read queries can use the load-balanced client Service.
 Because there is only one primary MySQL server, clients should connect directly to the
 primary MySQL Pod (through its DNS entry within the headless Service) to execute
-writes. 
+writes.
 -->
 请注意，只有读查询才能使用负载平衡的客户端 Service。
 因为只有一个 MySQL 主服务器，所以客户端应直接连接到 MySQL 主服务器 Pod
@@ -176,13 +176,13 @@ writes.
 <!--
 ### Create the StatefulSet {#statefulset}
 
-Finally, create the StatefulSet from the following YAML configuration file: 
+Finally, create the StatefulSet from the following YAML configuration file:
 -->
 ### 创建 StatefulSet {#statefulset}
 
 最后，使用以下 YAML 配置文件创建 StatefulSet：
 
-{{< codenew file="application/mysql/mysql-statefulset.yaml" >}}
+{{% code_sample file="application/mysql/mysql-statefulset.yaml" %}}
 
 ```shell
 kubectl apply -f https://k8s.io/examples/application/mysql/mysql-statefulset.yaml
@@ -217,10 +217,10 @@ Press **Ctrl+C** to cancel the watch.
 {{< note >}}
 <!--
 If you don't see any progress, make sure you have a dynamic PersistentVolume
-provisioner enabled as mentioned in the [prerequisites](#before-you-begin). 
+provisioner enabled, as mentioned in the [prerequisites](#before-you-begin).
 -->
-如果你看不到任何进度，确保已启用[前提条件](#准备开始)
-中提到的动态 PersistentVolume 制备程序。
+如果你看不到任何进度，确保已启用[前提条件](#准备开始)中提到的动态
+PersistentVolume 制备器。
 {{< /note >}}
 
 <!--
@@ -238,7 +238,7 @@ The StatefulSet controller starts Pods one at a time, in order by their
 ordinal index.
 It waits until each Pod reports being Ready before starting the next one. 
 -->
-## 了解有状态的 Pod 初始化
+## 了解有状态的 Pod 初始化   {#understanding-stateful-pod-init}
 
 StatefulSet 控制器按序数索引顺序地每次启动一个 Pod。
 它一直等到每个 Pod 报告就绪才再启动下一个 Pod。
@@ -249,7 +249,7 @@ In addition, the controller assigns each Pod a unique, stable name of the form
 `mysql-1`, and `mysql-2`. 
 -->
 此外，控制器为每个 Pod 分配一个唯一、稳定的名称，形如 `<statefulset 名称>-<序数索引>`，
-其结果是 Pods 名为 `mysql-0`、`mysql-1` 和 `mysql-2`。
+其结果是 Pod 名为 `mysql-0`、`mysql-1` 和 `mysql-2`。
 
 <!--
 The Pod template in the above StatefulSet manifest takes advantage of these
@@ -264,16 +264,16 @@ Before starting any of the containers in the Pod spec, the Pod first runs any
 [init Containers](/docs/concepts/workloads/pods/init-containers/)
 in the order defined. 
 -->
-### 生成配置
+### 生成配置   {#generating-config}
 
 在启动 Pod 规约中的任何容器之前，Pod 首先按顺序运行所有的
-[初始化容器](/zh-cn/docs/concepts/workloads/pods/init-containers/)。
+[Init 容器](/zh-cn/docs/concepts/workloads/pods/init-containers/)。
 
 <!--
 The first init container, named `init-mysql`, generates special MySQL config
 files based on the ordinal index. 
 -->
-第一个名为 `init-mysql` 的初始化容器根据序号索引生成特殊的 MySQL 配置文件。
+第一个名为 `init-mysql` 的 Init 容器根据序号索引生成特殊的 MySQL 配置文件。
 
 <!--
 The script determines its own ordinal index by extracting it from the end of
@@ -305,9 +305,8 @@ replicating.
 由于示例部署结构由单个 MySQL 主节点和任意数量的副本节点组成，
 因此脚本仅将序数 `0` 指定为主节点，而将其他所有节点指定为副本节点。
 
-与 StatefulSet 控制器的
-[部署顺序保证](/zh-cn/docs/concepts/workloads/controllers/statefulset/#deployment-and-scaling-guarantees)
-相结合，
+与 StatefulSet
+控制器的[部署顺序保证](/zh-cn/docs/concepts/workloads/controllers/statefulset/#deployment-and-scaling-guarantees)相结合，
 可以确保 MySQL 主服务器在创建副本服务器之前已准备就绪，以便它们可以开始复制。
 
 <!--
@@ -317,7 +316,7 @@ In general, when a new Pod joins the set as a replica, it must assume the primar
 server might already have data on it. It also must assume that the replication
 logs might not go all the way back to the beginning of time. 
 -->
-### 克隆现有数据
+### 克隆现有数据   {#cloning-existing-data}
 
 通常，当新 Pod 作为副本节点加入集合时，必须假定 MySQL 主节点可能已经有数据。
 还必须假设复制日志可能不会一直追溯到时间的开始。
@@ -334,7 +333,7 @@ a replica Pod the first time it starts up on an empty PersistentVolume.
 That means it copies all existing data from another running Pod,
 so its local state is consistent enough to begin replicating from the primary server.
 -->
-第二个名为 `clone-mysql` 的初始化容器，第一次在带有空 PersistentVolume 的副本 Pod
+第二个名为 `clone-mysql` 的 Init 容器，第一次在带有空 PersistentVolume 的副本 Pod
 上启动时，会在从属 Pod 上执行克隆操作。
 这意味着它将从另一个运行中的 Pod 复制所有现有数据，使此其本地状态足够一致，
 从而可以开始从主服务器复制。
@@ -351,7 +350,7 @@ Ready before starting Pod `N+1`.
 MySQL 本身不提供执行此操作的机制，因此本示例使用了一种流行的开源工具 Percona XtraBackup。
 在克隆期间，源 MySQL 服务器性能可能会受到影响。
 为了最大程度地减少对 MySQL 主服务器的影响，该脚本指示每个 Pod 从序号较低的 Pod 中克隆。
-可以这样做的原因是 StatefulSet 控制器始终确保在启动 Pod `N + 1` 之前 Pod `N` 已准备就绪。
+可以这样做的原因是 StatefulSet 控制器始终确保在启动 Pod `N+1` 之前 Pod `N` 已准备就绪。
 
 <!--
 ### Starting replication 
@@ -359,11 +358,11 @@ MySQL 本身不提供执行此操作的机制，因此本示例使用了一种�
 After the init containers complete successfully, the regular containers run.
 The MySQL Pods consist of a `mysql` container that runs the actual `mysqld`
 server, and an `xtrabackup` container that acts as a
-[sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns). 
+[sidecar](/blog/2015/06/the-distributed-system-toolkit-patterns).
 -->
-### 开始复制
+### 开始复制   {#starting-replication}
 
-初始化容器成功完成后，应用容器将运行。MySQL Pod 由运行实际 `mysqld` 服务的 `mysql`
+Init 容器成功完成后，应用容器将运行。MySQL Pod 由运行实际 `mysqld` 服务的 `mysql`
 容器和充当[辅助工具](/blog/2015/06/the-distributed-system-toolkit-patterns)的
 xtrabackup 容器组成。
 
@@ -406,7 +405,7 @@ You can send test queries to the primary MySQL server (hostname `mysql-0.mysql`)
 by running a temporary container with the `mysql:5.7` image and running the
 `mysql` client binary. 
 -->
-## 发送客户端请求
+## 发送客户端请求   {#sending-client-traffic}
 
 你可以通过运行带有 `mysql:5.7` 镜像的临时容器并运行 `mysql` 客户端二进制文件，
 将测试查询发送到 MySQL 主服务器（主机名 `mysql-0.mysql`）。
@@ -505,9 +504,9 @@ running while you force a Pod out of the Ready state.
 
 The [readiness probe](/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes)
 for the `mysql` container runs the command `mysql -h 127.0.0.1 -e 'SELECT 1'`
-to make sure the server is up and able to execute queries. 
+to make sure the server is up and able to execute queries.
 -->
-### 破坏就绪态探测
+### 破坏就绪态探测   {#break-readiness-probe}
 
 `mysql` 容器的[就绪态探测](/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes)
 运行命令 `mysql -h 127.0.0.1 -e 'SELECT 1'`，以确保服务器已启动并能够执行查询。
@@ -568,9 +567,9 @@ kubectl exec mysql-2 -c mysql -- mv /usr/bin/mysql.off /usr/bin/mysql
 ### Delete Pods 
 
 The StatefulSet also recreates Pods if they're deleted, similar to what a
-ReplicaSet does for stateless Pods. 
+ReplicaSet does for stateless Pods.
 -->
-### 删除 Pods
+### 删除 Pod   {#delete-pods}
 
 如果删除了 Pod，则 StatefulSet 还会重新创建 Pod，类似于 ReplicaSet 对无状态 Pod 所做的操作。
 
@@ -583,7 +582,7 @@ The StatefulSet controller notices that no `mysql-2` Pod exists anymore,
 and creates a new one with the same name and linked to the same
 PersistentVolumeClaim.
 You should see server ID `102` disappear from the loop output for a while
-and then return on its own. 
+and then return on its own.
 -->
 StatefulSet 控制器注意到不再存在 `mysql-2` Pod，于是创建一个具有相同名称并链接到相同
 PersistentVolumeClaim 的新 Pod。
@@ -594,7 +593,7 @@ PersistentVolumeClaim 的新 Pod。
 
 If your Kubernetes cluster has multiple Nodes, you can simulate Node downtime
 (such as when Nodes are upgraded) by issuing a
-[drain](/docs/reference/generated/kubectl/kubectl-commands/#drain). 
+[drain](/docs/reference/generated/kubectl/kubectl-commands/#drain).
 -->
 ### 腾空节点   {#drain-a-node}
 
@@ -629,15 +628,14 @@ Replace `<node-name>` with the name of the Node you found in the last step.
 接下来，通过运行以下命令腾空节点，该命令将其保护起来，以使新的 Pod 不能调度到该节点，
 然后逐出所有现有的 Pod。将 `<节点名称>` 替换为在上一步中找到的节点名称。
 
-
 {{< caution >}}
 <!--
-Draining a Node can impact other workloads and applications 
+Draining a Node can impact other workloads and applications
 running on the same node. Only perform the following step in a test
 cluster.
 -->
 腾空一个 Node 可能影响到在该节点上运行的其他负载和应用。
-只应在测试集群上执行下列步骤
+只应在测试集群上执行下列步骤。
 {{< /caution >}}
 
 <!--
@@ -692,7 +690,7 @@ Now uncordon the Node to return it to a normal state:
 kubectl uncordon <node-name>
 ```
 -->
-现在去掉节点保护（Uncordon），使其恢复为正常模式:
+现在去掉节点保护（Uncordon），使其恢复为正常模式：
 
 ```shell
 kubectl uncordon <节点名称>
@@ -701,13 +699,14 @@ kubectl uncordon <节点名称>
 <!--
 ## Scaling the number of replicas
 
-When you use MySQL replication, you can scale your read query capacity by adding replicas.
-With StatefulSet, you can do this with a single command: 
+When you use MySQL replication, you can scale your read query capacity by
+adding replicas.
+For a StatefulSet, you can achieve this with a single command:
 -->
-## 扩展副本节点数量
+## 扩展副本节点数量    {#scaling-number-of-replicas}
 
 使用 MySQL 复制时，你可以通过添加副本节点来扩展读取查询的能力。
-使用 StatefulSet，你可以使用单个命令执行此操作：
+对于 StatefulSet，你可以使用单个命令实现此目的：
 
 ```shell
 kubectl scale statefulset mysql --replicas=5
@@ -729,7 +728,7 @@ the `SELECT @@server_id` loop output.
 You can also verify that these new servers have the data you added before they
 existed: 
 -->
-一旦 Pod 启动，你应该看到服务器 IDs `103` 和 `104` 开始出现在 `SELECT @@server_id`
+一旦 Pod 启动，你应该看到服务器 ID `103` 和 `104` 开始出现在 `SELECT @@server_id`
 循环输出中。
 
 你还可以验证这些新服务器在存在之前已添加了数据：
@@ -783,7 +782,7 @@ kubectl get pvc -l app=mysql
 Which shows that all 5 PVCs still exist, despite having scaled the
 StatefulSet down to 3: 
 -->
-这表明，尽管将 StatefulSet 缩小为3，所有5个 PVC 仍然存在：
+这表明，尽管将 StatefulSet 缩小为 3，所有 5 个 PVC 仍然存在：
 
 ```
 NAME           STATUS    VOLUME                                     CAPACITY   ACCESSMODES   AGE
@@ -829,13 +828,15 @@ kubectl delete pvc data-mysql-4
 1. Verify that the Pods disappear.
    They might take some time to finish terminating. 
 -->
-3. 验证 Pod 消失。他们可能需要一些时间才能完成终止。
+3. 验证 Pod 消失。它们可能需要一些时间才能完成终止。
 
    ```shell
    kubectl get pods -l app=mysql
    ```
 
-   <!-- You'll know the Pods have terminated when the above returns: -->
+   <!--
+   You'll know the Pods have terminated when the above returns:
+   -->
    当上述命令返回如下内容时，你就知道 Pod 已终止：
 
    ```
@@ -859,23 +860,22 @@ kubectl delete pvc data-mysql-4
    Some dynamic provisioners (such as those for EBS and PD) also release the
    underlying resources upon deleting the PersistentVolumes. 
 -->
-5. 如果你手动供应 PersistentVolume，则还需要手动删除它们，并释放下层资源。
-   如果你使用了动态预配器，当得知你删除 PersistentVolumeClaim 时，它将自动删除 PersistentVolume。
-   一些动态预配器（例如用于 EBS 和 PD 的预配器）也会在删除 PersistentVolume 时释放下层资源。
+5. 如果你手动制备 PersistentVolume，则还需要手动删除它们，并释放下层资源。
+   如果你使用了动态制备器，当得知你删除 PersistentVolumeClaim 时，它将自动删除 PersistentVolume。
+   一些动态制备器（例如用于 EBS 和 PD 的制备器）也会在删除 PersistentVolume 时释放下层资源。
 
 ## {{% heading "whatsnext" %}}
 
 <!--
-* Learn more about [scaling a StatefulSet](/docs/tasks/run-application/scale-stateful-set/).
-* Learn more about [debugging a StatefulSet](/docs/tasks/debug/debug-application/debug-statefulset/).
-* Learn more about [deleting a StatefulSet](/docs/tasks/run-application/delete-stateful-set/).
-* Learn more about [force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/).
-* Look in the [Helm Charts repository](https://artifacthub.io/)
+- Learn more about [scaling a StatefulSet](/docs/tasks/run-application/scale-stateful-set/).
+- Learn more about [debugging a StatefulSet](/docs/tasks/debug/debug-application/debug-statefulset/).
+- Learn more about [deleting a StatefulSet](/docs/tasks/run-application/delete-stateful-set/).
+- Learn more about [force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/).
+- Look in the [Helm Charts repository](https://artifacthub.io/)
   for other stateful application examples.
 -->
-* 进一步了解[为 StatefulSet 扩缩容](/zh-cn/docs/tasks/run-application/scale-stateful-set/)；
-* 进一步了解[调试 StatefulSet](/zh-cn/docs/tasks/debug/debug-application/debug-statefulset/)；
-* 进一步了解[删除 StatefulSet](/zh-cn/docs/tasks/run-application/delete-stateful-set/)；
-* 进一步了解[强制删除 StatefulSet Pod](/zh-cn/docs/tasks/run-application/force-delete-stateful-set-pod/)；
-* 在 [Helm Charts 仓库](https://artifacthub.io/)中查找其他有状态的应用程序示例。
-
+- 进一步了解[为 StatefulSet 扩缩容](/zh-cn/docs/tasks/run-application/scale-stateful-set/)；
+- 进一步了解[调试 StatefulSet](/zh-cn/docs/tasks/debug/debug-application/debug-statefulset/)；
+- 进一步了解[删除 StatefulSet](/zh-cn/docs/tasks/run-application/delete-stateful-set/)；
+- 进一步了解[强制删除 StatefulSet Pod](/zh-cn/docs/tasks/run-application/force-delete-stateful-set-pod/)；
+- 在 [Helm Charts 仓库](https://artifacthub.io/)中查找其他有状态的应用程序示例。

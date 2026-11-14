@@ -69,7 +69,7 @@ Voici plusieurs idées pour utiliser les init containers :
 * Attendre qu'un {{< glossary_tooltip text="Service" term_id="service">}} soit créé,
   en utilisant une commande shell d'une ligne telle que :
   ```shell
-  for i in {1..100}; do sleep 1; if dig myservice; then exit 0; fi; done; exit 1
+  for i in {1..100}; do sleep 1; if nslookup myservice; then exit 0; fi; done; exit 1
   ```
 
 * Enregistrer ce Pod à un serveur distant depuis l'API downward avec une commande telle que :
@@ -294,7 +294,7 @@ est générée pour tout conteneur partageant un nom avec un autre.
 
 * La plus haute requête ou limite particulière de ressource définie pour tous les init containers
 est la *limite/requête d'initialisation effective*
-* La *limite/requête effective* d'un Pod pour une ressource est la plus haute parmis :
+* La *limite/requête effective* d'un Pod pour une ressource est la plus haute parmi :
   * la somme de toutes les requêtes/limites des conteneurs d'application pour une ressource
   * la limite/requête d'initialisation effective pour une ressource
 * Le Scheduling est effectué sur la base des requêtes/limites effectives, ce qui signifie

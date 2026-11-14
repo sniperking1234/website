@@ -27,7 +27,7 @@ in this task demonstrate a strategic merge patch and a JSON merge patch.
 Here's the configuration file for a Deployment that has two replicas. Each replica
 is a Pod that has one container:
 
-{{< codenew file="application/deployment-patch.yaml" >}}
+{{% code_sample file="application/deployment-patch.yaml" %}}
 
 Create the Deployment:
 
@@ -243,7 +243,7 @@ spec:
     spec:
       containers:
       - name: patch-demo-ctr-3
-        image: gcr.io/google-samples/node-hello:1.0
+        image: gcr.io/google-samples/hello-app:2.0
 ```
 
 In your patch command, set `type` to `merge`:
@@ -261,10 +261,10 @@ kubectl get deployment patch-demo --output yaml
 The `containers` list that you specified in the patch has only one Container.
 The output shows that your list of one Container replaced the existing `containers` list.
 
-```shell
+```yaml
 spec:
   containers:
-  - image: gcr.io/google-samples/node-hello:1.0
+  - image: gcr.io/google-samples/hello-app:2.0
     ...
     name: patch-demo-ctr-3
 ```
@@ -288,7 +288,7 @@ patch-demo-1307768864-c86dc   1/1       Running   0          1m
 
 Here's the configuration file for a Deployment that uses the `RollingUpdate` strategy:
 
-{{< codenew file="application/deployment-retainkeys.yaml" >}}
+{{% code_sample file="application/deployment-retainkeys.yaml" %}}
 
 Create the deployment:
 
@@ -309,7 +309,7 @@ spec:
 Patch your Deployment:
 
 ```shell
-kubectl patch deployment retainkeys-demo --type merge --patch-file patch-file-no-retainkeys.yaml
+kubectl patch deployment retainkeys-demo --type strategic --patch-file patch-file-no-retainkeys.yaml
 ```
 
 In the output, you can see that it is not possible to set `type` as `Recreate` when a value is defined for `spec.strategy.rollingUpdate`:
@@ -429,17 +429,17 @@ kubectl patch deployment patch-demo --patch '{"spec": {"template": {"spec": {"co
 
 ### Update an object's replica count using `kubectl patch` with `--subresource` {#scale-kubectl-patch}
 
-{{< feature-state for_k8s_version="v1.24" state="alpha" >}}
-
 The flag `--subresource=[subresource-name]` is used with kubectl commands like get, patch,
-edit and replace to fetch and update `status` and `scale` subresources of the resources
-(applicable for kubectl version v1.24 or more). This flag is used with all the API resources
-(built-in and CRs) which has `status` or `scale` subresource. Deployment is one of the
-examples which supports these subresources.
+edit, apply and replace to fetch and update `status`, `scale` and `resize` subresource of the
+resources you specify. You can specify a subresource for any of the Kubernetes API resources
+(built-in and CRs) that have `status`, `scale` or `resize` subresource.
+
+For example, a Deployment has a `status` subresource and a `scale` subresource, so you can
+use `kubectl` to get or modify just the `status` subresource of a Deployment.
 
 Here's a manifest for a Deployment that has two replicas:
 
-{{< codenew file="application/deployment.yaml" >}}
+{{% code_sample file="application/deployment.yaml" %}}
 
 Create the Deployment:
 

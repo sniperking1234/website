@@ -1,12 +1,12 @@
 ---
 title: 将节点上的容器运行时从 Docker Engine 改为 containerd
-weight: 8
+weight: 10
 content_type: task 
 ---
 
 <!--
 title: "Changing the Container Runtime on a Node from Docker Engine to containerd"
-weight: 8
+weight: 10
 content_type: task 
 -->
 
@@ -157,51 +157,31 @@ then run the following commands:
 <!--
 ## Configure the kubelet to use containerd as its container runtime
 
-Edit the file `/var/lib/kubelet/kubeadm-flags.env` and add the containerd runtime to the flags.
-`--container-runtime=remote` and
+Edit the file `/var/lib/kubelet/kubeadm-flags.env` and add the containerd runtime to the flags;
 `--container-runtime-endpoint=unix:///run/containerd/containerd.sock`.
 -->
 ## 配置 kubelet 使用 containerd 作为其容器运行时
 
-编辑文件 `/var/lib/kubelet/kubeadm-flags.env`，将 containerd 运行时添加到标志中：
-`--container-runtime=remote` 和
+编辑文件 `/var/lib/kubelet/kubeadm-flags.env`，将 containerd 运行时添加到标志中；
 `--container-runtime-endpoint=unix:///run/containerd/containerd.sock`。
 
 <!--
-Users using kubeadm should be aware that the `kubeadm` tool stores the CRI socket for each host as
-an annotation in the Node object for that host. To change it you can execute the following command
-on a machine that has the kubeadm `/etc/kubernetes/admin.conf` file.
+Users using kubeadm should be aware that the kubeadm tool stores the host's CRI socket in the
+`/var/lib/kubelet/instance-config.yaml` file on each node. You can create this `/var/lib/kubelet/instance-config.yaml` file on the node.
+
+The `/var/lib/kubelet/instance-config.yaml` file allows setting the `containerRuntimeEndpoint` parameter.
+
+You can set this parameter's value to the path of your chosen CRI socket (for example `unix:///run/containerd/containerd.sock`).
 -->
-`kubeadm` 工具将每个主机的 CRI 套接字保存在该主机对应的 Node 对象的注解中。
-使用 `kubeadm` 的用户应该知道，`kubeadm` 工具将每个主机的 CRI 套接字保存在该主机对应的
-Node 对象的注解中。
-要更改这一注解信息，你可以在一台包含 kubeadm `/etc/kubernetes/admin.conf` 文件的机器上执行以下命令：
+使用 kubeadm 的用户应注意，kubeadm 工具在每个节点的
+`/var/lib/kubelet/instance-config.yaml` 文件中存储主机的
+CRI 套接字。你可以在节点上创建这个 `/var/lib/kubelet/instance-config.yaml` 文件。
 
-```shell
-kubectl edit no <node-name>
-```
+`/var/lib/kubelet/instance-config.yaml` 文件允许设置
+`containerRuntimeEndpoint` 参数。
 
-<!--
-This will start a text editor where you can edit the Node object.
-To choose a text editor you can set the `KUBE_EDITOR` environment variable.
-
-- Change the value of `kubeadm.alpha.kubernetes.io/cri-socket` from `/var/run/dockershim.sock`
-  to the CRI socket path of your choice (for example `unix:///run/containerd/containerd.sock`).
-   
-  Note that new CRI socket paths must be prefixed with `unix://` ideally.
-
-- Save the changes in the text editor, which will update the Node object.
--->
-这一命令会打开一个文本编辑器，供你在其中编辑 Node 对象。
-要选择不同的文本编辑器，你可以设置 `KUBE_EDITOR` 环境变量。
-
-- 更改 `kubeadm.alpha.kubernetes.io/cri-socket` 值，将其从
-  `/var/run/dockershim.sock` 改为你所选择的 CRI 套接字路径
-  （例如：`unix:///run/containerd/containerd.sock`）。
-
-  注意新的 CRI 套接字路径必须带有 `unix://` 前缀。
-
-- 保存文本编辑器中所作的修改，这会更新 Node 对象。
+你可以将此参数的值设置为你所选择的 CRI
+套接字的路径（例如 `unix:///run/containerd/containerd.sock`）。
 
 <!--
 ## Restart the kubelet
@@ -229,15 +209,15 @@ Run `kubectl get nodes -o wide` and containerd appears as the runtime for the no
 {{% thirdparty-content %}}
 
 <!--
-Finally if everything goes well, remove Docker.
+If the node appears healthy, remove Docker.
 -->
-最后，在一切顺利时删除 Docker。
+如果节点显示正常，删除 Docker。
 
 {{< tabs name="tab-remove-docker-engine" >}}
 {{% tab name="CentOS" %}}
 
 ```shell
-sudo yum remove docker-ce docker-ce-cli
+sudo dnf remove docker-ce docker-ce-cli
 ```
 {{% /tab %}}
 {{% tab name="Debian" %}}
@@ -275,3 +255,17 @@ Docker 所提供的卸载 Docker Engine 命令指导中，存在删除 container
 在执行命令时要谨慎。
 {{< /caution >}}
 
+<!--
+## Uncordon the node
+-->
+## uncordon 节点
+
+```shell
+kubectl uncordon <node-to-uncordon>
+```
+
+<!--
+Replace `<node-to-uncordon>` with the name of your node you previously drained.
+-->
+
+将 `<node-to-uncordon>` 替换为你之前腾空的节点的名称。

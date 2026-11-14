@@ -1,12 +1,13 @@
 ---
 title: ReplicationController
-feature:
-  title: 自我修复
-  anchor: ReplicationController 如何工作
-  description: >
-    重新启动失败的容器，在节点死亡时替换并重新调度容器，杀死不响应用户定义的健康检查的容器，并且在它们准备好服务之前不会将它们公布给客户端。
+api_metadata:
+- apiVersion: "v1"
+  kind: "ReplicationController"
 content_type: concept
 weight: 90
+description: >-
+  用于管理可水平扩展的工作负载的旧版 API。
+  被 Deployment 和 ReplicaSet API 取代。
 ---
 
 <!--
@@ -14,14 +15,14 @@ reviewers:
 - bprashanth
 - janetkuo
 title: ReplicationController
-feature:
-  title: Self-healing
-  anchor: How a ReplicationController Works
-  description: >
-    Restarts containers that fail, replaces and reschedules containers when nodes die, kills containers that don't respond to your user-defined health check, and doesn't advertise them to clients until they are ready to serve.
-
+api_metadata:
+- apiVersion: "v1"
+  kind: "ReplicationController"
 content_type: concept
 weight: 90
+description: >-
+  Legacy API for managing workloads that can scale horizontally.
+  Superseded by the Deployment and ReplicaSet APIs.
 -->
 
 <!-- overview -->
@@ -45,7 +46,7 @@ always up and available.
 <!-- body -->
 
 <!--
-## How a ReplicationController Works
+## How a ReplicationController works
 
 If there are too many pods, the ReplicationController terminates the extra pods. If there are too few, the
 ReplicationController starts more pods. Unlike manually created pods, the pods maintained by a
@@ -86,7 +87,7 @@ This example ReplicationController config runs three copies of the nginx web ser
 
 这个示例 ReplicationController 配置运行 nginx Web 服务器的三个副本。
 
-{{< codenew file="controllers/replication.yaml" >}}
+{{% code_sample file="controllers/replication.yaml" %}}
 
 <!--
 Run the example job by downloading the example file and then running this command:
@@ -184,20 +185,31 @@ specifies an expression with the name from each pod in the returned list.
 `--output=jsonpath` 选项指定了一个表达式，仅从返回列表中的每个 Pod 中获取名称。
 
 <!--
-## Writing a ReplicationController Spec
+## Writing a ReplicationController Manifest
 
 As with all other Kubernetes config, a ReplicationController needs `apiVersion`, `kind`, and `metadata` fields.
-The name of a ReplicationController object must be a valid
-[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
+
+When the control plane creates new Pods for a ReplicationController, the `.metadata.name` of the
+ReplicationController is part of the basis for naming those Pods.  The name of a ReplicationController must be a valid
+[DNS subdomain](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)
+value, but this can produce unexpected results for the Pod hostnames.  For best compatibility,
+the name should follow the more restrictive rules for a
+[DNS label](/docs/concepts/overview/working-with-objects/names#dns-label-names).
+
 For general information about working with configuration files, see [object management](/docs/concepts/overview/working-with-objects/object-management/).
 
 A ReplicationController also needs a [`.spec` section](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status).
 -->
-## 编写一个 ReplicationController 规约   {#writing-a-replicationcontroller-spec}
+## 编写一个 ReplicationController 清单   {#writing-a-replicationcontroller-manifest}
 
 与所有其它 Kubernetes 配置一样，ReplicationController 需要 `apiVersion`、`kind` 和 `metadata` 字段。
-ReplicationController 对象的名称必须是有效的
-[DNS 子域名](/zh-cn/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)。
+
+当控制平面为 ReplicationController 创建新的 Pod 时，ReplicationController
+的 `.metadata.name` 是命名这些 Pod 的部分基础。ReplicationController 的名称必须是一个合法的
+[DNS 子域](/zh-cn/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names)值，
+但这可能对 Pod 的主机名产生意外的结果。为获得最佳兼容性，名称应遵循更严格的
+[DNS 标签](/zh-cn/docs/concepts/overview/working-with-objects/names#dns-label-names)规则。
+
 有关使用配置文件的常规信息，
 参考[对象管理](/zh-cn/docs/concepts/overview/working-with-objects/object-management/)。
 
@@ -378,15 +390,21 @@ Pods may be removed from a ReplicationController's target set by changing their 
 <!--
 ### Rescheduling
 
-As mentioned above, whether you have 1 pod you want to keep running, or 1000, a ReplicationController will ensure that the specified number of pods exists, even in the event of node failure or pod termination (for example, due to an action by another control agent).
+As mentioned above, whether you have 1 pod you want to keep running, or 1000, a
+ReplicationController will ensure that the specified number of pods exists, even
+in the event of node failure or pod termination (for example, due to an action
+by another control agent).
 -->
 ### 重新调度   {#rescheduling}
 
-如上所述，无论你想要继续运行 1 个 Pod 还是 1000 个 Pod，一个 ReplicationController 都将确保存在指定数量的 Pod，即使在节点故障或 Pod 终止(例如，由于另一个控制代理的操作)的情况下也是如此。
+如上所述，无论你想要继续运行 1 个 Pod 还是 1000 个 Pod，一个
+ReplicationController 都将确保存在指定数量的 Pod，即使在节点故障或
+Pod 终止（例如，由于另一个控制代理的操作）的情况下也是如此。
 <!--
 ### Scaling
 
-The ReplicationController enables scaling the number of replicas up or down, either manually or by an auto-scaling control agent, by updating the `replicas` field.
+The ReplicationController enables scaling the number of replicas up or down,
+either manually or by an auto-scaling control agent, by updating the `replicas` field.
 -->
 ### 扩缩容   {#scaling}
 
@@ -413,9 +431,11 @@ Ideally, the rolling update controller would take application readiness into acc
 
 The two ReplicationControllers would need to create pods with at least one differentiating label, such as the image tag of the primary container of the pod, since it is typically image updates that motivate rolling updates.
 -->
-理想情况下，滚动更新控制器将考虑应用程序的就绪情况，并确保在任何给定时间都有足够数量的 Pod 有效地提供服务。
+理想情况下，滚动更新控制器将考虑应用程序的就绪情况，并确保在任何给定时间都有足够数量的
+Pod 有效地提供服务。
 
-这两个 ReplicationController 将需要创建至少具有一个不同标签的 Pod，比如 Pod 主要容器的镜像标签，因为通常是镜像更新触发滚动更新。
+这两个 ReplicationController 将需要创建至少具有一个不同标签的 Pod，
+比如 Pod 主要容器的镜像标签，因为通常是镜像更新触发滚动更新。
 
 <!--
 ### Multiple release tracks
@@ -426,7 +446,7 @@ For instance, a service might target all pods with `tier in (frontend), environm
 -->
 ### 多个版本跟踪   {#multiple-release-tracks}
 
-除了在滚动更新过程中运行应用程序的多个版本之外，通常还会使用多个版本跟踪来长时间，
+除了在滚动更新过程中运行应用程序的多个版本之外，通常还会使用多个版本跟踪很长时间，
 甚至持续运行多个版本。这些跟踪将根据标签加以区分。
 
 例如，一个服务可能把具有 `tier in (frontend), environment in (prod)` 的所有 Pod 作为目标。
@@ -549,7 +569,8 @@ because they are declarative, server-side, and have additional features.
 -->
 ### Deployment （推荐）
 
-[`Deployment`](/zh-cn/docs/concepts/workloads/controllers/deployment/) 是一种更高级别的 API 对象，用于更新其底层 ReplicaSet 及其 Pod。
+[`Deployment`](/zh-cn/docs/concepts/workloads/controllers/deployment/)
+是一种更高级别的 API 对象，用于更新其底层 ReplicaSet 及其 Pod。
 如果你想要这种滚动更新功能，那么推荐使用 Deployment，因为它们是声明式的、服务端的，并且具有其它特性。
 
 <!--
@@ -599,13 +620,12 @@ ReplicationController。
 * Learn about [Deployment](/docs/concepts/workloads/controllers/deployment/), the replacement
   for ReplicationController.
 * `ReplicationController` is part of the Kubernetes REST API.
-  Read the {{< api-reference page="workload-resources/replication-controller-v1" >}}
+  Read the {{< api-reference page="core/replication-controller-v1" >}}
   object definition to understand the API for replication controllers.
 -->
 ## {{% heading "whatsnext" %}}
 
 - 了解 [Pod](/zh-cn/docs/concepts/workloads/pods)。
 - 了解 [Depolyment](/zh-cn/docs/concepts/workloads/controllers/deployment/)，ReplicationController 的替代品。
-- `ReplicationController` 是 Kubernetes REST API 的一部分，阅读 {{< api-reference page="workload-resources/replication-controller-v1" >}}
+- `ReplicationController` 是 Kubernetes REST API 的一部分，阅读 {{< api-reference page="core/replication-controller-v1" >}}
   对象定义以了解 replication controllers 的 API。
-

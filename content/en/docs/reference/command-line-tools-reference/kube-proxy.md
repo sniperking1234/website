@@ -3,6 +3,8 @@ title: kube-proxy
 content_type: tool-reference
 weight: 30
 auto_generated: true
+description: >-
+  
 ---
 
 
@@ -11,7 +13,7 @@ The file is auto-generated from the Go source code of the component using a gene
 [generator](https://github.com/kubernetes-sigs/reference-docs/). To learn how
 to generate the reference documentation, please read
 [Contributing to the reference documentation](/docs/contribute/generate-ref-docs/).
-To update the reference content, please follow the 
+To update the reference content, please follow the
 [Contributing upstream](/docs/contribute/generate-ref-docs/contribute-upstream/)
 guide. You can file document formatting bugs against the
 [reference-docs](https://github.com/kubernetes-sigs/reference-docs/) project.
@@ -53,14 +55,21 @@ kube-proxy [flags]
 <td colspan="2">--alsologtostderr</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>log to standard error as well as files</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>log to standard error as well as files (no effect when -logtostderr=true)</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--alsologtostderrthreshold int</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true)</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--bind-address string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 0.0.0.0</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The IP address for the proxy server to serve on (set to '0.0.0.0' for all IPv4 interfaces and '::' for all IPv6 interfaces). This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Overrides kube-proxy's idea of what its node's primary IP is. Note that the name is a historical artifact, and kube-proxy does not actually bind any sockets to this IP. This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
@@ -68,13 +77,6 @@ kube-proxy [flags]
 </tr>
 <tr>
 <td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true kube-proxy will treat failure to bind to a port as fatal and exit</p></td>
-</tr>
-
-<tr>
-<td colspan="2">--boot_id_file string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/proc/sys/kernel/random/boot_id"</td>
-</tr>
-<tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Comma-separated list of files to check for boot-id. Use the first one that exists.</p></td>
 </tr>
 
 <tr>
@@ -88,7 +90,7 @@ kube-proxy [flags]
 <td colspan="2">--cluster-cidr string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The CIDR range of pods in the cluster. When configured, traffic sent to a Service cluster IP from outside this range will be masqueraded and traffic sent from pods to an external LoadBalancer IP will be directed to the respective cluster IP instead. For dual-stack clusters, a comma-separated list is accepted with at least one CIDR per IP family (IPv4 and IPv6). This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The CIDR range of the pods in the cluster. (For dual-stack clusters, this can be a comma-separated dual-stack pair of CIDR ranges.). When --detect-local-mode is set to ClusterCIDR, kube-proxy will consider traffic to be local if its source IP is in this range. (Otherwise it is not used.) This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
@@ -120,6 +122,13 @@ kube-proxy [flags]
 </tr>
 
 <tr>
+<td colspan="2">--conntrack-tcp-be-liberal</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Enable liberal mode for tracking TCP packets by setting nf_conntrack_tcp_be_liberal to 1</p></td>
+</tr>
+
+<tr>
 <td colspan="2">--conntrack-tcp-timeout-close-wait duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 1h0m0s</td>
 </tr>
 <tr>
@@ -134,6 +143,20 @@ kube-proxy [flags]
 </tr>
 
 <tr>
+<td colspan="2">--conntrack-udp-timeout duration</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Idle timeout for UNREPLIED UDP connections (0 to leave as-is)</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--conntrack-udp-timeout-stream duration</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Idle timeout for ASSURED UDP connections (0 to leave as-is)</p></td>
+</tr>
+
+<tr>
 <td colspan="2">--detect-local-mode LocalMode</td>
 </tr>
 <tr>
@@ -144,14 +167,14 @@ kube-proxy [flags]
 <td colspan="2">--feature-gates &lt;comma-separated 'key=True|False' pairs&gt;</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br/>APIListChunking=true|false (BETA - default=true)<br/>APIPriorityAndFairness=true|false (BETA - default=true)<br/>APIResponseCompression=true|false (BETA - default=true)<br/>APIServerIdentity=true|false (ALPHA - default=false)<br/>APIServerTracing=true|false (ALPHA - default=false)<br/>AllAlpha=true|false (ALPHA - default=false)<br/>AllBeta=true|false (BETA - default=false)<br/>AnyVolumeDataSource=true|false (BETA - default=true)<br/>AppArmor=true|false (BETA - default=true)<br/>CPUManager=true|false (BETA - default=true)<br/>CPUManagerPolicyAlphaOptions=true|false (ALPHA - default=false)<br/>CPUManagerPolicyBetaOptions=true|false (BETA - default=true)<br/>CPUManagerPolicyOptions=true|false (BETA - default=true)<br/>CSIMigrationAzureFile=true|false (BETA - default=true)<br/>CSIMigrationPortworx=true|false (BETA - default=false)<br/>CSIMigrationRBD=true|false (ALPHA - default=false)<br/>CSIMigrationvSphere=true|false (BETA - default=true)<br/>CSINodeExpandSecret=true|false (ALPHA - default=false)<br/>CSIVolumeHealth=true|false (ALPHA - default=false)<br/>ContainerCheckpoint=true|false (ALPHA - default=false)<br/>CronJobTimeZone=true|false (BETA - default=true)<br/>CustomCPUCFSQuotaPeriod=true|false (ALPHA - default=false)<br/>CustomResourceValidationExpressions=true|false (BETA - default=true)<br/>DelegateFSGroupToCSIDriver=true|false (BETA - default=true)<br/>DevicePlugins=true|false (BETA - default=true)<br/>DisableCloudProviders=true|false (ALPHA - default=false)<br/>DisableKubeletCloudCredentialProviders=true|false (ALPHA - default=false)<br/>DownwardAPIHugePages=true|false (BETA - default=true)<br/>EndpointSliceTerminatingCondition=true|false (BETA - default=true)<br/>ExpandedDNSConfig=true|false (ALPHA - default=false)<br/>ExperimentalHostUserNamespaceDefaulting=true|false (BETA - default=false)<br/>GRPCContainerProbe=true|false (BETA - default=true)<br/>GracefulNodeShutdown=true|false (BETA - default=true)<br/>GracefulNodeShutdownBasedOnPodPriority=true|false (BETA - default=true)<br/>HPAContainerMetrics=true|false (ALPHA - default=false)<br/>HPAScaleToZero=true|false (ALPHA - default=false)<br/>HonorPVReclaimPolicy=true|false (ALPHA - default=false)<br/>IPTablesOwnershipCleanup=true|false (ALPHA - default=false)<br/>InTreePluginAWSUnregister=true|false (ALPHA - default=false)<br/>InTreePluginAzureDiskUnregister=true|false (ALPHA - default=false)<br/>InTreePluginAzureFileUnregister=true|false (ALPHA - default=false)<br/>InTreePluginGCEUnregister=true|false (ALPHA - default=false)<br/>InTreePluginOpenStackUnregister=true|false (ALPHA - default=false)<br/>InTreePluginPortworxUnregister=true|false (ALPHA - default=false)<br/>InTreePluginRBDUnregister=true|false (ALPHA - default=false)<br/>InTreePluginvSphereUnregister=true|false (ALPHA - default=false)<br/>JobMutableNodeSchedulingDirectives=true|false (BETA - default=true)<br/>JobPodFailurePolicy=true|false (ALPHA - default=false)<br/>JobReadyPods=true|false (BETA - default=true)<br/>JobTrackingWithFinalizers=true|false (BETA - default=true)<br/>KMSv2=true|false (ALPHA - default=false)<br/>KubeletCredentialProviders=true|false (BETA - default=true)<br/>KubeletInUserNamespace=true|false (ALPHA - default=false)<br/>KubeletPodResources=true|false (BETA - default=true)<br/>KubeletPodResourcesGetAllocatable=true|false (BETA - default=true)<br/>KubeletTracing=true|false (ALPHA - default=false)<br/>LegacyServiceAccountTokenNoAutoGeneration=true|false (BETA - default=true)<br/>LocalStorageCapacityIsolationFSQuotaMonitoring=true|false (BETA - default=true)<br/>LogarithmicScaleDown=true|false (BETA - default=true)<br/>MatchLabelKeysInPodTopologySpread=true|false (ALPHA - default=false)<br/>MaxUnavailableStatefulSet=true|false (ALPHA - default=false)<br/>MemoryManager=true|false (BETA - default=true)<br/>MemoryQoS=true|false (ALPHA - default=false)<br/>MinDomainsInPodTopologySpread=true|false (BETA - default=false)<br/>MixedProtocolLBService=true|false (BETA - default=true)<br/>MultiCIDRRangeAllocator=true|false (ALPHA - default=false)<br/>NetworkPolicyStatus=true|false (ALPHA - default=false)<br/>NodeInclusionPolicyInPodTopologySpread=true|false (ALPHA - default=false)<br/>NodeOutOfServiceVolumeDetach=true|false (ALPHA - default=false)<br/>NodeSwap=true|false (ALPHA - default=false)<br/>OpenAPIEnums=true|false (BETA - default=true)<br/>OpenAPIV3=true|false (BETA - default=true)<br/>PodAndContainerStatsFromCRI=true|false (ALPHA - default=false)<br/>PodDeletionCost=true|false (BETA - default=true)<br/>PodDisruptionConditions=true|false (ALPHA - default=false)<br/>PodHasNetworkCondition=true|false (ALPHA - default=false)<br/>ProbeTerminationGracePeriod=true|false (BETA - default=true)<br/>ProcMountType=true|false (ALPHA - default=false)<br/>ProxyTerminatingEndpoints=true|false (ALPHA - default=false)<br/>QOSReserved=true|false (ALPHA - default=false)<br/>ReadWriteOncePod=true|false (ALPHA - default=false)<br/>RecoverVolumeExpansionFailure=true|false (ALPHA - default=false)<br/>RemainingItemCount=true|false (BETA - default=true)<br/>RetroactiveDefaultStorageClass=true|false (ALPHA - default=false)<br/>RotateKubeletServerCertificate=true|false (BETA - default=true)<br/>SELinuxMountReadWriteOncePod=true|false (ALPHA - default=false)<br/>SeccompDefault=true|false (BETA - default=true)<br/>ServerSideFieldValidation=true|false (BETA - default=true)<br/>ServiceIPStaticSubrange=true|false (BETA - default=true)<br/>ServiceInternalTrafficPolicy=true|false (BETA - default=true)<br/>SizeMemoryBackedVolumes=true|false (BETA - default=true)<br/>StatefulSetAutoDeletePVC=true|false (ALPHA - default=false)<br/>StorageVersionAPI=true|false (ALPHA - default=false)<br/>StorageVersionHash=true|false (BETA - default=true)<br/>TopologyAwareHints=true|false (BETA - default=true)<br/>TopologyManager=true|false (BETA - default=true)<br/>UserNamespacesStatelessPodsSupport=true|false (ALPHA - default=false)<br/>VolumeCapacityPriority=true|false (ALPHA - default=false)<br/>WinDSR=true|false (ALPHA - default=false)<br/>WinOverlay=true|false (BETA - default=true)<br/>WindowsHostProcessContainers=true|false (BETA - default=true)This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br/>APIResponseCompression=true|false (BETA - default=true)<br/>APIServerIdentity=true|false (BETA - default=true)<br/>APIServerWebhookAuthenticationToken=true|false (ALPHA - default=false)<br/>APIServingWithRoutine=true|false (ALPHA - default=false)<br/>AllAlpha=true|false (ALPHA - default=false)<br/>AllBeta=true|false (BETA - default=false)<br/>AllowParsingUserUIDFromCertAuth=true|false (BETA - default=true)<br/>AllowUnsafeMalformedObjectDeletion=true|false (BETA - default=true)<br/>AtomicFIFO=true|false (BETA - default=true)<br/>AtomicWriteVolumeUserFields=true|false (ALPHA - default=false)<br/>AuthorizePodWebsocketUpgradeCreatePermission=true|false (BETA - default=true)<br/>CBORServingAndStorage=true|false (ALPHA - default=false)<br/>CPUManagerPolicyAlphaOptions=true|false (ALPHA - default=false)<br/>CPUManagerPolicyBetaOptions=true|false (BETA - default=true)<br/>CRDObservedGenerationTracking=true|false (BETA - default=true)<br/>CRIListStreaming=true|false (ALPHA - default=false)<br/>CSIVolumeHealth=true|false (ALPHA - default=false)<br/>ClearingNominatedNodeNameAfterBinding=true|false (BETA - default=true)<br/>ClientsAllowCARotation=true|false (BETA - default=true)<br/>ClientsAllowCBOR=true|false (ALPHA - default=false)<br/>ClientsAllowTLSCacheGC=true|false (BETA - default=true)<br/>ClientsPreferCBOR=true|false (ALPHA - default=false)<br/>CloudControllerManagerWatchBasedRoutesReconciliation=true|false (ALPHA - default=false)<br/>CloudControllerManagerWebhook=true|false (ALPHA - default=false)<br/>ComponentFlagz=true|false (BETA - default=true)<br/>ComponentStatusz=true|false (BETA - default=true)<br/>CompositePodGroup=true|false (ALPHA - default=false)<br/>ConcurrentWatchObjectDecode=true|false (BETA - default=true)<br/>ConsistentListFromCacheSkipTimeoutFallback=true|false (ALPHA - default=false)<br/>ConstrainedImpersonation=true|false (BETA - default=true)<br/>ContainerCheckpoint=true|false (BETA - default=true)<br/>ContainerRestartRules=true|false (BETA - default=true)<br/>ContainerStopSignals=true|false (ALPHA - default=false)<br/>ContextualLogging=true|false (BETA - default=true)<br/>ControllerManagerReleaseLeaderElectionLockOnExit=true|false (ALPHA - default=false)<br/>CoordinatedLeaderElection=true|false (BETA - default=false)<br/>CrossNamespaceVolumeDataSource=true|false (ALPHA - default=false)<br/>DRAConsumableCapacity=true|false (BETA - default=true)<br/>DRADerivedAttributes=true|false (ALPHA - default=false)<br/>DRADeviceBindingConditions=true|false (BETA - default=true)<br/>DRADeviceCompatibilityGroups=true|false (ALPHA - default=false)<br/>DRAFractionalCapacityRange=true|false (BETA - default=false), or DRAFractionalCapacityRange=true|false (BETA - default=true) if --min-compatibility-version&gt;=1.37<br/>DRAListTypeAttributes=true|false (ALPHA - default=false)<br/>DRANodeAllocatableResources=true|false (ALPHA - default=false)<br/>DRAOptionalNodeOperations=true|false (ALPHA - default=false)<br/>DRAPartitionableDevices=true|false (BETA - default=true)<br/>DRAPartitionableDevicesType=true|false (ALPHA - default=false)<br/>DRAResourceClaimGranularStatusAuthorization=true|false (BETA - default=true)<br/>DRAResourcePoolStatus=true|false (ALPHA - default=false)<br/>DRASchedulerFilterTimeout=true|false (BETA - default=true)<br/>DRAWorkloadResourceClaims=true|false (BETA - default=false)<br/>DeclarativeValidationBeta=true|false (BETA - default=true)<br/>DefaultPodSysctls=true|false (ALPHA - default=false)<br/>DeploymentReplicaSetTerminatingReplicas=true|false (BETA - default=true)<br/>DetectCacheInconsistency=true|false (BETA - default=true)<br/>EmptyDirVolumeMode=true|false (ALPHA - default=false)<br/>EnvFiles=true|false (BETA - default=true)<br/>EtcdRangeStream=true|false (BETA - default=true)<br/>EventedPLEG=true|false (ALPHA - default=false)<br/>EvictionRequestAPI=true|false (ALPHA - default=false)<br/>ExcludeAdmissionWebhookVirtualResources=true|false (BETA - default=true)<br/>ExtendWebSocketsToKubelet=true|false (BETA - default=true)<br/>GRPCContainerProbeTLS=true|false (ALPHA - default=false)<br/>GenericWorkload=true|false (BETA - default=false)<br/>GracefulNodeShutdown=true|false (BETA - default=true)<br/>GracefulNodeShutdownBasedOnPodPriority=true|false (BETA - default=true)<br/>H2CContainerProbe=true|false (ALPHA - default=false)<br/>HPAGeneration=true|false (BETA - default=true)<br/>HPAOptimizedSelectorStore=true|false (BETA - default=true)<br/>HPAScaleToZero=true|false (BETA - default=true)<br/>HugepageAwareEviction=true|false (BETA - default=true)<br/>ImageVolumeWithDigest=true|false (ALPHA - default=false)<br/>InOrderInformersBatchProcess=true|false (BETA - default=true)<br/>InPlacePodLevelResourcesVerticalScaling=true|false (BETA - default=true)<br/>InPlacePodVerticalScalingExclusiveCPUs=true|false (ALPHA - default=false)<br/>InPlacePodVerticalScalingExclusiveMemory=true|false (ALPHA - default=false)<br/>InPlacePodVerticalScalingMemoryBackedVolumes=true|false (ALPHA - default=false)<br/>InPlacePodVerticalScalingSchedulerPreemption=true|false (ALPHA - default=false)<br/>InterPodAffinityHostnameFastPath=true|false (ALPHA - default=false)<br/>KubeProxyNFTablesLocalhostNodePorts=true|false (ALPHA - default=false)<br/>KubeletAllocatedPodsEndpoint=true|false (ALPHA - default=false)<br/>KubeletCrashLoopBackOffMax=true|false (BETA - default=true)<br/>KubeletEnsureSecretPulledImages=true|false (BETA - default=true)<br/>KubeletInUserNamespace=true|false (BETA - default=true)<br/>KubeletSeparateDiskGC=true|false (BETA - default=true)<br/>KubeletServiceAccountTokenForCredentialProviders=true|false (BETA - default=true)<br/>ListFromCacheSnapshot=true|false (BETA - default=true)<br/>LocalStorageCapacityIsolationFSQuotaMonitoring=true|false (BETA - default=false)<br/>LoggingAlphaOptions=true|false (ALPHA - default=false)<br/>LoggingBetaOptions=true|false (BETA - default=true)<br/>ManifestBasedAdmissionControlConfig=true|false (BETA - default=true)<br/>MatchLabelKeysInPodTopologySpread=true|false (BETA - default=true)<br/>MatchLabelKeysInPodTopologySpreadSelectorMerge=true|false (BETA - default=true)<br/>MaxUnavailableStatefulSet=true|false (BETA - default=true)<br/>MemoryQoS=true|false (BETA - default=true)<br/>MutablePVNodeAffinity=true|false (ALPHA - default=false)<br/>MutablePodResourcesForSuspendedJobs=true|false (BETA - default=true)<br/>MutableSchedulingDirectivesForSuspendedJobs=true|false (BETA - default=true)<br/>NFTablesNetlink=true|false (BETA - default=true)<br/>NativeHistograms=true|false (BETA - default=true)<br/>NodeControllerLeaseCircuitBreaker=true|false (BETA - default=true)<br/>NodeLifecycleConditions=true|false (ALPHA - default=false)<br/>NominatedNodeNameForExpectation=true|false (BETA - default=true)<br/>OpenAPIEnums=true|false (BETA - default=true)<br/>OpportunisticBatching=true|false (BETA - default=true)<br/>PersistentVolumeClaimUnusedSinceTime=true|false (BETA - default=true)<br/>PodAndContainerStatsFromCRI=true|false (BETA - default=false)<br/>PodDeletionCost=true|false (BETA - default=true)<br/>PodGroupPreemptionPolicy=true|false (ALPHA - default=false)<br/>PodLevelResourceManagers=true|false (BETA - default=false)<br/>PodLevelResources=true|false (BETA - default=true)<br/>PodLevelResourcesFixDefaulting=true|false (BETA - default=true)<br/>PodLevelResourcesFixKubeletQOSClass=true|false (BETA - default=true)<br/>PodLogsQuerySplitStreams=true|false (ALPHA - default=false)<br/>PodTopologyLabelsAdmission=true|false (BETA - default=true)<br/>PodsAPI=true|false (BETA - default=true)<br/>PortForwardWebsockets=true|false (BETA - default=true)<br/>QOSReserved=true|false (ALPHA - default=false)<br/>ReduceDefaultCrashLoopBackOffDecay=true|false (ALPHA - default=false)<br/>ReloadKubeletClientCAFile=true|false (BETA - default=true)<br/>ReloadKubeletServerCertificateFile=true|false (BETA - default=true)<br/>RemoteRequestHeaderUID=true|false (BETA - default=true)<br/>ResourceHealthStatus=true|false (BETA - default=true)<br/>ResourceHealthStatusMessage=true|false (BETA - default=true)<br/>RestartAllContainersOnContainerExits=true|false (BETA - default=true)<br/>RotateKubeletServerCertificate=true|false (BETA - default=true)<br/>RuntimeClassInImageCriApi=true|false (ALPHA - default=false)<br/>SchedulerAsyncAPICalls=true|false (BETA - default=false)<br/>SchedulerAsyncPreemption=true|false (BETA - default=true)<br/>SchedulerPopFromBackoffQ=true|false (BETA - default=true)<br/>SchedulerPreQueueingHints=true|false (ALPHA - default=false)<br/>ServiceAccountNodeAudienceRestriction=true|false (BETA - default=true)<br/>ShardedListAndWatch=true|false (ALPHA - default=false)<br/>SizeBasedListCostEstimate=true|false (BETA - default=true)<br/>StaleControllerConsistencyDaemonSet=true|false (BETA - default=true)<br/>StaleControllerConsistencyHPA=true|false (BETA - default=true)<br/>StaleControllerConsistencyJob=true|false (BETA - default=true)<br/>StaleControllerConsistencyReplicaSet=true|false (BETA - default=true)<br/>StaleControllerConsistencyStatefulSet=true|false (BETA - default=true)<br/>StatefulSetRecreateStrategy=true|false (ALPHA - default=false)<br/>StatefulSetSemanticRevisionComparison=true|false (BETA - default=true)<br/>StorageCapacityScoring=true|false (BETA - default=true)<br/>StorageVersionAPI=true|false (ALPHA - default=false)<br/>StorageVersionHash=true|false (BETA - default=true)<br/>StrictIPCIDRValidation=true|false (BETA - default=true)<br/>StructuredAuthenticationConfigurationEgressSelector=true|false (BETA - default=true)<br/>StructuredAuthenticationConfigurationJWKSMetrics=true|false (BETA - default=true)<br/>TaintTolerationComparisonOperators=true|false (ALPHA - default=false)<br/>TokenRequestServiceAccountUIDValidation=true|false (BETA - default=true)<br/>TopologyAwareWorkloadScheduling=true|false (ALPHA - default=false)<br/>TopologyManagerPolicyAlphaOptions=true|false (ALPHA - default=false)<br/>TopologyManagerPolicyBetaOptions=true|false (BETA - default=true)<br/>TranslateStreamCloseWebsocketRequests=true|false (BETA - default=true)<br/>UnauthenticatedHTTP2DOSMitigation=true|false (BETA - default=true)<br/>UnknownVersionInteroperabilityProxy=true|false (BETA - default=true)<br/>UnlockWhileProcessingFIFO=true|false (BETA - default=true)<br/>UserNamespacesHostNetworkSupport=true|false (ALPHA - default=false)<br/>VolumeBindMountOptions=true|false (ALPHA - default=false)<br/>VolumeLimitScaling=true|false (BETA - default=true)<br/>WatchList=true|false (BETA - default=true)<br/>WatchListClient=true|false (BETA - default=true)<br/>WatchListCompression=true|false (BETA - default=true)<br/>WebhookRoundTripLoadBalancing=true|false (BETA - default=true)<br/>WindowsCPUAndMemoryAffinity=true|false (ALPHA - default=false)<br/>WindowsGracefulNodeShutdown=true|false (BETA - default=true)<br/>WorkloadWithJob=true|false (ALPHA - default=false)<br/>This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--healthz-bind-address ipport&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 0.0.0.0:10256</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The IP address with port for the health check server to serve on (set to '0.0.0.0:10256' for all IPv4 interfaces and '[::]:10256' for all IPv6 interfaces). Set empty to disable. This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The IP address and port for the health check server to serve on, defaulting to &quot;0.0.0.0:10256&quot;. This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
@@ -165,42 +188,56 @@ kube-proxy [flags]
 <td colspan="2">--hostname-override string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If non-empty, will use this string as identification instead of the actual hostname.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If non-empty, will be used as the name of the Node that kube-proxy is running on. If unset, the node name is assumed to be the same as the node's hostname.</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--init-only</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true, perform any initialization steps that must be done with full root privileges, and then exit. After doing this, you can run kube-proxy again with only the CAP_NET_ADMIN capability.</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--iptables-localhost-nodeports&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: true</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If false, kube-proxy will disable the legacy behavior of allowing NodePort services to be accessed via localhost. (Applies only to iptables mode and IPv4; localhost NodePorts are never allowed with other proxy modes or with IPv6.)</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--iptables-masquerade-bit int32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 14</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If using the pure iptables proxy, the bit of the fwmark space to mark packets requiring SNAT with.  Must be within the range [0, 31].</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If using the iptables or ipvs proxy mode, the bit of the fwmark space to mark packets requiring SNAT with.  Must be within the range [0, 31].</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--iptables-min-sync-period duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 1s</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The minimum interval of how often the iptables rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m').</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The minimum period between iptables rule resyncs (e.g. '5s', '1m', '2h22m'). A value of 0 means every Service or EndpointSlice change will result in an immediate iptables resync.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--iptables-sync-period duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 30s</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The maximum interval of how often iptables rules are refreshed (e.g. '5s', '1m', '2h22m').  Must be greater than 0.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>An interval (e.g. '5s', '1m', '2h22m') indicating how frequently various re-synchronizing and cleanup operations are performed. Must be greater than 0.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--ipvs-exclude-cidrs strings</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A comma-separated list of CIDRs which the ipvs proxier should not touch when cleaning up IPVS rules.</p></td>
 </tr>
 
 <tr>
-<td colspan="2">--ipvs-min-sync-period duration</td>
+<td colspan="2">--ipvs-min-sync-period duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 1s</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The minimum interval of how often the ipvs rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m').</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The minimum period between IPVS rule resyncs (e.g. '5s', '1m', '2h22m'). A value of 0 means every Service or EndpointSlice change will result in an immediate IPVS resync.</p></td>
 </tr>
 
 <tr>
@@ -221,7 +258,7 @@ kube-proxy [flags]
 <td colspan="2">--ipvs-sync-period duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 30s</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The maximum interval of how often ipvs rules are refreshed (e.g. '5s', '1m', '2h22m').  Must be greater than 0.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>An interval (e.g. '5s', '1m', '2h22m') indicating how frequently various re-synchronizing and cleanup operations are performed. Must be greater than 0.</p></td>
 </tr>
 
 <tr>
@@ -274,6 +311,34 @@ kube-proxy [flags]
 </tr>
 
 <tr>
+<td colspan="2">--legacy_stderr_threshold_behavior&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: true</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--log-flush-frequency duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 5s</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Maximum number of seconds between log flushes</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--log-text-info-buffer-size quantity</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>[Alpha] In text format with split output streams, the info messages can be buffered for a while to increase performance. The default value of zero bytes disables buffering. The size can be specified as number of bytes (512), multiples of 1000 (1K), multiples of 1024 (2Ki), or powers of those (3M, 4G, 5Mi, 6Gi). Enable the LoggingAlphaOptions feature gate to use this.</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--log-text-split-stream</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>[Alpha] In text format, write error messages to stderr and info messages to stdout. The default is to write a single stream to stdout. Enable the LoggingAlphaOptions feature gate to use this.</p></td>
+</tr>
+
+<tr>
 <td colspan="2">--log_backtrace_at &lt;a string in the form 'file:N'&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: :0</td>
 </tr>
 <tr>
@@ -284,21 +349,28 @@ kube-proxy [flags]
 <td colspan="2">--log_dir string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If non-empty, write log files in this directory</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If non-empty, write log files in this directory (no effect when -logtostderr=true)</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--log_file string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If non-empty, use this log file</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If non-empty, use this log file (no effect when -logtostderr=true)</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--log_file_max_size uint&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 1800</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Defines the maximum size a log file can grow to. Unit is megabytes. If the value is 0, the maximum file size is unlimited.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited.</p></td>
+</tr>
+
+<tr>
+<td colspan="2">--logging-format string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "text"</td>
+</tr>
+<tr>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Sets the log format. Permitted formats: &quot;text&quot;.</p></td>
 </tr>
 
 <tr>
@@ -309,17 +381,10 @@ kube-proxy [flags]
 </tr>
 
 <tr>
-<td colspan="2">--machine_id_file string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/machine-id,/var/lib/dbus/machine-id"</td>
-</tr>
-<tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Comma-separated list of files to check for machine-id. Use the first one that exists.</p></td>
-</tr>
-
-<tr>
 <td colspan="2">--masquerade-all</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If using the pure iptables proxy, SNAT all traffic sent via Service cluster IPs (this not commonly needed)</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>SNAT all traffic sent via Service cluster IPs. This may be required with some CNI plugins. Only supported on Linux.</p></td>
 </tr>
 
 <tr>
@@ -333,21 +398,21 @@ kube-proxy [flags]
 <td colspan="2">--metrics-bind-address ipport&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 127.0.0.1:10249</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The IP address with port for the metrics server to serve on (set to '0.0.0.0:10249' for all IPv4 interfaces and '[::]:10249' for all IPv6 interfaces). Set empty to disable. This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The IP address and port for the metrics server to serve on, defaulting to &quot;127.0.0.1:10249&quot;. (Set to &quot;0.0.0.0:10249&quot; / &quot;[::]:10249&quot; to bind on all interfaces.) This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--nodeport-addresses strings</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A string slice of values which specify the addresses to use for NodePorts. Values may be valid IP blocks (e.g. 1.2.3.0/24, 1.2.3.4/32). The default empty string slice ([]) means to use all local addresses. This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A list of CIDR ranges and/or keywords that expand to CIDR ranges. NodePort services are only accessible on node IPs covered by the list. Supported keywords: 'primary' (the Node object's primary IPv4 and/or IPv6 addresses), 'localhost' (127.0.0.0/8 and ::1/128), and 'all' (0.0.0.0/0 and ::/0). Any combination of valid keywords and CIDRS may be included in the list. Serving NodePorts on loopback IPs is only supported in iptables mode (IPv4 only, see --iptables-localhost-nodeports), and, only for TCP, in nftables mode when the KubeProxyNFTablesLocalhostNodePorts feature gate is enabled and the list explicitly includes loopback (e.g. 'localhost'). If unset, this defaults to 'all' in iptables and ipvs mode, and to 'primary' in nftables mode. This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--one_output</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true, only write logs to their native severity level (vs also writing to each lower severity level)</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true)</p></td>
 </tr>
 
 <tr>
@@ -361,14 +426,14 @@ kube-proxy [flags]
 <td colspan="2">--pod-bridge-interface string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A bridge interface name in the cluster. Kube-proxy considers traffic as local if originating from an interface which matches the value. This argument should be set if DetectLocalMode is set to BridgeInterface.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>A bridge interface name. When --detect-local-mode is set to BridgeInterface, kube-proxy will consider traffic to be local if it originates from this bridge.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--pod-interface-name-prefix string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>An interface prefix in the cluster. Kube-proxy considers traffic as local if originating from interfaces that match the given prefix. This argument should be set if DetectLocalMode is set to InterfaceNamePrefix.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>An interface name prefix. When --detect-local-mode is set to InterfaceNamePrefix, kube-proxy will consider traffic to be local if it originates from any interface whose name begins with this prefix.</p></td>
 </tr>
 
 <tr>
@@ -382,21 +447,14 @@ kube-proxy [flags]
 <td colspan="2">--proxy-mode ProxyMode</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Which proxy mode to use: 'iptables' (Linux-only), 'ipvs' (Linux-only), 'kernelspace' (Windows-only), or 'userspace' (Linux/Windows, deprecated). The default value is 'iptables' on Linux and 'userspace' on Windows(will be 'kernelspace' in a future release).This parameter is ignored if a config file is specified by --config.</p></td>
-</tr>
-
-<tr>
-<td colspan="2">--proxy-port-range port-range</td>
-</tr>
-<tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Range of host ports (beginPort-endPort, single port or beginPort+offset, inclusive) that may be consumed in order to proxy service traffic. If (unspecified, 0, or 0-0) then ports will be randomly chosen.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Which proxy mode to use: on Linux this can be 'iptables' (default), 'ipvs', or 'nftables'. On Windows the only supported value is 'kernelspace'. This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--show-hidden-metrics-for-version string</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The previous version for which you want to show hidden metrics. Only the previous minor version is meaningful, other values will not be allowed. The format is &lt;major&gt;.&lt;minor&gt;, e.g.: '1.16'. The purpose of this format is make sure you have the opportunity to notice if the next release hides additional metrics, rather than being surprised when they are permanently removed in the release after that.This parameter is ignored if a config file is specified by --config.</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>The previous version for which you want to show hidden metrics. Only the previous minor version is meaningful, other values will not be allowed. The format is &lt;major&gt;.&lt;minor&gt;, e.g.: '1.16'. The purpose of this format is make sure you have the opportunity to notice if the next release hides additional metrics, rather than being surprised when they are permanently removed in the release after that. This parameter is ignored if a config file is specified by --config.</p></td>
 </tr>
 
 <tr>
@@ -410,21 +468,14 @@ kube-proxy [flags]
 <td colspan="2">--skip_log_headers</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true, avoid headers when opening log files</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>If true, avoid headers when opening log files (no effect when -logtostderr=true)</p></td>
 </tr>
 
 <tr>
 <td colspan="2">--stderrthreshold int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 2</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>logs at or above this threshold go to stderr</p></td>
-</tr>
-
-<tr>
-<td colspan="2">--udp-timeout duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 250ms</td>
-</tr>
-<tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>How long an idle UDP connection will be kept open (e.g. '250ms', '2s').  Must be greater than 0. Only applicable for proxy-mode=userspace</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true unless -legacy_stderr_threshold_behavior=false)</p></td>
 </tr>
 
 <tr>
@@ -438,14 +489,14 @@ kube-proxy [flags]
 <td colspan="2">--version version[=true]</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>Print version information and quit</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>--version, --version=raw prints version information and quits; --version=vX.Y.Z... sets the reported version</p></td>
 </tr>
 
 <tr>
-<td colspan="2">--vmodule &lt;comma-separated 'pattern=N' settings&gt;</td>
+<td colspan="2">--vmodule pattern=N,...</td>
 </tr>
 <tr>
-<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>comma-separated list of pattern=N settings for file-filtered logging</p></td>
+<td></td><td style="line-height: 130%; word-wrap: break-word;"><p>comma-separated list of pattern=N settings for file-filtered logging (only works for text log format)</p></td>
 </tr>
 
 <tr>

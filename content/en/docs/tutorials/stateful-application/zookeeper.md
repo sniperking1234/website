@@ -26,8 +26,7 @@ Kubernetes concepts:
 - [Pods](/docs/concepts/workloads/pods/)
 - [Cluster DNS](/docs/concepts/services-networking/dns-pod-service/)
 - [Headless Services](/docs/concepts/services-networking/service/#headless-services)
-- [PersistentVolumes](/docs/concepts/storage/volumes/)
-- [PersistentVolume Provisioning](https://github.com/kubernetes/examples/tree/master/staging/persistent-volume-provisioning/)
+- [PersistentVolumes](/docs/concepts/storage/persistent-volumes/) 
 - [StatefulSets](/docs/concepts/workloads/controllers/statefulset/)
 - [PodDisruptionBudgets](/docs/concepts/workloads/pods/disruptions/#pod-disruption-budget)
 - [PodAntiAffinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)
@@ -74,7 +73,7 @@ a [Service](/docs/concepts/services-networking/service/),
 a [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/#pod-disruption-budgets),
 and a [StatefulSet](/docs/concepts/workloads/controllers/statefulset/).
 
-{{< codenew file="application/zookeeper/zookeeper.yaml" >}}
+{{% code_sample file="application/zookeeper/zookeeper.yaml" %}}
 
 Open a terminal, and use the
 [`kubectl apply`](/docs/reference/generated/kubectl/kubectl-commands/#apply) command to create the
@@ -1042,7 +1041,7 @@ There are pending pods when an error occurred: Cannot evict pod as it would viol
 pod/zk-2
 ```
 
-Use `CTRL-C` to terminate to kubectl.
+Use `CTRL-C` to terminate kubectl.
 
 You cannot drain the third node because evicting `zk-2` would violate `zk-budget`. However, the node will remain cordoned.
 

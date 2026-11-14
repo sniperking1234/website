@@ -19,12 +19,12 @@ description: >-
 <!--
 This page shows how to set a quota for the total number of Pods that can run
 in a {{< glossary_tooltip text="Namespace" term_id="namespace" >}}. You specify quotas in a
-[ResourceQuota](/docs/reference/kubernetes-api/policy-resources/resource-quota-v1/)
+[ResourceQuota](/docs/reference/kubernetes-api/core/resource-quota-v1/)
 object.
 -->
 本文主要介绍如何在{{< glossary_tooltip text="命名空间" term_id="namespace" >}}中设置可运行 Pod 总数的配额。
 你可以通过使用
-[ResourceQuota](/zh-cn/docs/reference/kubernetes-api/policy-resources/resource-quota-v1/)
+[ResourceQuota](/zh-cn/docs/reference/kubernetes-api/core/resource-quota-v1/)
 对象来配置配额。
 
 ## {{% heading "prerequisites" %}}
@@ -61,7 +61,7 @@ Here is an example manifest for a ResourceQuota:
 
 下面是 ResourceQuota 的示例清单：
 
-{{< codenew file="admin/resource/quota-pod.yaml" >}}
+{{% code_sample file="admin/resource/quota-pod.yaml" %}}
 
 <!--
 Create the ResourceQuota:
@@ -104,7 +104,7 @@ Here is an example manifest for a {{< glossary_tooltip term_id="deployment" >}}:
 -->
 下面是一个 {{< glossary_tooltip term_id="deployment" >}} 的示例清单：
 
-{{< codenew file="admin/resource/quota-pod-deployment.yaml" >}}
+{{% code_sample file="admin/resource/quota-pod-deployment.yaml" %}}
 
 <!--
 In that manifest, `replicas: 3` tells Kubernetes to attempt to create three new Pods, all
@@ -161,7 +161,7 @@ that can live in a single namespace.
 ### 资源的选择  {#choice-of-resource}
 在此任务中，你定义了一个限制 Pod 总数的 ResourceQuota，
 你也可以限制其他类型对象的总数。
-例如，你可以限制在一个命名空间中可以创建的 {{< glossary_tooltip text="CronJobs" term_id="cronjob" >}} 的数量。
+例如，你可以限制在一个命名空间中可以创建的 {{< glossary_tooltip text="CronJob" term_id="cronjob" >}} 的数量。
 
 <!--
 ## Clean up
@@ -202,10 +202,12 @@ kubectl delete namespace quota-pod-example
 
 * [Assign Memory Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-memory-resource/)
 * [Assign CPU Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-cpu-resource/)
+* [Assign Pod-level CPU and memory resources](/docs/tasks/configure-pod-container/assign-pod-level-resources/)
 * [Configure Quality of Service for Pods](/docs/tasks/configure-pod-container/quality-service-pod/)
 -->
 ### 应用开发人员参考 {#for-app-developers}
 
 * [为容器和 Pod 分配内存资源](/zh-cn/docs/tasks/configure-pod-container/assign-memory-resource/)
 * [给容器和 Pod 分配 CPU 资源](/zh-cn/docs/tasks/configure-pod-container/assign-cpu-resource/)
+* [分配 Pod 级别的 CPU 和内存资源](/zh-cn/docs/tasks/configure-pod-container/assign-pod-level-resources/)
 * [配置 Pod 的服务质量](/zh-cn/docs/tasks/configure-pod-container/quality-service-pod/)

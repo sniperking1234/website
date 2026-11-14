@@ -4,5 +4,6 @@
 [Minikube](/docs/setup/learning-environment/minikube/),
 или вы можете использовать одну из песочниц Kubernetes:
 
+* [iximiuz Labs](https://labs.iximiuz.com/playgrounds?category=kubernetes&filter=all)
 * [Killercoda](https://killercoda.com/playgrounds/scenario/kubernetes)
-* [Play with Kubernetes](http://labs.play-with-k8s.com/)
+* [KodeKloud](https://kodekloud.com/public-playgrounds)

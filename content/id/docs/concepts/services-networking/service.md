@@ -295,7 +295,7 @@ Kubernetes mendukung 2 buah mode primer untuk melakukan `Service` - variabel _en
 
 Ketika sebuah `Pod` dijalankan pada *node*, _kubelet_ menambahkan seperangkat variabel _environment_
 untuk setiap `Service` yang aktif. _Environment_ yang didukung adalah [Docker links compatible](https://docs.docker.com/userguide/dockerlinks/) variabel (perhatikan
-[makeLinkVariables](http://releases.k8s.io/{{< param "githubbranch" >}}/pkg/kubelet/envvars/envvars.go#L49))
+[makeLinkVariables](https://github.com/kubernetes/kubernetes/blob/dd2d12f6dc0e654c15d5db57a5f9f6ba61192726/pkg/kubelet/envvars/envvars.go#L72))
 dan variabel `{SVCNAME}_SERVICE_HOST` dan `{SVCNAME}_SERVICE_PORT`, dinama nama `Service` akan diubah
 menjadi huruf kapital dan tanda _minus_  akan diubah menjadi _underscore_.
 
@@ -828,7 +828,7 @@ _Value_ dari `externalIP` tidak diatur oleh Kubernetes dan merupakan tanggung ja
 dari administrator klaster.
 
 Pada _ServiceSpec_, kamu dapat memberikan spesifikasi `externalIP` dan `ServiceTypes`.
-Pada contoh di bawah ini. `"my-service"` dapat diakses oleh klien pada "`80.11.12.10:80`" (`externalIP:port`).
+Pada contoh di bawah ini. `"my-service"` dapat diakses oleh klien pada "`198.51.100.32:80`" (`externalIP:port`).
 
 ```yaml
 kind: Service

@@ -11,7 +11,7 @@ description: >-
 
 This page shows how to set a quota for the total number of Pods that can run
 in a {{< glossary_tooltip text="Namespace" term_id="namespace" >}}. You specify quotas in a
-[ResourceQuota](/docs/reference/kubernetes-api/policy-resources/resource-quota-v1/)
+[ResourceQuota](/docs/reference/kubernetes-api/core/resource-quota-v1/)
 object.
 
 
@@ -39,7 +39,7 @@ kubectl create namespace quota-pod-example
 
 Here is an example manifest for a ResourceQuota:
 
-{{< codenew file="admin/resource/quota-pod.yaml" >}}
+{{% code_sample file="admin/resource/quota-pod.yaml" %}}
 
 Create the ResourceQuota:
 
@@ -69,7 +69,7 @@ status:
 
 Here is an example manifest for a {{< glossary_tooltip term_id="deployment" >}}:
 
-{{< codenew file="admin/resource/quota-pod-deployment.yaml" >}}
+{{% code_sample file="admin/resource/quota-pod-deployment.yaml" %}}
 
 In that manifest, `replicas: 3` tells Kubernetes to attempt to create three new Pods, all
 running the same application.
@@ -141,6 +141,8 @@ kubectl delete namespace quota-pod-example
 * [Assign Memory Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-memory-resource/)
 
 * [Assign CPU Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-cpu-resource/)
+
+* [Assign Pod-level CPU and memory resources](/docs/tasks/configure-pod-container/assign-pod-level-resources/)
 
 * [Configure Quality of Service for Pods](/docs/tasks/configure-pod-container/quality-service-pod/)
 

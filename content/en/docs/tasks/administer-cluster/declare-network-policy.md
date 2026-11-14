@@ -5,6 +5,7 @@ reviewers:
 title: Declare Network Policy
 min-kubernetes-server-version: v1.8
 content_type: task
+weight: 180
 ---
 <!-- overview -->
 This document helps you get started using the Kubernetes [NetworkPolicy API](/docs/concepts/services-networking/network-policies/) to declare network policies that govern how pods communicate with each other.
@@ -22,8 +23,6 @@ Make sure you've configured a network provider with network policy support. Ther
 * [Calico](/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/)
 * [Cilium](/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/)
 * [Kube-router](/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/)
-* [Romana](/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/)
-* [Weave Net](/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/)
 
 <!-- steps -->
 
@@ -68,7 +67,7 @@ pod/nginx-701339712-e0qfq   1/1           Running       0          35s
 You should be able to access the new `nginx` service from other Pods. To access the `nginx` Service from another Pod in the `default` namespace, start a busybox container:
 
 ```console
-kubectl run busybox --rm -ti --image=busybox:1.28 -- /bin/sh
+kubectl run busybox --rm -ti --image=busybox -- /bin/sh
 ```
 
 In your shell, run the following command:
@@ -86,7 +85,7 @@ remote file exists
 
 To limit the access to the `nginx` service so that only Pods with the label `access: true` can query it, create a NetworkPolicy object as follows:
 
-{{< codenew file="service/networking/nginx-policy.yaml" >}}
+{{% code_sample file="service/networking/nginx-policy.yaml" %}}
 
 The name of a NetworkPolicy object must be a valid
 [DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
@@ -111,7 +110,7 @@ networkpolicy.networking.k8s.io/access-nginx created
 When you attempt to access the `nginx` Service from a Pod without the correct labels, the request times out:
 
 ```console
-kubectl run busybox --rm -ti --image=busybox:1.28 -- /bin/sh
+kubectl run busybox --rm -ti --image=busybox -- /bin/sh
 ```
 
 In your shell, run the command:
@@ -130,7 +129,7 @@ wget: download timed out
 You can create a Pod with the correct labels to see that the request is allowed:
 
 ```console
-kubectl run busybox --rm -ti --labels="access=true" --image=busybox:1.28 -- /bin/sh
+kubectl run busybox --rm -ti --labels="access=true" --image=busybox -- /bin/sh
 ```
 
 In your shell, run the command:

@@ -1,13 +1,11 @@
 ---
 title: Cloud Controller Manager
 id: cloud-controller-manager
-date: 2018-04-12
 full_link: /docs/concepts/architecture/cloud-controller/
 short_description: >
   Control plane component that integrates Kubernetes with third-party cloud providers.
 aka: 
 tags:
-- core-object
 - architecture
 - operation
 ---

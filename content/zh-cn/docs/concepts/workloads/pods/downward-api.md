@@ -1,6 +1,7 @@
 ---
 title: Downward API
 content_type: concept
+weight: 170
 description: >
   有两种方法可以将 Pod 和容器字段暴露给运行中的容器：环境变量和由特殊卷类型承载的文件。
   这两种暴露 Pod 和容器字段的方法统称为 Downward API。
@@ -8,6 +9,7 @@ description: >
 <!--
 title: Downward API
 content_type: concept
+weight: 170
 description: >
   There are two ways to expose Pod and container fields to a running container:
   environment variables, and as files that are populated by a special volume type.
@@ -39,12 +41,12 @@ inject the Pod's name into the well-known environment variable.
 <!--
 In Kubernetes, there are two ways to expose Pod and container fields to a running container:
 
-* as [environment variables](/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api)
+* as [environment variables](/docs/tasks/inject-data-application/environment-variable-expose-pod-information/)
 * as [files in a `downwardAPI` volume](/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/)
 -->
 在 Kubernetes 中，有两种方法可以将 Pod 和容器字段暴露给运行中的容器：
 
-* 作为[环境变量](/zh-cn/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api)
+* 作为[环境变量](/zh-cn/docs/tasks/inject-data-application/environment-variable-expose-pod-information/)
 * 作为 [`downwardAPI` 卷中的文件](/zh-cn/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/)
 
 <!--
@@ -79,13 +81,13 @@ You can pass information from available Container-level fields using
 <!--
 ### Information available via `fieldRef` {#downwardapi-fieldRef}
 
-For most Pod-level fields, you can provide them to a container either as
+For some Pod-level fields, you can provide them to a container either as
 an environment variable or using a `downwardAPI` volume. The fields available
 via either mechanism are:
 -->
 ### 可通过 `fieldRef` 获得的信息  {#downwardapi-fieldRef}
 
-对于大多数 Pod 级别的字段，你可以将它们作为环境变量或使用 `downwardAPI` 卷提供给容器。
+对于某些 Pod 级别的字段，你可以将它们作为环境变量或使用 `downwardAPI` 卷提供给容器。
 通过这两种机制可用的字段有：
 
 <!--
@@ -124,6 +126,12 @@ via either mechanism are:
 : Pod 的{{< glossary_tooltip text="标签" term_id="label" >}} `<KEY>` 的值（例如：`metadata.labels['mylabel']`）
 
 <!--
+The following information is available through environment variables
+**but not as a downwardAPI volume fieldRef**:
+-->
+以下信息可以通过环境变量获得，但**不能作为 `downwardAPI` 卷 `fieldRef`** 获得：
+
+<!--
 `spec.serviceAccountName`
 : the name of the pod's {{< glossary_tooltip text="service account" term_id="service-account" >}}
 -->
@@ -145,6 +153,13 @@ via either mechanism are:
 : Pod 所在节点的主 IP 地址
 
 <!--
+`status.hostIPs`
+: the IP addresses is a dual-stack version of `status.hostIP`, the first is always the same as `status.hostIP`.
+-->
+`status.hostIPs`
+: 这组 IP 地址是 `status.hostIP` 的双协议栈版本，第一个 IP 始终与 `status.hostIP` 相同。
+
+<!--
 `status.podIP`
 : the pod's primary IP address (usually, its IPv4 address)
 -->
@@ -152,10 +167,17 @@ via either mechanism are:
 : Pod 的主 IP 地址（通常是其 IPv4 地址）
 
 <!--
-In addition, the following information is available through
-a `downwardAPI` volume `fieldRef`, but **not as environment variables**:
+`status.podIPs`
+: the IP addresses is a dual-stack version of `status.podIP`, the first is always the same as `status.podIP`
 -->
-此外，以下信息可以通过 `downwardAPI` 卷 `fieldRef` 获得，但**不能作为环境变量**获得：
+`status.podIPs`
+: 这组 IP 地址是 `status.podIP` 的双协议栈版本, 第一个 IP 始终与 `status.podIP` 相同。
+
+<!--
+The following information is available through a `downwardAPI` volume 
+`fieldRef`, **but not as environment variables**:
+-->
+以下信息可以通过 `downwardAPI` 卷 `fieldRef` 获得，但**不能作为环境变量**获得：
 
 <!--
 `metadata.labels`
@@ -179,6 +201,25 @@ These container-level fields allow you to provide information about
 for resources such as CPU and memory.
 -->
 ### 可通过 `resourceFieldRef` 获得的信息  {#downwardapi-resourceFieldRef}
+
+这些容器级别的字段允许你提供关于
+[请求和限制](/zh-cn/docs/concepts/configuration/manage-resources-containers/#requests-and-limits)
+的资源（如 CPU 和内存）信息。
+
+{{< note >}}
+{{< feature-state feature_gate_name="InPlacePodVerticalScaling" >}}
+<!--
+Container CPU and memory resources can be resized while the container is running.
+If this happens, a downward API volume will be updated,
+but environment variables will not be updated unless the container restarts.
+See [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/)
+for more details.
+-->
+容器的 CPU 和内存资源可以在容器运行时调整大小。
+如果发生这种情况，Downward API 卷将会被更新，
+但是环境变量不会被更新，除非容器重启。
+更多详情请参见[调整分配给容器的 CPU 和内存资源](/zh-cn/docs/tasks/configure-pod-container/resize-container-resources/)。
+{{< /note >}}
 
 <!--
 `resource: limits.cpu`
@@ -210,19 +251,17 @@ for resources such as CPU and memory.
 
 <!--
 `resource: limits.hugepages-*`
-: A container's hugepages limit (provided that the `DownwardAPIHugePages` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled)
+: A container's hugepages limit
 -->
 `resource: limits.hugepages-*`
-: 容器的巨页限制值（前提是启用了 `DownwardAPIHugePages`
-[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)）
+: 容器的巨页限制值
 
 <!--
 `resource: requests.hugepages-*`
-: A container's hugepages request (provided that the `DownwardAPIHugePages` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled)
+: A container's hugepages request
 -->
 `resource: requests.hugepages-*`
-: 容器的巨页请求值（前提是启用了 `DownwardAPIHugePages`
-[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)）
+: 容器的巨页请求值
 
 <!--
 `resource: limits.ephemeral-storage`
@@ -253,18 +292,17 @@ calculation.
 [节点可分配资源](/zh-cn/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable)
 计算并暴露 CPU 和内存的最大可分配值。
 
-
 ## {{% heading "whatsnext" %}}
 
 <!--
 You can read about [`downwardAPI` volumes](/docs/concepts/storage/volumes/#downwardapi).
 
 You can try using the downward API to expose container- or Pod-level information:
-* as [environment variables](/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api)
+* as [environment variables](/docs/tasks/inject-data-application/environment-variable-expose-pod-information/)
 * as [files in `downwardAPI` volume](/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/)
 -->
 你可以阅读有关 [`downwardAPI` 卷](/zh-cn/docs/concepts/storage/volumes/#downwardapi)的内容。
 
 你可以尝试使用 Downward API 暴露容器或 Pod 级别的信息：
-* 作为[环境变量](/zh-cn/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api)
+* 作为[环境变量](/zh-cn/docs/tasks/inject-data-application/environment-variable-expose-pod-information/)
 * 作为 [`downwardAPI` 卷中的文件](/zh-cn/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/)

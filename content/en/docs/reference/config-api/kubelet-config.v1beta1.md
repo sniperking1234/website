@@ -10,10 +10,345 @@ auto_generated: true
 
 
 - [CredentialProviderConfig](#kubelet-config-k8s-io-v1beta1-CredentialProviderConfig)
+- [ImagePullIntent](#kubelet-config-k8s-io-v1beta1-ImagePullIntent)
+- [ImagePulledRecord](#kubelet-config-k8s-io-v1beta1-ImagePulledRecord)
 - [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
 - [SerializedNodeConfigSource](#kubelet-config-k8s-io-v1beta1-SerializedNodeConfigSource)
   
     
+    
+
+## `FormatOptions`     {#FormatOptions}
+    
+
+**Appears in:**
+
+- [LoggingConfiguration](#LoggingConfiguration)
+
+
+<p>FormatOptions contains options for the different logging formats.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>text</code> <B>[Required]</B><br/>
+<a href="#TextOptions"><code>TextOptions</code></a>
+</td>
+<td>
+   <p>[Alpha] Text contains options for logging format &quot;text&quot;.
+Only available when the LoggingAlphaOptions feature gate is enabled.</p>
+</td>
+</tr>
+<tr><td><code>json</code> <B>[Required]</B><br/>
+<a href="#JSONOptions"><code>JSONOptions</code></a>
+</td>
+<td>
+   <p>[Alpha] JSON contains options for logging format &quot;json&quot;.
+Only available when the LoggingAlphaOptions feature gate is enabled.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `JSONOptions`     {#JSONOptions}
+    
+
+**Appears in:**
+
+- [FormatOptions](#FormatOptions)
+
+
+<p>JSONOptions contains options for logging format &quot;json&quot;.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>OutputRoutingOptions</code> <B>[Required]</B><br/>
+<a href="#OutputRoutingOptions"><code>OutputRoutingOptions</code></a>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+</tbody>
+</table>
+
+## `LogFormatFactory`     {#LogFormatFactory}
+    
+
+
+<p>LogFormatFactory provides support for a certain additional,
+non-default log format.</p>
+
+
+
+
+## `LoggingConfiguration`     {#LoggingConfiguration}
+    
+
+**Appears in:**
+
+- [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
+
+
+<p>LoggingConfiguration contains logging options.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>format</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>Format Flag specifies the structure of log messages.
+default value of format is <code>text</code></p>
+</td>
+</tr>
+<tr><td><code>flushFrequency</code> <B>[Required]</B><br/>
+<a href="#TimeOrMetaDuration"><code>TimeOrMetaDuration</code></a>
+</td>
+<td>
+   <p>Maximum time between log flushes.
+If a string, parsed as a duration (i.e. &quot;1s&quot;)
+If an int, the maximum number of nanoseconds (i.e. 1s = 1000000000).
+Ignored if the selected logging backend writes log messages without buffering.</p>
+</td>
+</tr>
+<tr><td><code>verbosity</code> <B>[Required]</B><br/>
+<a href="#VerbosityLevel"><code>VerbosityLevel</code></a>
+</td>
+<td>
+   <p>Verbosity is the threshold that determines which log messages are
+logged. Default is zero which logs only the most important
+messages. Higher values enable additional messages. Error messages
+are always logged.</p>
+</td>
+</tr>
+<tr><td><code>vmodule</code> <B>[Required]</B><br/>
+<a href="#VModuleConfiguration"><code>VModuleConfiguration</code></a>
+</td>
+<td>
+   <p>VModule overrides the verbosity threshold for individual files.
+Only supported for &quot;text&quot; log format.</p>
+</td>
+</tr>
+<tr><td><code>options</code> <B>[Required]</B><br/>
+<a href="#FormatOptions"><code>FormatOptions</code></a>
+</td>
+<td>
+   <p>[Alpha] Options holds additional parameters that are specific
+to the different logging formats. Only the options for the selected
+format get used, but all of them get validated.
+Only available when the LoggingAlphaOptions feature gate is enabled.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `LoggingOptions`     {#LoggingOptions}
+    
+
+
+<p>LoggingOptions can be used with ValidateAndApplyWithOptions to override
+certain global defaults.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>ErrorStream</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a>
+</td>
+<td>
+   <p>ErrorStream can be used to override the os.Stderr default.</p>
+</td>
+</tr>
+<tr><td><code>InfoStream</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a>
+</td>
+<td>
+   <p>InfoStream can be used to override the os.Stdout default.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `OutputRoutingOptions`     {#OutputRoutingOptions}
+    
+
+**Appears in:**
+
+- [JSONOptions](#JSONOptions)
+
+- [TextOptions](#TextOptions)
+
+
+<p>OutputRoutingOptions contains options that are supported by both &quot;text&quot; and &quot;json&quot;.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>splitStream</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>[Alpha] SplitStream redirects error messages to stderr while
+info messages go to stdout, with buffering. The default is to write
+both to stdout, without buffering. Only available when
+the LoggingAlphaOptions feature gate is enabled.</p>
+</td>
+</tr>
+<tr><td><code>infoBufferSize</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#QuantityValue"><code>k8s.io/apimachinery/pkg/api/resource.QuantityValue</code></a>
+</td>
+<td>
+   <p>[Alpha] InfoBufferSize sets the size of the info stream when
+using split streams. The default is zero, which disables buffering.
+Only available when the LoggingAlphaOptions feature gate is enabled.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `TextOptions`     {#TextOptions}
+    
+
+**Appears in:**
+
+- [FormatOptions](#FormatOptions)
+
+
+<p>TextOptions contains options for logging format &quot;text&quot;.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>OutputRoutingOptions</code> <B>[Required]</B><br/>
+<a href="#OutputRoutingOptions"><code>OutputRoutingOptions</code></a>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+</tbody>
+</table>
+
+## `TimeOrMetaDuration`     {#TimeOrMetaDuration}
+    
+
+**Appears in:**
+
+- [LoggingConfiguration](#LoggingConfiguration)
+
+
+<p>TimeOrMetaDuration is present only for backwards compatibility for the
+flushFrequency field, and new fields should use metav1.Duration.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>Duration</code> <B>[Required]</B><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>Duration holds the duration</p>
+</td>
+</tr>
+<tr><td><code>-</code> <B>[Required]</B><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>SerializeAsString controls whether the value is serialized as a string or an integer</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `TracingConfiguration`     {#TracingConfiguration}
+    
+
+**Appears in:**
+
+- [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
+
+
+<p>TracingConfiguration provides versioned configuration for OpenTelemetry tracing clients.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>endpoint</code><br/>
+<code>string</code>
+</td>
+<td>
+   <p>Endpoint of the collector this component will report traces to.
+The connection is insecure, and does not currently support TLS.
+Recommended is unset, and endpoint is the otlp grpc default, localhost:4317.</p>
+</td>
+</tr>
+<tr><td><code>samplingRatePerMillion</code><br/>
+<code>int32</code>
+</td>
+<td>
+   <p>SamplingRatePerMillion is the number of samples to collect per million spans.
+Recommended is unset. If unset, sampler respects its parent span's sampling
+rate, but otherwise never samples.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `VModuleConfiguration`     {#VModuleConfiguration}
+    
+(Alias of `[]k8s.io/component-base/logs/api/v1.VModuleItem`)
+
+**Appears in:**
+
+- [LoggingConfiguration](#LoggingConfiguration)
+
+
+<p>VModuleConfiguration is a collection of individual file names or patterns
+and the corresponding verbosity threshold.</p>
+
+
+
+
+## `VerbosityLevel`     {#VerbosityLevel}
+    
+(Alias of `uint32`)
+
+**Appears in:**
+
+- [LoggingConfiguration](#LoggingConfiguration)
+
+
+
+<p>VerbosityLevel represents a klog or logr verbosity threshold.</p>
+
+
+
+  
 
 ## `CredentialProviderConfig`     {#kubelet-config-k8s-io-v1beta1-CredentialProviderConfig}
     
@@ -40,7 +375,87 @@ each provider as specified by the CredentialProvider type.</p>
 Multiple providers may match against a single image, in which case credentials
 from all providers will be returned to the kubelet. If multiple providers are called
 for a single image, the results are combined. If providers return overlapping
-auth keys, the value from the provider earlier in this list is used.</p>
+auth keys, the value from the provider earlier in this list is attempted first.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `ImagePullIntent`     {#kubelet-config-k8s-io-v1beta1-ImagePullIntent}
+    
+
+
+<p>ImagePullIntent is a record of the kubelet attempting to pull an image.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+<tr><td><code>apiVersion</code><br/>string</td><td><code>kubelet.config.k8s.io/v1beta1</code></td></tr>
+<tr><td><code>kind</code><br/>string</td><td><code>ImagePullIntent</code></td></tr>
+    
+  
+<tr><td><code>image</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>Image is the image spec from a Container's <code>image</code> field.
+The filename is a SHA-256 hash of this value. This is to avoid filename-unsafe
+characters like ':' and '/'.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `ImagePulledRecord`     {#kubelet-config-k8s-io-v1beta1-ImagePulledRecord}
+    
+
+
+<p>ImagePullRecord is a record of an image that was pulled by the kubelet.</p>
+<p>If there are no records in the <code>kubernetesSecrets</code> field and both <code>nodeWideCredentials</code>
+and <code>anonymous</code> are <code>false</code>, credentials must be re-checked the next time an
+image represented by this record is being requested.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+<tr><td><code>apiVersion</code><br/>string</td><td><code>kubelet.config.k8s.io/v1beta1</code></td></tr>
+<tr><td><code>kind</code><br/>string</td><td><code>ImagePulledRecord</code></td></tr>
+    
+  
+<tr><td><code>lastUpdatedTime</code> <B>[Required]</B><br/>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#time-v1-meta"><code>meta/v1.Time</code></a>
+</td>
+<td>
+   <p>LastUpdatedTime is the time of the last update to this record</p>
+</td>
+</tr>
+<tr><td><code>imageRef</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>ImageRef is a reference to the image represented by this file as received
+from the CRI.
+The filename is a SHA-256 hash of this value. This is to avoid filename-unsafe
+characters like ':' and '/'.</p>
+</td>
+</tr>
+<tr><td><code>credentialMapping</code> <B>[Required]</B><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-ImagePullCredentials"><code>map[string]ImagePullCredentials</code></a>
+</td>
+<td>
+   <p>CredentialMapping maps <code>image</code> to the set of credentials that it was
+previously pulled with.
+<code>image</code> in this case is the content of a pod's container <code>image</code> field that's
+got its tag/digest removed.</p>
+<p>Example:
+Container requests the <code>hello-world:latest@sha256:91fb4b041da273d5a3273b6d587d62d518300a6ad268b28628f74997b93171b2</code> image:
+&quot;credentialMapping&quot;: {
+&quot;hello-world&quot;: { &quot;nodePodsAccessible&quot;: true }
+}</p>
 </td>
 </tr>
 </tbody>
@@ -77,6 +492,16 @@ Default: true</p>
    <p>staticPodPath is the path to the directory containing local (static) pods to
 run, or the path to a single static pod file.
 Default: &quot;&quot;</p>
+</td>
+</tr>
+<tr><td><code>podLogsDir</code><br/>
+<code>string</code>
+</td>
+<td>
+   <p>podLogsDir is a custom root directory path kubelet will use to place pod's log files.
+Default: &quot;/var/log/pods/&quot;
+Note: it is not recommended to use the temp folder as a log directory as it may cause
+unexpected behavior in many places.</p>
 </td>
 </tr>
 <tr><td><code>syncFrequency</code><br/>
@@ -175,7 +600,22 @@ Default: &quot;&quot;</p>
 </td>
 <td>
    <p>tlsCipherSuites is the list of allowed cipher suites for the server.
+Note that TLS 1.3 ciphersuites are not configurable.
 Values are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants).
+Default: nil</p>
+</td>
+</tr>
+<tr><td><code>tlsCurvePreferences</code><br/>
+<code>[]int32</code>
+</td>
+<td>
+   <p>tlsCurvePreferences is the set of allowed key exchange mechanisms for the server,
+specified as numeric Go crypto/tls CurveID values.
+The supported values depend on the Go version used.
+See https://pkg.go.dev/crypto/tls#CurveID for values supported for each Go version.
+The order of the list is ignored, and key exchange mechanisms are
+chosen by Go from this list using an internal preference order.
+If empty, the default Go curves will be used.
 Default: nil</p>
 </td>
 </tr>
@@ -256,13 +696,56 @@ Only used if registryPullQPS is greater than 0.
 Default: 10</p>
 </td>
 </tr>
+<tr><td><code>imagePullCredentialsVerificationPolicy</code><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-ImagePullCredentialsVerificationPolicy"><code>ImagePullCredentialsVerificationPolicy</code></a>
+</td>
+<td>
+   <p>imagePullCredentialsVerificationPolicy determines how credentials should be
+verified when pod requests an image that is already present on the node:</p>
+<ul>
+<li>NeverVerify
+<ul>
+<li>anyone on a node can use any image present on the node</li>
+</ul>
+</li>
+<li>NeverVerifyPreloadedImages
+<ul>
+<li>images that were pulled to the node by something else than the kubelet
+can be used without reverifying pull credentials</li>
+</ul>
+</li>
+<li>NeverVerifyAllowlistedImages
+<ul>
+<li>like &quot;NeverVerifyPreloadedImages&quot; but only node images from
+<code>preloadedImagesVerificationAllowlist</code> don't require reverification</li>
+</ul>
+</li>
+<li>AlwaysVerify
+<ul>
+<li>all images require credential reverification</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+<tr><td><code>preloadedImagesVerificationAllowlist</code><br/>
+<code>[]string</code>
+</td>
+<td>
+   <p>preloadedImagesVerificationAllowlist specifies a list of images that are
+exempted from credential reverification for the &quot;NeverVerifyAllowlistedImages&quot;
+<code>imagePullCredentialsVerificationPolicy</code>.
+The list accepts a full path segment wildcard suffix &quot;/*&quot;.
+Only use image specs without an image tag or digest.</p>
+</td>
+</tr>
 <tr><td><code>eventRecordQPS</code><br/>
 <code>int32</code>
 </td>
 <td>
    <p>eventRecordQPS is the maximum event creations per second. If 0, there
 is no limit enforced. The value cannot be a negative number.
-Default: 5</p>
+Default: 50</p>
 </td>
 </tr>
 <tr><td><code>eventBurst</code><br/>
@@ -273,7 +756,7 @@ Default: 5</p>
 allows event creations to burst to this number, while still not exceeding
 eventRecordQPS. This field canot be a negative number and it is only used
 when eventRecordQPS &gt; 0.
-Default: 10</p>
+Default: 100</p>
 </td>
 </tr>
 <tr><td><code>enableDebuggingHandlers</code><br/>
@@ -290,7 +773,7 @@ Default: true</p>
 <code>bool</code>
 </td>
 <td>
-   <p>enableContentionProfiling enables lock contention profiling, if enableDebuggingHandlers is true.
+   <p>enableContentionProfiling enables block profiling, if enableDebuggingHandlers is true.
 Default: false</p>
 </td>
 </tr>
@@ -346,6 +829,7 @@ Default: nil</p>
 <td>
    <p>streamingConnectionIdleTimeout is the maximum time a streaming connection
 can be idle before the connection is automatically closed.
+Deprecated: no longer has any effect.
 Default: &quot;4h&quot;</p>
 </td>
 </tr>
@@ -354,10 +838,9 @@ Default: &quot;4h&quot;</p>
 </td>
 <td>
    <p>nodeStatusUpdateFrequency is the frequency that kubelet computes node
-status. If node lease feature is not enabled, it is also the frequency that
-kubelet posts node status to master.
-Note: When node lease feature is not enabled, be cautious when changing the
-constant, it must work with nodeMonitorGracePeriod in nodecontroller.
+status and checks if an update to the API server is necessary. Status
+is posted to the API server either when it changes or when
+nodeStatusReportFrequency has elapsed since the last report.
 Default: &quot;10s&quot;</p>
 </td>
 </tr>
@@ -366,10 +849,11 @@ Default: &quot;10s&quot;</p>
 </td>
 <td>
    <p>nodeStatusReportFrequency is the frequency that kubelet posts node
-status to master if node status does not change. Kubelet will ignore this
-frequency and post node status immediately if any change is detected. It is
-only used when node lease feature is enabled. nodeStatusReportFrequency's
-default value is 5m. But if nodeStatusUpdateFrequency is set explicitly,
+status to the API server if node status does not change. Kubelet will
+ignore this frequency and post node status immediately if any change
+is detected.
+nodeStatusReportFrequency's default value is 5m. But if
+nodeStatusUpdateFrequency is set explicitly,
 nodeStatusReportFrequency's default value will be set to
 nodeStatusUpdateFrequency for backward compatibility.
 Default: &quot;5m&quot;</p>
@@ -395,7 +879,19 @@ Default: 40</p>
 <td>
    <p>imageMinimumGCAge is the minimum age for an unused image before it is
 garbage collected.
+The field value must be greater than 0.
+If unset or 0, defaults to 2m.
 Default: &quot;2m&quot;</p>
+</td>
+</tr>
+<tr><td><code>imageMaximumGCAge</code><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>imageMaximumGCAge is the maximum age an image can be unused before it is garbage collected.
+The default of this field is &quot;0s&quot;, which disables this field--meaning images won't be garbage
+collected based on being unused for too long.
+Default: &quot;0s&quot; (disabled)</p>
 </td>
 </tr>
 <tr><td><code>imageGCHighThresholdPercent</code><br/>
@@ -482,8 +978,20 @@ Default: &quot;cgroupfs&quot;</p>
 </td>
 <td>
    <p>cpuManagerPolicy is the name of the policy to use.
-Requires the CPUManager feature gate to be enabled.
 Default: &quot;None&quot;</p>
+</td>
+</tr>
+<tr><td><code>singleProcessOOMKill</code><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>singleProcessOOMKill, if true, will prevent the <code>memory.oom.group</code> flag from being set for container
+cgroups in cgroups v2. This causes processes in the container to be OOM killed individually instead of as
+a group. It means that if true, the behavior aligns with the behavior of cgroups v1.
+The default value is determined automatically when you don't specify.
+On non-linux such as windows, only null / absent is allowed.
+On cgroup v1 linux, only null / absent and true are allowed.
+On cgroup v2 linux, null / absent, true and false are allowed. The default value is false.</p>
 </td>
 </tr>
 <tr><td><code>cpuManagerPolicyOptions</code><br/>
@@ -492,7 +1000,6 @@ Default: &quot;None&quot;</p>
 <td>
    <p>cpuManagerPolicyOptions is a set of key=value which 	allows to set extra options
 to fine tune the behaviour of the cpu manager policies.
-Requires  both the &quot;CPUManager&quot; and &quot;CPUManagerPolicyOptions&quot; feature gates to be enabled.
 Default: nil</p>
 </td>
 </tr>
@@ -501,7 +1008,6 @@ Default: nil</p>
 </td>
 <td>
    <p>cpuManagerReconcilePeriod is the reconciliation period for the CPU Manager.
-Requires the CPUManager feature gate to be enabled.
 Default: &quot;10s&quot;</p>
 </td>
 </tr>
@@ -529,8 +1035,7 @@ resources;</li>
 <li><code>single-numa-node</code>: kubelet only allows pods with a single NUMA alignment
 of CPU and device resources.</li>
 </ul>
-<p>Policies other than &quot;none&quot; require the TopologyManager feature gate to be enabled.
-Default: &quot;none&quot;</p>
+<p>Default: &quot;none&quot;</p>
 </td>
 </tr>
 <tr><td><code>topologyManagerScope</code><br/>
@@ -543,8 +1048,17 @@ that topology manager requests and hint providers generate. Valid values include
 <li><code>container</code>: topology policy is applied on a per-container basis.</li>
 <li><code>pod</code>: topology policy is applied on a per-pod basis.</li>
 </ul>
-<p>&quot;pod&quot; scope requires the TopologyManager feature gate to be enabled.
-Default: &quot;container&quot;</p>
+<p>Default: &quot;container&quot;</p>
+</td>
+</tr>
+<tr><td><code>topologyManagerPolicyOptions</code><br/>
+<code>map[string]string</code>
+</td>
+<td>
+   <p>TopologyManagerPolicyOptions is a set of key=value which allows to set extra options
+to fine tune the behaviour of the topology manager policies.
+Requires  both the &quot;TopologyManager&quot; and &quot;TopologyManagerPolicyOptions&quot; feature gates to be enabled.
+Default: nil</p>
 </td>
 </tr>
 <tr><td><code>qosReserved</code><br/>
@@ -645,7 +1159,7 @@ Default: true</p>
 </td>
 <td>
    <p>cpuCFSQuotaPeriod is the CPU CFS quota period value, <code>cpu.cfs_period_us</code>.
-The value must be between 1 us and 1 second, inclusive.
+The value must be between 1 ms and 1 second, inclusive.
 Requires the CustomCPUCFSQuotaPeriod feature gate to be enabled.
 Default: &quot;100ms&quot;</p>
 </td>
@@ -682,7 +1196,7 @@ Default: &quot;application/vnd.kubernetes.protobuf&quot;</p>
 </td>
 <td>
    <p>kubeAPIQPS is the QPS to use while talking with kubernetes apiserver.
-Default: 5</p>
+Default: 50</p>
 </td>
 </tr>
 <tr><td><code>kubeAPIBurst</code><br/>
@@ -691,7 +1205,7 @@ Default: 5</p>
 <td>
    <p>kubeAPIBurst is the burst to allow while talking with kubernetes API server.
 This field cannot be a negative number.
-Default: 10</p>
+Default: 100</p>
 </td>
 </tr>
 <tr><td><code>serializeImagePulls</code><br/>
@@ -703,6 +1217,16 @@ at a time. We recommend <em>not</em> changing the default value on nodes that
 run docker daemon with version  &lt; 1.9 or an Aufs storage backend.
 Issue #10959 has more details.
 Default: true</p>
+</td>
+</tr>
+<tr><td><code>maxParallelImagePulls</code><br/>
+<code>int32</code>
+</td>
+<td>
+   <p>MaxParallelImagePulls sets the maximum number of image pulls in parallel.
+This field cannot be set if SerializeImagePulls is true.
+Setting it to nil means no limit.
+Default: nil</p>
 </td>
 </tr>
 <tr><td><code>evictionHard</code><br/>
@@ -743,6 +1267,7 @@ Default: nil</p>
 <td>
    <p>evictionPressureTransitionPeriod is the duration for which the kubelet has to wait
 before transitioning out of an eviction pressure condition.
+A duration of 0s will be converted to the default value of 5m
 Default: &quot;5m&quot;</p>
 </td>
 </tr>
@@ -753,9 +1278,6 @@ Default: &quot;5m&quot;</p>
    <p>evictionMaxPodGracePeriod is the maximum allowed grace period (in seconds) to use
 when terminating pods in response to a soft eviction threshold being met. This value
 effectively caps the Pod's terminationGracePeriodSeconds value during soft evictions.
-Note: Due to issue #64530, the behavior has a bug where this value currently just
-overrides the grace period during soft eviction, which can increase the grace
-period from what is set on the Pod. This bug will be fixed in a future release.
 Default: 0</p>
 </td>
 </tr>
@@ -768,6 +1290,20 @@ which describe the minimum amount of a given resource the kubelet will reclaim w
 performing a pod eviction while that resource is under pressure.
 For example: <code>{&quot;imagefs.available&quot;: &quot;2Gi&quot;}</code>.
 Default: nil</p>
+</td>
+</tr>
+<tr><td><code>mergeDefaultEvictionSettings</code><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>mergeDefaultEvictionSettings indicates that defaults for the evictionHard, evictionSoft, evictionSoftGracePeriod, and evictionMinimumReclaim
+fields should be merged into values specified for those fields in this configuration.
+Signals specified in this configuration take precedence.
+Signals not specified in this configuration inherit their defaults.
+If false, and if any signal is specified in this configuration then other signals that
+are not specified in this configuration will be set to 0.
+It applies to merging the fields for which the default exists, and currently only evictionHard has default values.
+Default: false</p>
 </td>
 </tr>
 <tr><td><code>podsPerCore</code><br/>
@@ -806,10 +1342,9 @@ Default: false</p>
 <code>bool</code>
 </td>
 <td>
-   <p>makeIPTablesUtilChains, if true, causes the Kubelet ensures a set of iptables rules
-are present on host.
-These rules will serve as utility rules for various components, e.g. kube-proxy.
-The rules will be created based on iptablesMasqueradeBit and iptablesDropBit.
+   <p>makeIPTablesUtilChains, if true, causes the Kubelet to create the
+KUBE-IPTABLES-HINT chain in iptables as a hint to other components about the
+configuration of iptables on the system.
 Default: true</p>
 </td>
 </tr>
@@ -817,10 +1352,9 @@ Default: true</p>
 <code>int32</code>
 </td>
 <td>
-   <p>iptablesMasqueradeBit is the bit of the iptables fwmark space to mark for SNAT.
-Values must be within the range [0, 31]. Must be different from other mark bits.
-Warning: Please match the value of the corresponding parameter in kube-proxy.
-TODO: clean up IPTablesMasqueradeBit in kube-proxy.
+   <p>iptablesMasqueradeBit formerly controlled the creation of the KUBE-MARK-MASQ
+chain.
+Deprecated: no longer has any effect.
 Default: 14</p>
 </td>
 </tr>
@@ -828,8 +1362,8 @@ Default: 14</p>
 <code>int32</code>
 </td>
 <td>
-   <p>iptablesDropBit is the bit of the iptables fwmark space to mark for dropping packets.
-Values must be within the range [0, 31]. Must be different from other mark bits.
+   <p>iptablesDropBit formerly controlled the creation of the KUBE-MARK-DROP chain.
+Deprecated: no longer has any effect.
 Default: 15</p>
 </td>
 </tr>
@@ -876,6 +1410,27 @@ be present for a container.
 Default: 5</p>
 </td>
 </tr>
+<tr><td><code>containerLogMaxWorkers</code><br/>
+<code>int32</code>
+</td>
+<td>
+   <p>ContainerLogMaxWorkers specifies the maximum number of concurrent workers to spawn
+for performing the log rotate operations. Set this count to 1 for disabling the
+concurrent log rotation workflows
+Default: 1</p>
+</td>
+</tr>
+<tr><td><code>containerLogMonitorInterval</code><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>ContainerLogMonitorInterval specifies the duration at which the container logs are monitored
+for performing the log rotate operation. This defaults to 10 * time.Seconds. But can be
+customized to a smaller value based on the log generation rate and the size required to be
+rotated against
+Default: 10s</p>
+</td>
+</tr>
 <tr><td><code>configMapAndSecretChangeDetectionStrategy</code><br/>
 <a href="#kubelet-config-k8s-io-v1beta1-ResourceChangeDetectionStrategy"><code>ResourceChangeDetectionStrategy</code></a>
 </td>
@@ -897,7 +1452,7 @@ managers are running. Valid values include:</p>
    <p>systemReserved is a set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G)
 pairs that describe resources reserved for non-kubernetes components.
 Currently only cpu and memory are supported.
-See http://kubernetes.io/docs/user-guide/compute-resources for more detail.
+See https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources for more detail.
 Default: nil</p>
 </td>
 </tr>
@@ -908,7 +1463,7 @@ Default: nil</p>
    <p>kubeReserved is a set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G) pairs
 that describe resources reserved for kubernetes system components.
 Currently cpu, memory and local storage for root file system are supported.
-See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+See https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources
 for more details.
 Default: nil</p>
 </td>
@@ -943,7 +1498,7 @@ Default: &quot;&quot;</p>
 <td>
    <p>systemReservedCgroup helps the kubelet identify absolute name of top level CGroup used
 to enforce <code>systemReserved</code> compute resource reservation for OS system daemons.
-Refer to <a href="https://git.k8s.io/community/contributors/design-proposals/node/node-allocatable.md">Node Allocatable</a>
+Refer to <a href="https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable">Node Allocatable</a>
 doc for more information.
 Default: &quot;&quot;</p>
 </td>
@@ -954,7 +1509,7 @@ Default: &quot;&quot;</p>
 <td>
    <p>kubeReservedCgroup helps the kubelet identify absolute name of top level CGroup used
 to enforce <code>KubeReserved</code> compute resource reservation for Kubernetes node system daemons.
-Refer to <a href="https://git.k8s.io/community/contributors/design-proposals/node/node-allocatable.md">Node Allocatable</a>
+Refer to <a href="https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable">Node Allocatable</a>
 doc for more information.
 Default: &quot;&quot;</p>
 </td>
@@ -965,12 +1520,13 @@ Default: &quot;&quot;</p>
 <td>
    <p>This flag specifies the various Node Allocatable enforcements that Kubelet needs to perform.
 This flag accepts a list of options. Acceptable options are <code>none</code>, <code>pods</code>,
-<code>system-reserved</code> and <code>kube-reserved</code>.
+<code>system-reserved</code>, <code>system-reserved-compressible</code>, <code>kube-reserved</code>, and <code>kube-reserved-compressible</code>.
 If <code>none</code> is specified, no other options may be specified.
-When <code>system-reserved</code> is in the list, systemReservedCgroup must be specified.
-When <code>kube-reserved</code> is in the list, kubeReservedCgroup must be specified.
+When a <code>system-reserved</code> option is in the list, systemReservedCgroup must be specified.
+When a <code>kube-reserved</code> option is in the list, kubeReservedCgroup must be specified.
+If a <code>compressible</code> option is specified, the corresponding non-compressible option may not be specified.
 This field is supported only when <code>cgroupsPerQOS</code> is set to true.
-Refer to <a href="https://git.k8s.io/community/contributors/design-proposals/node/node-allocatable.md">Node Allocatable</a>
+Refer to <a href="https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable">Node Allocatable</a>
 for more information.
 Default: [&quot;pods&quot;]</p>
 </td>
@@ -983,6 +1539,16 @@ Default: [&quot;pods&quot;]</p>
 Unsafe sysctl groups are <code>kernel.shm*</code>, <code>kernel.msg*</code>, <code>kernel.sem</code>, <code>fs.mqueue.*</code>,
 and <code>net.*</code>. For example: &quot;<code>kernel.msg*,net.ipv4.route.min_pmtu</code>&quot;
 Default: []</p>
+</td>
+</tr>
+<tr><td><code>defaultPodSysctls</code><br/>
+<code>map[string]string</code>
+</td>
+<td>
+   <p>DefaultPodSysctls is a set of default sysctls that will be applied to all pods.
+It can be overridden by sysctls set in pod spec.securityContext.sysctls.
+Support namespaced groups: <code>kernel.shm*</code>, <code>kernel.msg*</code>, <code>kernel.sem</code>, <code>fs.mqueue.*</code>, <code>net.*</code>, <code>kernel.domainname</code>, and <code>user.*</code>.
+For example: {&quot;net.ipv4.ip_forward&quot;: &quot;1&quot;, &quot;kernel.shmall&quot;: &quot;1048576&quot;}</p>
 </td>
 </tr>
 <tr><td><code>volumePluginDir</code><br/>
@@ -1030,6 +1596,17 @@ Format: text</p>
 <td>
    <p>enableSystemLogHandler enables system logs via web interface host:port/logs/
 Default: true</p>
+</td>
+</tr>
+<tr><td><code>enableSystemLogQuery</code><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>enableSystemLogQuery enables the node log query feature on the /logs endpoint.
+EnableSystemLogHandler has to be enabled in addition for this feature to work.
+Enabling this feature has security implications. The recommendation is to enable it on a need basis for debugging
+purposes and disabling otherwise.
+Default: false</p>
 </td>
 </tr>
 <tr><td><code>shutdownGracePeriod</code><br/>
@@ -1086,6 +1663,14 @@ This configuration must be empty if either ShutdownGracePeriod or ShutdownGraceP
 Default: nil</p>
 </td>
 </tr>
+<tr><td><code>crashLoopBackOff</code><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-CrashLoopBackOffConfig"><code>CrashLoopBackOffConfig</code></a>
+</td>
+<td>
+   <p>CrashLoopBackOff contains config to modify node-level parameters for
+container restart behavior</p>
+</td>
+</tr>
 <tr><td><code>reservedMemory</code><br/>
 <a href="#kubelet-config-k8s-io-v1beta1-MemoryReservation"><code>[]MemoryReservation</code></a>
 </td>
@@ -1133,7 +1718,6 @@ Default: true</p>
 </td>
 <td>
    <p>SeccompDefault enables the use of <code>RuntimeDefault</code> as the default seccomp profile for all workloads.
-This requires the corresponding SeccompDefault feature gate to be enabled as well.
 Default: false</p>
 </td>
 </tr>
@@ -1144,13 +1728,26 @@ Default: false</p>
    <p>MemoryThrottlingFactor specifies the factor multiplied by the memory limit or node allocatable memory
 when setting the cgroupv2 memory.high value to enforce MemoryQoS.
 Decreasing this factor will set lower high limit for container cgroups and put heavier reclaim pressure
-while increasing will put less reclaim pressure.
-See http://kep.k8s.io/2570 for more details.
-Default: 0.8</p>
+while increasing will put less reclaim pressure. If nil, memory.high is not set.
+See https://kep.k8s.io/2570 for more details.
+Default: nil</p>
+</td>
+</tr>
+<tr><td><code>memoryReservationPolicy</code><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-MemoryReservationPolicy"><code>MemoryReservationPolicy</code></a>
+</td>
+<td>
+   <p>MemoryReservationPolicy controls how the kubelet applies cgroup v2 memory protection.
+&quot;None&quot; (default): The kubelet does not set memory.min for containers and pods,
+ensuring no hard memory is locked by the kernel.
+&quot;TieredReservation&quot;: The kubelet sets cgroup v2 memory.min for Guaranteed pods and memory.low for Burstable pods based on memory requests.
+Guaranteed memory is never reclaimed by the kernel; Burstable memory is preferentially retained but may be reclaimed under extreme pressure.
+See https://kep.k8s.io/2570 for more details.
+Default: None</p>
 </td>
 </tr>
 <tr><td><code>registerWithTaints</code><br/>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#taint-v1-core"><code>[]core/v1.Taint</code></a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#taint-v1-core"><code>[]core/v1.Taint</code></a>
 </td>
 <td>
    <p>registerWithTaints are an array of taints to add to a node object when
@@ -1172,7 +1769,8 @@ Default: true</p>
 </td>
 <td>
    <p>Tracing specifies the versioned configuration for OpenTelemetry tracing clients.
-See http://kep.k8s.io/2832 for more details.</p>
+See https://kep.k8s.io/2832 for more details.
+Default: nil</p>
 </td>
 </tr>
 <tr><td><code>localStorageCapacityIsolation</code><br/>
@@ -1187,6 +1785,43 @@ This feature depends on the capability of detecting correct root file system dis
 such as kind rootless, if this capability cannot be supported, the feature LocalStorageCapacityIsolation should be
 disabled. Once disabled, user should not set request/limit for container's ephemeral storage, or sizeLimit for emptyDir.
 Default: true</p>
+</td>
+</tr>
+<tr><td><code>containerRuntimeEndpoint</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>ContainerRuntimeEndpoint is the endpoint of container runtime.
+Unix Domain Sockets are supported on Linux, while npipe and tcp endpoints are supported on Windows.
+Examples:'unix:///path/to/runtime.sock', 'npipe:////./pipe/runtime'</p>
+</td>
+</tr>
+<tr><td><code>imageServiceEndpoint</code><br/>
+<code>string</code>
+</td>
+<td>
+   <p>ImageServiceEndpoint is the endpoint of container image service.
+Unix Domain Socket are supported on Linux, while npipe and tcp endpoints are supported on Windows.
+Examples:'unix:///path/to/runtime.sock', 'npipe:////./pipe/runtime'.
+If not specified, the value in containerRuntimeEndpoint is used.</p>
+</td>
+</tr>
+<tr><td><code>failCgroupV1</code><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>FailCgroupV1 prevents the kubelet from starting on hosts
+that use cgroup v1. By default, this is set to 'true', meaning
+the kubelet will not start on cgroup v1 hosts unless this
+option is explicitly disabled.
+Default: true</p>
+</td>
+</tr>
+<tr><td><code>userNamespaces</code><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-UserNamespaces"><code>UserNamespaces</code></a>
+</td>
+<td>
+   <p>UserNamespaces contains User Namespace configurations.</p>
 </td>
 </tr>
 </tbody>
@@ -1210,10 +1845,36 @@ It exists in the kubeletconfig API group because it is classified as a versioned
     
   
 <tr><td><code>source</code><br/>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeconfigsource-v1-core"><code>core/v1.NodeConfigSource</code></a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#nodeconfigsource-v1-core"><code>core/v1.NodeConfigSource</code></a>
 </td>
 <td>
    <p>source is the source that we are serializing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `CrashLoopBackOffConfig`     {#kubelet-config-k8s-io-v1beta1-CrashLoopBackOffConfig}
+    
+
+**Appears in:**
+
+- [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
+
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>maxContainerRestartPeriod</code><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"><code>meta/v1.Duration</code></a>
+</td>
+<td>
+   <p>maxContainerRestartPeriod is the maximum duration the backoff delay can accrue
+to for container restarts, minimum 1 second, maximum 300 seconds. If not set,
+defaults to the internal crashloopbackoff maximum (300s).</p>
 </td>
 </tr>
 </tbody>
@@ -1242,7 +1903,8 @@ invoked when an image being pulled matches the images handled by the plugin (see
 <td>
    <p>name is the required name of the credential provider. It must match the name of the
 provider executable as seen by the kubelet. The executable must be in the kubelet's
-bin directory (set by the --image-credential-provider-bin-dir flag).</p>
+bin directory (set by the --image-credential-provider-bin-dir flag).
+Required to be unique across all providers.</p>
 </td>
 </tr>
 <tr><td><code>matchImages</code> <B>[Required]</B><br/>
@@ -1337,6 +1999,149 @@ credential plugin.</p>
    <span class="text-muted">No description provided.</span></td>
 </tr>
 <tr><td><code>value</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+</tbody>
+</table>
+
+## `ImagePullCredentials`     {#kubelet-config-k8s-io-v1beta1-ImagePullCredentials}
+    
+
+**Appears in:**
+
+- [ImagePulledRecord](#kubelet-config-k8s-io-v1beta1-ImagePulledRecord)
+
+
+<p>ImagePullCredentials describe credentials that can be used to pull an image.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>kubernetesSecrets</code><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-ImagePullSecret"><code>[]ImagePullSecret</code></a>
+</td>
+<td>
+   <p>KubernetesSecretCoordinates is an index of coordinates of all the kubernetes
+secrets that were used to pull the image.</p>
+</td>
+</tr>
+<tr><td><code>kubernetesServiceAccounts</code><br/>
+<a href="#kubelet-config-k8s-io-v1beta1-ImagePullServiceAccount"><code>[]ImagePullServiceAccount</code></a>
+</td>
+<td>
+   <p>KubernetesServiceAccounts is an index of coordinates of all the kubernetes
+service accounts that were used to pull the image.</p>
+</td>
+</tr>
+<tr><td><code>nodePodsAccessible</code><br/>
+<code>bool</code>
+</td>
+<td>
+   <p>NodePodsAccessible is a flag denoting the pull credentials are accessible
+by all the pods on the node, or that no credentials are needed for the pull.</p>
+<p>If true, it is mutually exclusive with the <code>kubernetesSecrets</code> field.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `ImagePullCredentialsVerificationPolicy`     {#kubelet-config-k8s-io-v1beta1-ImagePullCredentialsVerificationPolicy}
+    
+(Alias of `string`)
+
+**Appears in:**
+
+- [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
+
+
+<p>ImagePullCredentialsVerificationPolicy is an enum for the policy that is enforced
+when pod is requesting an image that appears on the system</p>
+
+
+
+
+## `ImagePullSecret`     {#kubelet-config-k8s-io-v1beta1-ImagePullSecret}
+    
+
+**Appears in:**
+
+- [ImagePullCredentials](#kubelet-config-k8s-io-v1beta1-ImagePullCredentials)
+
+
+<p>ImagePullSecret is a representation of a Kubernetes secret object coordinates along
+with a credential hash of the pull secret credentials this object contains.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>uid</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+<tr><td><code>namespace</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+<tr><td><code>name</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+<tr><td><code>credentialHash</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>CredentialHash is a SHA-256 retrieved by hashing the image pull credentials
+content of the secret specified by the UID/Namespace/Name coordinates.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+## `ImagePullServiceAccount`     {#kubelet-config-k8s-io-v1beta1-ImagePullServiceAccount}
+    
+
+**Appears in:**
+
+- [ImagePullCredentials](#kubelet-config-k8s-io-v1beta1-ImagePullCredentials)
+
+
+<p>ImagePullServiceAccount is a representation of a Kubernetes service account object coordinates
+for which the kubelet sent service account token to the credential provider plugin for image pull credentials.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>uid</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+<tr><td><code>namespace</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <span class="text-muted">No description provided.</span></td>
+</tr>
+<tr><td><code>name</code> <B>[Required]</B><br/>
 <code>string</code>
 </td>
 <td>
@@ -1571,13 +2376,27 @@ and groups corresponding to the Organization in the client certificate.</p>
    <span class="text-muted">No description provided.</span></td>
 </tr>
 <tr><td><code>limits</code> <B>[Required]</B><br/>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcelist-v1-core"><code>core/v1.ResourceList</code></a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#resourcelist-v1-core"><code>core/v1.ResourceList</code></a>
 </td>
 <td>
    <span class="text-muted">No description provided.</span></td>
 </tr>
 </tbody>
 </table>
+
+## `MemoryReservationPolicy`     {#kubelet-config-k8s-io-v1beta1-MemoryReservationPolicy}
+    
+(Alias of `string`)
+
+**Appears in:**
+
+- [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
+
+
+<p>MemoryReservationPolicy defines how the kubelet applies cgroup v2 memory protection.</p>
+
+
+
 
 ## `MemorySwapConfiguration`     {#kubelet-config-k8s-io-v1beta1-MemorySwapConfiguration}
     
@@ -1598,8 +2417,8 @@ and groups corresponding to the Organization in the client certificate.</p>
 </td>
 <td>
    <p>swapBehavior configures swap memory available to container workloads. May be one of
-&quot;&quot;, &quot;LimitedSwap&quot;: workload combined memory and swap usage cannot exceed pod memory limit
-&quot;UnlimitedSwap&quot;: workloads can use unlimited swap, up to the allocatable limit.</p>
+&quot;&quot;, &quot;NoSwap&quot;: workloads can not use swap, default option.
+&quot;LimitedSwap&quot;: workload swap usage is limited. The swap limit is proportionate to the container's memory request.</p>
 </td>
 </tr>
 </tbody>
@@ -1652,86 +2471,8 @@ managers (secret, configmap) are discovering object changes.</p>
 </tr>
 </tbody>
 </table>
-  
-  
-    
 
-## `FormatOptions`     {#FormatOptions}
-    
-
-**Appears in:**
-
-- [LoggingConfiguration](#LoggingConfiguration)
-
-
-<p>FormatOptions contains options for the different logging formats.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>json</code> <B>[Required]</B><br/>
-<a href="#JSONOptions"><code>JSONOptions</code></a>
-</td>
-<td>
-   <p>[Alpha] JSON contains options for logging format &quot;json&quot;.
-Only available when the LoggingAlphaOptions feature gate is enabled.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `JSONOptions`     {#JSONOptions}
-    
-
-**Appears in:**
-
-- [FormatOptions](#FormatOptions)
-
-
-<p>JSONOptions contains options for logging format &quot;json&quot;.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>splitStream</code> <B>[Required]</B><br/>
-<code>bool</code>
-</td>
-<td>
-   <p>[Alpha] SplitStream redirects error messages to stderr while
-info messages go to stdout, with buffering. The default is to write
-both to stdout, without buffering. Only available when
-the LoggingAlphaOptions feature gate is enabled.</p>
-</td>
-</tr>
-<tr><td><code>infoBufferSize</code> <B>[Required]</B><br/>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#QuantityValue"><code>k8s.io/apimachinery/pkg/api/resource.QuantityValue</code></a>
-</td>
-<td>
-   <p>[Alpha] InfoBufferSize sets the size of the info stream when
-using split streams. The default is zero, which disables buffering.
-Only available when the LoggingAlphaOptions feature gate is enabled.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `LogFormatFactory`     {#LogFormatFactory}
-    
-
-
-<p>LogFormatFactory provides support for a certain additional,
-non-default log format.</p>
-
-
-
-
-## `LoggingConfiguration`     {#LoggingConfiguration}
+## `UserNamespaces`     {#kubelet-config-k8s-io-v1beta1-UserNamespaces}
     
 
 **Appears in:**
@@ -1739,7 +2480,7 @@ non-default log format.</p>
 - [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
 
 
-<p>LoggingConfiguration contains logging options.</p>
+<p>UserNamespaces contains User Namespace configurations.</p>
 
 
 <table class="table">
@@ -1747,116 +2488,17 @@ non-default log format.</p>
 <tbody>
     
   
-<tr><td><code>format</code> <B>[Required]</B><br/>
-<code>string</code>
+<tr><td><code>idsPerPod</code><br/>
+<code>int64</code>
 </td>
 <td>
-   <p>Format Flag specifies the structure of log messages.
-default value of format is <code>text</code></p>
-</td>
-</tr>
-<tr><td><code>flushFrequency</code> <B>[Required]</B><br/>
-<a href="https://pkg.go.dev/time#Duration"><code>time.Duration</code></a>
-</td>
-<td>
-   <p>Maximum number of nanoseconds (i.e. 1s = 1000000000) between log
-flushes. Ignored if the selected logging backend writes log
-messages without buffering.</p>
-</td>
-</tr>
-<tr><td><code>verbosity</code> <B>[Required]</B><br/>
-<a href="#VerbosityLevel"><code>VerbosityLevel</code></a>
-</td>
-<td>
-   <p>Verbosity is the threshold that determines which log messages are
-logged. Default is zero which logs only the most important
-messages. Higher values enable additional messages. Error messages
-are always logged.</p>
-</td>
-</tr>
-<tr><td><code>vmodule</code> <B>[Required]</B><br/>
-<a href="#VModuleConfiguration"><code>VModuleConfiguration</code></a>
-</td>
-<td>
-   <p>VModule overrides the verbosity threshold for individual files.
-Only supported for &quot;text&quot; log format.</p>
-</td>
-</tr>
-<tr><td><code>options</code> <B>[Required]</B><br/>
-<a href="#FormatOptions"><code>FormatOptions</code></a>
-</td>
-<td>
-   <p>[Alpha] Options holds additional parameters that are specific
-to the different logging formats. Only the options for the selected
-format get used, but all of them get validated.
-Only available when the LoggingAlphaOptions feature gate is enabled.</p>
+   <p>IDsPerPod is the mapping length of UIDs and GIDs.
+The length must be a multiple of 65536, and must be less than 1&lt;&lt;32.
+On non-linux such as windows, only null / absent is allowed.</p>
+<p>Changing the value may require recreating all containers on the node.</p>
+<p>Default: 65536</p>
 </td>
 </tr>
 </tbody>
 </table>
-
-## `TracingConfiguration`     {#TracingConfiguration}
-    
-
-**Appears in:**
-
-- [KubeletConfiguration](#kubelet-config-k8s-io-v1beta1-KubeletConfiguration)
-
-
-<p>TracingConfiguration provides versioned configuration for OpenTelemetry tracing clients.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
   
-<tr><td><code>endpoint</code><br/>
-<code>string</code>
-</td>
-<td>
-   <p>Endpoint of the collector this component will report traces to.
-The connection is insecure, and does not currently support TLS.
-Recommended is unset, and endpoint is the otlp grpc default, localhost:4317.</p>
-</td>
-</tr>
-<tr><td><code>samplingRatePerMillion</code><br/>
-<code>int32</code>
-</td>
-<td>
-   <p>SamplingRatePerMillion is the number of samples to collect per million spans.
-Recommended is unset. If unset, sampler respects its parent span's sampling
-rate, but otherwise never samples.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `VModuleConfiguration`     {#VModuleConfiguration}
-    
-(Alias of `[]k8s.io/component-base/logs/api/v1.VModuleItem`)
-
-**Appears in:**
-
-- [LoggingConfiguration](#LoggingConfiguration)
-
-
-<p>VModuleConfiguration is a collection of individual file names or patterns
-and the corresponding verbosity threshold.</p>
-
-
-
-
-## `VerbosityLevel`     {#VerbosityLevel}
-    
-(Alias of `uint32`)
-
-**Appears in:**
-
-- [LoggingConfiguration](#LoggingConfiguration)
-
-
-
-<p>VerbosityLevel represents a klog or logr verbosity threshold.</p>
-
-

@@ -1,13 +1,13 @@
 ---
 title: Generate Certificates Manually
 content_type: task
-weight: 20
+weight: 30
 ---
 
 <!-- overview -->
 
 When using client certificate authentication, you can generate certificates
-manually through `easyrsa`, `openssl` or `cfssl`.
+manually through [`easyrsa`](https://github.com/OpenVPN/easy-rsa), [`openssl`](https://github.com/openssl/openssl) or [`cfssl`](https://github.com/cloudflare/cfssl).
 
 <!-- body -->
 
@@ -18,7 +18,7 @@ manually through `easyrsa`, `openssl` or `cfssl`.
 1. Download, unpack, and initialize the patched version of `easyrsa3`.
 
    ```shell
-   curl -LO https://storage.googleapis.com/kubernetes-release/easy-rsa/easy-rsa.tar.gz
+   curl -LO https://dl.k8s.io/easy-rsa/easy-rsa.tar.gz
    tar xzf easy-rsa.tar.gz
    cd easy-rsa-master/easyrsa3
    ./easyrsa init-pki
@@ -75,7 +75,7 @@ manually through `easyrsa`, `openssl` or `cfssl`.
 1. According to the ca.key generate a ca.crt (use `-days` to set the certificate effective time):
 
    ```shell
-   openssl req -x509 -new -nodes -key ca.key -subj "/CN=${MASTER_IP}" -days 10000 -out ca.crt
+   openssl req -x509 -new -noenc -key ca.key -subj "/CN=${MASTER_IP}" -days 10000 -out ca.crt
    ```
 
 1. Generate a server.key with 2048bit:
@@ -155,7 +155,13 @@ manually through `easyrsa`, `openssl` or `cfssl`.
    openssl x509  -noout -text -in ./server.crt
    ```
 
-Finally, add the same parameters into the API server start parameters.
+1. Fill in and add the following parameters into the API server start parameters:
+
+   ```shell
+   --client-ca-file=/yourdirectory/ca.crt
+   --tls-cert-file=/yourdirectory/server.crt
+   --tls-private-key-file=/yourdirectory/server.key
+   ```
 
 ### cfssl
 

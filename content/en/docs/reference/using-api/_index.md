@@ -5,7 +5,7 @@ reviewers:
 - lavalamp
 - jbeda
 content_type: concept
-weight: 10
+weight: 20
 no_list: true
 card:
   name: reference
@@ -39,7 +39,7 @@ The JSON and Protobuf serialization schemas follow the same guidelines for
 schema changes. The following descriptions cover both formats.
 
 The API versioning and software versioning are indirectly related.
-The [API and release versioning proposal](https://git.k8s.io/sig-release/release-engineering/versioning.md)
+The [API and release versioning proposal](https://git.k8s.io/sig-release/release-engineering/reference/versioning.md#kubernetes-release-versioning)
 describes the relationship between API versioning and software versioning.
 
 Different API versions indicate different levels of stability and support. You
@@ -130,3 +130,4 @@ Kubernetes stores its serialized state in terms of the API resources by writing 
 - Learn more about [API conventions](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#api-conventions)
 - Read the design documentation for
   [aggregator](https://git.k8s.io/design-proposals-archive/api-machinery/aggregated-api-servers.md)
+- Learn about [Declarative API Validation](/docs/reference/using-api/declarative-validation/).

@@ -3,6 +3,7 @@ title: Security Checklist
 description: >
   Baseline checklist for ensuring security in Kubernetes clusters.
 content_type: concept
+weight: 100
 ---
 
 <!-- overview -->
@@ -12,6 +13,7 @@ comprehensive documentation on each topic. It does not claim to be exhaustive
 and is meant to evolve.
 
 On how to read and use this document:
+
 - The order of topics does not reflect an order of priority.
 - Some checklist items are detailed in the paragraph below the list of each section.
 
@@ -39,7 +41,7 @@ evaluated on its merits.
 - [ ] A process exists for periodic access review, and reviews occur no more
   than 24 months apart.
 - [ ] The [Role Based Access Control Good Practices](/docs/concepts/security/rbac-good-practices/)
-  is followed for guidance related to authentication and authorization.
+  are followed for guidance related to authentication and authorization.
 
 After bootstrapping, neither users nor components should authenticate to the
 Kubernetes API as `system:masters`. Similarly, running all of
@@ -49,7 +51,7 @@ an admin user.
 
 ## Network security
 
-- [ ] CNI plugins in-use supports network policies.
+- [ ] CNI plugins in use support network policies.
 - [ ] Ingress and egress network policies are applied to all workloads in the
   cluster.
 - [ ] Default network policies within each namespace, selecting all pods, denying
@@ -64,9 +66,8 @@ plugins provide the functionality to
 restrict network resources that pods may communicate with. This is most commonly done
 through [Network Policies](/docs/concepts/services-networking/network-policies/)
 which provide a namespaced resource to define rules. Default network policies
-blocking everything egress and ingress, in each namespace, selecting all the
-pods, can be useful to adopt an allow list approach, ensuring that no workloads
-is missed.
+that block all egress and ingress, in each namespace, selecting all pods, can be
+useful to adopt an allow list approach to ensure that no workloads are missed.
 
 Not all CNI plugins provide encryption in transit. If the chosen plugin lacks this
 feature, an alternative solution could be to use a service mesh to provide that
@@ -78,12 +79,12 @@ be used to communicate securely with it. The certificate authority for this
 should be unique to etcd.
 
 External Internet access to the Kubernetes API server should be restricted to
-not expose the API publicly. Be careful as many managed Kubernetes distribution
+not expose the API publicly. Be careful, as many managed Kubernetes distributions
 are publicly exposing the API server by default. You can then use a bastion host
 to access the server.
 
 The [kubelet](/docs/reference/command-line-tools-reference/kubelet/) API access
-should be restricted and not publicly exposed, the defaults authentication and
+should be restricted and not exposed publicly, the default authentication and
 authorization settings, when no configuration file specified with the `--config`
 flag, are overly permissive.
 
@@ -95,6 +96,7 @@ For restricted LoadBalancer and ExternalIPs use, see
 [CVE-2020-8554: Man in the middle using LoadBalancer or ExternalIPs](https://github.com/kubernetes/kubernetes/issues/97076)
 and the [DenyServiceExternalIPs admission controller](/docs/reference/access-authn-authz/admission-controllers/#denyserviceexternalips)
 for further information.
+
 ## Pod security
 
 - [ ] RBAC rights to `create`, `update`, `patch`, `delete` workloads is only granted if necessary.
@@ -151,23 +153,20 @@ Memory limit superior to request can expose the whole node to OOM issues.
 
 ### Enabling Seccomp
 
-Seccomp can improve the security of your workloads by reducing the Linux kernel
-syscall attack surface available inside containers. The seccomp filter mode
-leverages BPF to create an allow or deny list of specific syscalls, named
-profiles. Those seccomp profiles can be enabled on individual workloads,
-[a security tutorial is available](/docs/tutorials/security/seccomp/). In
-addition, the [Kubernetes Security Profiles Operator](https://github.com/kubernetes-sigs/security-profiles-operator)
-is a project to facilitate the management and use of seccomp in clusters.
+Seccomp stands for secure computing mode and has been a feature of the Linux kernel since version 2.6.12.
+It can be used to sandbox the privileges of a process, restricting the calls it is able to make
+from userspace into the kernel. Kubernetes lets you automatically apply seccomp profiles loaded onto
+a node to your Pods and containers.
 
-For historical context, please note that Docker has been using
-[a default seccomp profile](https://docs.docker.com/engine/security/seccomp/)
-to only allow a restricted set of syscalls since 2016 from
-[Docker Engine 1.10](https://www.docker.com/blog/docker-engine-1-10-security/),
-but Kubernetes is still not confining workloads by default. The default seccomp
-profile can be found [in containerd](https://github.com/containerd/containerd/blob/main/contrib/seccomp/seccomp_default.go)
-as well. Fortunately, [Seccomp Default](/blog/2021/08/25/seccomp-default/), a
-new alpha feature to use a default seccomp profile for all workloads can now be
-enabled and tested.
+Seccomp can improve the security of your workloads by reducing the Linux kernel syscall attack
+surface available inside containers. The seccomp filter mode leverages BPF to create an allow or
+deny list of specific syscalls, named profiles.
+
+Since Kubernetes 1.27, you can enable the use of `RuntimeDefault` as the default seccomp profile
+for all workloads. A [security tutorial](/docs/tutorials/security/seccomp/) is available on this
+topic. In addition, the
+[Kubernetes Security Profiles Operator](https://github.com/kubernetes-sigs/security-profiles-operator)
+is a project that facilitates the management and use of seccomp in clusters.
 
 {{< note >}}
 Seccomp is only available on Linux nodes.
@@ -177,10 +176,10 @@ Seccomp is only available on Linux nodes.
 
 #### AppArmor
 
-[AppArmor](https://apparmor.net/) is a Linux kernel security module that can
+[AppArmor](/docs/tutorials/security/apparmor/) is a Linux kernel security module that can
 provide an easy way to implement Mandatory Access Control (MAC) and better
-auditing through system logs. To [enable AppArmor in Kubernetes](/docs/tutorials/security/apparmor/),
-at least version 1.4 is required. Like seccomp, AppArmor is also configured
+auditing through system logs. A default AppArmor profile is enforced on nodes that support it, or a custom profile can be configured.
+Like seccomp, AppArmor is also configured
 through profiles, where each profile is either running in enforcing mode, which
 blocks access to disallowed resources or complain mode, which only reports
 violations. AppArmor profiles are enforced on a per-container basis, with an
@@ -203,6 +202,11 @@ labels can be assigned to containers or pods
 SELinux is only available on Linux nodes, and enabled in
 [some Linux distributions](https://en.wikipedia.org/wiki/Security-Enhanced_Linux#Implementations).
 {{< /note >}}
+
+## Logs and auditing
+
+- [ ] Audit logs, if enabled, are protected from general access.
+
 
 ## Pod placement
 
@@ -276,7 +280,7 @@ for time-bound service account credentials.
 - [ ] Container images are configured to be run as unprivileged user.
 - [ ] References to container images are made by sha256 digests (rather than
 tags) or the provenance of the image is validated by verifying the image's
-digital signature at deploy time [via admission control](/docs/tasks/administer-cluster/verify-signed-images/#verifying-image-signatures-with-admission-controller).
+digital signature at deploy time [via admission control](/docs/tasks/administer-cluster/verify-signed-artifacts/#verifying-image-signatures-with-admission-controller).
 - [ ] Container images are regularly scanned during creation and in deployment, and
   known vulnerable software is patched.
 
@@ -299,7 +303,7 @@ Avoid using image tags to reference an image, especially the `latest` tag, the
 image behind a tag can be easily modified in a registry. Prefer using the
 complete `sha256` digest which is unique to the image manifest. This policy can be
 enforced via an [ImagePolicyWebhook](/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook).
-Image signatures can also be automatically [verified with an admission controller](/docs/tasks/administer-cluster/verify-signed-images/#verifying-image-signatures-with-admission-controller)
+Image signatures can also be automatically [verified with an admission controller](/docs/tasks/administer-cluster/verify-signed-artifacts/#verifying-image-signatures-with-admission-controller)
 at deploy time to validate their authenticity and integrity.
 
 Scanning a container image can prevent critical vulnerabilities from being
@@ -320,7 +324,7 @@ Production.
   webhook admission controller.
 - [ ] The admission chain plugins and webhooks are securely configured.
 
-Admission controllers can help to improve the security of the cluster. However,
+Admission controllers can help improve the security of the cluster. However,
 they can present risks themselves as they extend the API server and
 [should be properly secured](/blog/2022/01/19/secure-your-admission-controllers-and-webhooks/).
 
@@ -345,11 +349,11 @@ permission to sign certificate requests.
 attribute') of `system:masters`.
 
 [`LimitRanger`](/docs/reference/access-authn-authz/admission-controllers/#limitranger)
-: Enforce the LimitRange API constraints.
+: Enforces the LimitRange API constraints.
 
 [`MutatingAdmissionWebhook`](/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook)
 : Allows the use of custom controllers through webhooks, these controllers may
-mutate requests that it reviews.
+mutate requests that they review.
 
 [`PodSecurity`](/docs/reference/access-authn-authz/admission-controllers/#podsecurity)
 : Replacement for Pod Security Policy, restricts security contexts of deployed
@@ -362,8 +366,8 @@ Pods.
 : Allows the use of custom controllers through webhooks, these controllers do
 not mutate requests that it reviews.
 
-The second group includes plugin that are not enabled by default but in general
-availability state and recommended to improve your security posture:
+The second group includes plugins that are not enabled by default but are in general
+availability state and are recommended to improve your security posture:
 
 [`DenyServiceExternalIPs`](/docs/reference/access-authn-authz/admission-controllers/#denyserviceexternalips)
 : Rejects all net-new usage of the `Service.spec.externalIPs` field. This is a mitigation for
@@ -371,7 +375,7 @@ availability state and recommended to improve your security posture:
 
 [`NodeRestriction`](/docs/reference/access-authn-authz/admission-controllers/#noderestriction)
 : Restricts kubelet's permissions to only modify the pods API resources they own
-or the node API ressource that represent themselves. It also prevents kubelet
+or the node API resource that represent themselves. It also prevents kubelet
 from using the `node-restriction.kubernetes.io/` annotation, which can be used
 by an attacker with access to the kubelet's credentials to influence pod
 placement to the controlled node.
@@ -400,8 +404,14 @@ alpha state but could be considered for certain use cases:
 
 ## What's next
 
-- [RBAC Good Practices](/docs/concepts/security/rbac-good-practices/) for
-  further information on authorization.
+- [Privilege escalation via Pod creation](/docs/reference/access-authn-authz/authorization/#privilege-escalation-via-pod-creation)
+  warns you about a specific access control risk; check how you're managing that
+  threat.
+  - If you use Kubernetes RBAC, read
+    [RBAC Good Practices](/docs/concepts/security/rbac-good-practices/) for
+    further information on authorization.
+- [Securing a Cluster](/docs/tasks/administer-cluster/securing-a-cluster/) for
+  information on protecting a cluster from accidental or malicious access.
 - [Cluster Multi-tenancy guide](/docs/concepts/security/multi-tenancy/) for
   configuration options recommendations and best practices on multi-tenancy.
 - [Blog post "A Closer Look at NSA/CISA Kubernetes Hardening Guidance"](/blog/2021/10/05/nsa-cisa-kubernetes-hardening-guidance/#building-secure-container-images)

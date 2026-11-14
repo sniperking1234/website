@@ -25,6 +25,13 @@ You may also visit the [troubleshooting overview document](/docs/tasks/debug/) f
 对于应用的调试，请参阅[应用故障排查指南](/zh-cn/docs/tasks/debug/debug-application/)。
 你也可以访问[故障排查](/zh-cn/docs/tasks/debug/)来获取更多的信息。
 
+<!--
+For troubleshooting {{<glossary_tooltip text="kubectl" term_id="kubectl">}}, refer to
+[Troubleshooting kubectl](/docs/tasks/debug/debug-cluster/troubleshoot-kubectl/).
+-->
+有关 {{<glossary_tooltip text="kubectl" term_id="kubectl">}} 的故障排查，
+请参阅 [kubectl 故障排查](/zh-cn/docs/tasks/debug/debug-cluster/troubleshoot-kubectl/)。
+
 <!-- body -->
 
 <!--
@@ -60,7 +67,13 @@ kubectl cluster-info dump
 <!-- 
 ### Example: debugging a down/unreachable node
 
-Sometimes when debugging it can be useful to look at the status of a node -- for example, because you've noticed strange behavior of a Pod that's running on the node, or to find out why a Pod won't schedule onto the node. As with Pods, you can use `kubectl describe node` and `kubectl get node -o yaml` to retrieve detailed information about nodes. For example, here's what you'll see if a node is down (disconnected from the network, or kubelet dies and won't restart, etc.). Notice the events that show the node is NotReady, and also notice that the pods are no longer running (they are evicted after five minutes of NotReady status).
+Sometimes when debugging it can be useful to look at the status of a node -- for example, because
+you've noticed strange behavior of a Pod that's running on the node, or to find out why a Pod
+won't schedule onto the node. As with Pods, you can use `kubectl describe node` and `kubectl get
+node -o yaml` to retrieve detailed information about nodes. For example, here's what you'll see if
+a node is down (disconnected from the network, or kubelet dies and won't restart, etc.). Notice
+the events that show the node is NotReady, and also notice that the pods are no longer running
+(they are evicted after five minutes of NotReady status).
 -->
 ### 示例：调试关闭/无法访问的节点 {#example-debugging-a-down-unreachable-node}
 
@@ -68,7 +81,7 @@ Sometimes when debugging it can be useful to look at the status of a node -- for
 或者找出为什么 Pod 不会调度到节点上。与 Pod 一样，你可以使用 `kubectl describe node`
 和 `kubectl get node -o yaml` 来检索有关节点的详细信息。
 例如，如果节点关闭（与网络断开连接，或者 kubelet 进程挂起并且不会重新启动等），
-你将看到以下内容。请注意显示节点为 NotReady 的事件，并注意 Pod 不再运行（它们在 NotReady 状态五分钟后被驱逐）。
+你将看到以下内容。请注意显示节点为 `NotReady` 的事件，并注意 Pod 不再运行（它们在 `NotReady` 状态五分钟后被驱逐）。
 
 ```shell
 kubectl get nodes
@@ -94,7 +107,6 @@ Labels:             beta.kubernetes.io/arch=amd64
                     kubernetes.io/arch=amd64
                     kubernetes.io/hostname=kube-worker-1
                     kubernetes.io/os=linux
-Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /run/containerd/containerd.sock
                     node.alpha.kubernetes.io/ttl: 0
                     volumes.kubernetes.io/controller-managed-attach-detach: true
 CreationTimestamp:  Thu, 17 Feb 2022 16:46:30 -0500
@@ -167,7 +179,6 @@ apiVersion: v1
 kind: Node
 metadata:
   annotations:
-    kubeadm.alpha.kubernetes.io/cri-socket: /run/containerd/containerd.sock
     node.alpha.kubernetes.io/ttl: "0"
     volumes.kubernetes.io/controller-managed-attach-detach: "true"
   creationTimestamp: "2022-02-17T21:46:30Z"
@@ -226,7 +237,7 @@ status:
     type: PIDPressure
   - lastHeartbeatTime: "2022-02-17T22:20:15Z"
     lastTransitionTime: "2022-02-17T22:15:15Z"
-    message: kubelet is posting ready status. AppArmor enabled
+    message: kubelet is posting ready status.
     reason: KubeletReady
     status: "True"
     type: Ready
@@ -279,11 +290,10 @@ of the relevant log files.  On systemd-based systems, you may need to use `journ
 * `/var/log/kubelet.log` - logs from the kubelet, responsible for running containers on the node
 * `/var/log/kube-proxy.log` - logs from `kube-proxy`, which is responsible for directing traffic to Service endpoints
 -->
-
 ### 工作节点 {#worker-nodes}
 
-* `/var/log/kubelet.log` —— 来自 `kubelet` 的日志，负责在节点运行容器
-* `/var/log/kube-proxy.log` —— 来自 `kube-proxy` 的日志，负责将流量转发到服务端点
+* `/var/log/kubelet.log` —— 负责在节点运行容器的 `kubelet` 所产生的日志
+* `/var/log/kube-proxy.log` —— 负责将流量转发到服务端点的 `kube-proxy` 所产生的日志
 
 <!-- 
 ## Cluster failure modes
@@ -301,7 +311,7 @@ This is an incomplete list of things that could go wrong, and how to adjust your
 - Network partition within cluster, or between cluster and users
 - Crashes in Kubernetes software
 - Data loss or unavailability of persistent storage (e.g. GCE PD or AWS EBS volume)
-- Operator error, for example misconfigured Kubernetes software or application software
+- Operator error, for example, misconfigured Kubernetes software or application software
 -->
 ### 故障原因 {#contributing-causes}
 
@@ -317,7 +327,7 @@ This is an incomplete list of things that could go wrong, and how to adjust your
 - API server VM shutdown or apiserver crashing
   - Results
     - unable to stop, update, or start new pods, services, replication controller
-    - existing pods and services should continue to work normally, unless they depend on the Kubernetes API
+    - existing pods and services should continue to work normally unless they depend on the Kubernetes API
 - API server backing storage lost
   - Results
     - the kube-apiserver component fails to start successfully and become healthy
@@ -389,7 +399,7 @@ This is an incomplete list of things that could go wrong, and how to adjust your
 <!--
 ### Mitigations
 
-- Action: Use IaaS provider's automatic VM restarting feature for IaaS VMs
+- Action: Use the IaaS provider's automatic VM restarting feature for IaaS VMs
   - Mitigates: Apiserver VM shutdown or apiserver crashing
   - Mitigates: Supporting services VM shutdown or crashes
 
@@ -453,6 +463,7 @@ This is an incomplete list of things that could go wrong, and how to adjust your
   [monitoring resource usage](/docs/tasks/debug/debug-cluster/resource-usage-monitoring/)
 * Use Node Problem Detector to
   [monitor node health](/docs/tasks/debug/debug-cluster/monitor-node-health/)
+* Use `kubectl debug node` to [debug Kubernetes nodes](/docs/tasks/debug/debug-cluster/kubectl-node-debug) 
 * Use `crictl` to [debug Kubernetes nodes](/docs/tasks/debug/debug-cluster/crictl/)
 * Get more information about [Kubernetes auditing](/docs/tasks/debug/debug-cluster/audit/)
 * Use `telepresence` to [develop and debug services locally](/docs/tasks/debug/debug-cluster/local-debugging/)
@@ -460,6 +471,7 @@ This is an incomplete list of things that could go wrong, and how to adjust your
 * 了解[资源指标管道](/zh-cn/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/)中可用的指标
 * 发现用于[监控资源使用](/zh-cn/docs/tasks/debug/debug-cluster/resource-usage-monitoring/)的其他工具
 * 使用节点问题检测器[监控节点健康](/zh-cn/docs/tasks/debug/debug-cluster/monitor-node-health/)
+* 使用 `kubectl debug node` [调试 Kubernetes 节点](/zh-cn/docs/tasks/debug/debug-cluster/kubectl-node-debug)
 * 使用 `crictl` 来[调试 Kubernetes 节点](/zh-cn/docs/tasks/debug/debug-cluster/crictl/)
 * 获取更多关于 [Kubernetes 审计](/zh-cn/docs/tasks/debug/debug-cluster/audit/)的信息
 * 使用 `telepresence` [本地开发和调试服务](/zh-cn/docs/tasks/debug/debug-cluster/local-debugging/)

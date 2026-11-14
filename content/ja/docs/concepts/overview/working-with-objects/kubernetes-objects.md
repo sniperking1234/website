@@ -40,7 +40,7 @@ Kubernetesでオブジェクトを作成する場合、オブジェクトの基�
 
 ここで、KubernetesのDeploymentに必要なフィールドとオブジェクトのspecを記載した`.yaml`ファイルの例を示します:
 
-{{< codenew file="application/deployment.yaml" >}}
+{{% code_sample file="application/deployment.yaml" %}}
 
 上に示した`.yaml`ファイルを利用してDeploymentを作成するには、`kubectl`コマンドラインインターフェースに含まれている[`kubectl apply`](/docs/reference/generated/kubectl/kubectl-commands#apply)コマンドに`.yaml`ファイルを引数に指定し、実行します。ここで例を示します:
 

@@ -1,8 +1,7 @@
 ---
 title: Persistent Volume Claim
 id: persistent-volume-claim
-date: 2018-04-12
-full_link: /docs/concepts/storage/persistent-volumes/
+full_link: /docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 short_description: >
   Reserva el recurso de almacenamiento definido en un PersistentVolume para poderlo montar como un volúmen en un contenedor.
 

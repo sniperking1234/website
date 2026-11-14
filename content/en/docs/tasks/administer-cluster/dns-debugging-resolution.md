@@ -5,6 +5,7 @@ reviewers:
 title:  Debugging DNS Resolution
 content_type: task
 min-kubernetes-server-version: v1.6
+weight: 170
 ---
 
 <!-- overview -->
@@ -14,8 +15,7 @@ This page provides hints on diagnosing DNS problems.
 
 {{< include "task-tutorial-prereqs.md" >}}  
 Your cluster must be configured to use the CoreDNS
-{{< glossary_tooltip text="addon" term_id="addons" >}} or its precursor,
-kube-dns.  
+{{< glossary_tooltip text="addon" term_id="addons" >}}.
 
 {{% version-check %}}
 
@@ -23,7 +23,7 @@ kube-dns.
 
 ### Create a simple Pod to use as a test environment
 
-{{< codenew file="admin/dns/dnsutils.yaml" >}}
+{{% code_sample file="admin/dns/dnsutils.yaml" %}}
 
 {{< note >}}
 This example creates a pod in the `default` namespace. DNS name resolution for 
@@ -44,7 +44,7 @@ pod/dnsutils created
 kubectl get pods dnsutils
 ```
 ```
-NAME      READY     STATUS    RESTARTS   AGE
+NAME       READY     STATUS    RESTARTS   AGE
 dnsutils   1/1       Running   0          <some-time>
 ```
 
@@ -83,7 +83,7 @@ nameserver 10.0.0.10
 options ndots:5
 ```
 
-Errors such as the following indicate a problem with the CoreDNS (or kube-dns)
+Errors such as the following indicate a problem with the CoreDNS
 add-on or with associated Services:
 
 ```shell
@@ -124,7 +124,8 @@ coredns-7b96bf9f76-mvmmt   1/1       Running   0           1h
 ```
 
 {{< note >}}
-The value for label `k8s-app` is `kube-dns` for both CoreDNS and kube-dns deployments.
+The value for label `k8s-app` for CoreDNS is `kube-dns`, for backward
+compatibility with the original kube-dns.
 {{< /note >}}
 
 
@@ -169,7 +170,8 @@ kube-dns     ClusterIP   10.0.0.10      <none>        53/UDP,53/TCP        1h
 ```
 
 {{< note >}}
-The service name is `kube-dns` for both CoreDNS and kube-dns deployments.
+The Service for CoreDNS is named `kube-dns`, for backward compatibility with the
+original kube-dns.
 {{< /note >}}
 
 
@@ -181,23 +183,19 @@ more information.
 
 ### Are DNS endpoints exposed?
 
-You can verify that DNS endpoints are exposed by using the `kubectl get endpoints`
+You can verify that DNS endpoints are exposed by using the `kubectl get endpointslice`
 command.
 
 ```shell
-kubectl get endpoints kube-dns --namespace=kube-system
+kubectl get endpointslice -l kubernetes.io/service-name=kube-dns --namespace=kube-system
 ```
 ```
-NAME       ENDPOINTS                       AGE
-kube-dns   10.180.3.17:53,10.180.3.17:53    1h
+NAME             ADDRESSTYPE   PORTS   ENDPOINTS                  AGE
+coredns-zxoja    IPv4          53      10.180.3.17,10.180.3.17    1h
 ```
 
 If you do not see the endpoints, see the endpoints section in the
 [debugging Services](/docs/tasks/debug/debug-application/debug-service/) documentation.
-
-For additional Kubernetes DNS examples, see the
-[cluster-dns examples](https://github.com/kubernetes/examples/tree/master/staging/cluster-dns)
-in the Kubernetes GitHub repository.
 
 ### Are DNS queries being received/processed?
 
@@ -255,8 +253,8 @@ linux/amd64, go1.10.3, 2e322f6
 ### Does CoreDNS have sufficient permissions?
 
 CoreDNS must be able to list {{< glossary_tooltip text="service"
-term_id="service" >}} and {{< glossary_tooltip text="endpoint"
-term_id="endpoint" >}} related resources to properly resolve service names.
+term_id="service" >}} and {{< glossary_tooltip text="endpointslice"
+term_id="endpoint-slice" >}} related resources to properly resolve service names.
 
 Sample error message:
 ```
@@ -274,7 +272,6 @@ Expected output:
 PolicyRule:
   Resources                        Non-Resource URLs  Resource Names  Verbs
   ---------                        -----------------  --------------  -----
-  nodes                            []                 []              [get]
   endpoints                        []                 []              [list watch]
   namespaces                       []                 []              [list watch]
   pods                             []                 []              [list watch]
@@ -334,19 +331,17 @@ Kubernetes installs do not configure the nodes' `resolv.conf` files to use the
 cluster DNS by default, because that process is inherently distribution-specific.
 This should probably be implemented eventually.
 
-Linux's libc (a.k.a. glibc) has a limit for the DNS `nameserver` records to 3 by default. What's more, for the glibc versions which are older than glibc-2.17-222 ([the new versions update see this issue](https://access.redhat.com/solutions/58028)), the allowed number of DNS `search` records has been limited to 6 ([see this bug from 2005](https://bugzilla.redhat.com/show_bug.cgi?id=168253)). Kubernetes needs to consume 1 `nameserver` record and 3 `search` records. This means that if a local installation already uses 3 `nameserver`s or uses more than 3 `search`es while your glibc version is in the affected list, some of those settings will be lost. To work around the DNS `nameserver` records limit, the node can run `dnsmasq`, which will provide more `nameserver` entries. You can also use kubelet's `--resolv-conf` flag. To fix the DNS `search` records limit, consider upgrading your linux distribution or upgrading to an unaffected version of glibc.
+Linux's libc (a.k.a. glibc) has a limit for the DNS `nameserver` records to 3 by
+default and Kubernetes needs to consume 1 `nameserver` record. This means that
+if a local installation already uses 3 `nameserver`s, some of those entries will
+be lost. To work around this limit, the node can run `dnsmasq`, which will
+provide more `nameserver` entries. You can also use kubelet's `--resolv-conf`
+flag.
 
-{{< note >}}
-
-With [Expanded DNS Configuration](/docs/concepts/services-networking/dns-pod-service/#expanded-dns-configuration),
-Kubernetes allows more DNS `search` records.
-
-{{< /note >}}
-
-If you are using Alpine version 3.3 or earlier as your base image, DNS may not
-work properly due to a known issue with Alpine.
-Kubernetes [issue 30215](https://github.com/kubernetes/kubernetes/issues/30215)
-details more information on this.
+If you are using Alpine version 3.17 or earlier as your base image, DNS may not
+work properly due to a design issue with Alpine. 
+Until musl version 1.24 didn't include TCP fallback to the DNS stub resolver meaning any DNS call above 512 bytes would fail.
+Please upgrade your images to Alpine version 3.18 or above.
 
 ## {{% heading "whatsnext" %}}
 

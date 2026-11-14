@@ -14,10 +14,10 @@ reviewers:
 <!-- overview -->
 <!--
 Kubernetes provides a `certificates.k8s.io` API, which lets you provision TLS
-certificates signed by a Certificate Authority (CA) that you control. These CA
+certificates signed by a Certificate Authority (CA) that you control. These CAs
 and certificates can be used by your workloads to establish trust.
 
-`certificates.k8s.io` API uses a protocol that is similar to the [ACME
+The `certificates.k8s.io` API uses a protocol that is similar to the [ACME
 draft](https://github.com/ietf-wg-acme/acme/).
 -->
 Kubernetes 提供 `certificates.k8s.io` API，可让你配置由你控制的证书颁发机构（CA）
@@ -48,14 +48,14 @@ You need the `cfssl` tool. You can download `cfssl` from
 
 Some steps in this page use the `jq` tool. If you don't have `jq`, you can
 install it via your operating system's software sources, or fetch it from
-[https://stedolan.github.io/jq/](https://stedolan.github.io/jq/).
+[https://jqlang.github.io/jq/](https://jqlang.github.io/jq/).
 -->
 你需要 `cfssl` 工具。
 你可以从 [https://github.com/cloudflare/cfssl/releases](https://github.com/cloudflare/cfssl/releases)
 下载 `cfssl`。
 
 本文中某些步骤使用 `jq` 工具。如果你没有 `jq`，你可以通过操作系统的软件源安装，
-或者从 [https://stedolan.github.io/jq/](https://stedolan.github.io/jq/) 获取。
+或者从 [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/) 获取。
 
 <!-- steps -->
 
@@ -65,7 +65,7 @@ install it via your operating system's software sources, or fetch it from
 Trusting the [custom CA](#configuring-your-cluster-to-provide-signing) from an application running as a pod usually requires
 some extra application configuration. You will need to add the CA certificate
 bundle to the list of CA certificates that the TLS client or server trusts. For
-example, you would do this with a golang TLS config by parsing the certificate
+example, you would do this with a Golang TLS config by parsing the certificate
 chain and adding the parsed certificates to the `RootCAs` field in the
 [`tls.Config`](https://pkg.go.dev/crypto/tls#Config) struct.
 -->
@@ -104,18 +104,19 @@ have access to read.
 
 The following section demonstrates how to create a TLS certificate for a
 Kubernetes service accessed through DNS.
-
-{{< note >}}
-This tutorial uses CFSSL: Cloudflare's PKI and TLS toolkit [click here](https://blog.cloudflare.com/introducing-cfssl/) to know more.
-{{< /note >}}
 -->
 ## 请求证书
 
 以下部分演示如何为通过 DNS 访问的 Kubernetes 服务创建 TLS 证书。
 
 {{< note >}}
-本教程使用 CFSSL：Cloudflare's PKI 和 TLS 工具包
-[点击此处](https://blog.cloudflare.com/introducing-cfssl/)了解更多信息。
+<!--
+This tutorial uses CFSSL: Cloudflare's PKI and TLS toolkit See the Cloudflare blog
+article [Introducing CFSSL - CloudFlare's PKI toolkit](https://blog.cloudflare.com/introducing-cfssl/) for more information.
+-->
+本教程使用 CFSSL：Cloudflare 的 PKI 和 TLS 工具包。详见 Cloudflare
+博客文章[介绍 CFSSL - CloudFlare 的 PKI 工具包](https://blog.cloudflare.com/introducing-cfssl/)
+了解更多。
 {{< /note >}}
 
 <!--
@@ -150,7 +151,7 @@ EOF
 Where `192.0.2.24` is the service's cluster IP,
 `my-svc.my-namespace.svc.cluster.local` is the service's DNS name,
 `10.0.34.2` is the pod's IP and `my-pod.my-namespace.pod.cluster.local`
-is the pod's DNS name. You should see the output similar to:
+is the pod's DNS name. You should see output similar to:
 -->
 其中 `192.0.2.24` 是服务的集群 IP，`my-svc.my-namespace.svc.cluster.local`
 是服务的 DNS 名称，`10.0.34.2` 是 Pod 的 IP，而
@@ -177,12 +178,12 @@ is still to be created.
 <!--
 ## Create a CertificateSigningRequest object to send to the Kubernetes API
 
-Generate a CSR yaml blob and send it to the apiserver by running the following
-command:
+Generate a CSR manifest (in YAML) and send it to the API server. You can do that by
+running the following command:
 -->
 ## 创建证书签名请求（CSR）对象发送到 Kubernetes API
 
-使用以下命令创建 CSR YAML 文件，并发送到 API 服务器：
+你可以使用以下命令创建 CSR 清单（YAML 格式），并发送到 API 服务器：
 
 ```shell
 cat <<EOF | kubectl apply -f -
@@ -209,7 +210,7 @@ A specific `signerName` must be requested.
 View documentation for [supported signer names](/docs/reference/access-authn-authz/certificate-signing-requests/#signers)
 for more information.
 
-The CSR should now be visible from the API in a Pending state. You can see
+The CSR should now be visible in the API in a Pending state. You can see
 it by running:
 -->
 请注意，在步骤 1 中创建的 `server.csr` 文件是 base64 编码并存储在
@@ -248,7 +249,7 @@ Events: <none>
 ## Get the CertificateSigningRequest approved {#get-the-certificate-signing-request-approved}
 
 Approving the [certificate signing request](/docs/reference/access-authn-authz/certificate-signing-requests/)
-is either done by an automated approval process or on a one off basis by a cluster
+is either done by an automated approval process or on a one-off basis by a cluster
 administrator. If you're authorized to approve a certificate request, you can do that
 manually using `kubectl`; for example:
 -->
@@ -338,7 +339,7 @@ EOF
 ```
 
 <!-- 
-This produces a certificate authority key file (`ca-key.pem`) and certificate (`ca.pem`). 
+This produces a certificate authority key file (`ca-key.pem`) and certificate (`ca.pem`).
 -->
 这会产生一个证书颁发机构密钥文件（`ca-key.pem`）和证书（`ca.pem`）。
 
@@ -346,7 +347,7 @@ This produces a certificate authority key file (`ca-key.pem`) and certificate (`
 <!-- ### Issue a certificate -->
 ### 颁发证书
 
-{{< codenew file="tls/server-signing-config.json" >}}
+{{% code_sample file="tls/server-signing-config.json" %}}
 
 <!-- 
 Use a `server-signing-config.json` signing configuration and the certificate authority key file 
@@ -361,14 +362,18 @@ kubectl get csr my-svc.my-namespace -o jsonpath='{.spec.request}' | \
   cfssljson -bare ca-signed-server
 ```
 
-<!-- You should see output similar to: -->
+<!--
+You should see the output similar to:
+-->
 你应该看到类似于以下的输出：
 
 ```
 2022/02/01 11:52:26 [INFO] signed certificate with serial number 576048928624926584381415936700914530534472870337
 ```
 
-<!-- This produces a signed serving certificate file, `ca-signed-server.pem`. -->
+<!--
+This produces a signed serving certificate file, `ca-signed-server.pem`.
+-->
 这会生成一个签名的服务证书文件，`ca-signed-server.pem`。
 
 <!-- 
@@ -389,12 +394,12 @@ kubectl get csr my-svc.my-namespace -o json | \
 
 {{< note >}}
 <!-- 
-This uses the command line tool [`jq`](https://stedolan.github.io/jq/) to populate the base64-encoded
+This uses the command line tool [`jq`](https://jqlang.github.io/jq/) to populate the base64-encoded
 content in the `.status.certificate` field.
 If you do not have `jq`, you can also save the JSON output to a file, populate this field manually, and
 upload the resulting file.
 -->
-这使用命令行工具 [`jq`](https://stedolan.github.io/jq/)
+这使用命令行工具 [`jq`](https://jqlang.github.io/jq/)
 在 `.status.certificate` 字段中填充 base64 编码的内容。
 如果你没有 `jq` 工具，你还可以将 JSON 输出保存到文件中，手动填充此字段，然后上传结果文件。
 {{< /note >}}
@@ -437,7 +442,7 @@ kubectl get csr my-svc.my-namespace -o jsonpath='{.status.certificate}' \
 Now you can populate `server.crt` and `server-key.pem` in a
 {{< glossary_tooltip text="Secret" term_id="secret" >}}
 that you could later mount into a Pod (for example, to use with a webserver
-that serves HTTPS). 
+that serves HTTPS).
 -->
 现在你可以将 `server.crt` 和 `server-key.pem` 填充到
 {{<glossary_tooltip text="Secret" term_id="secret" >}} 中，
@@ -452,10 +457,10 @@ secret/server created
 ```
 
 <!-- 
-Finally, you can populate `ca.pem` into a {{< glossary_tooltip text="ConfigMap" term_id="configmap" >}}
+Finally, you can store `ca.pem` into a {{< glossary_tooltip text="ConfigMap" term_id="configmap" >}}
 and use it as the trust root to verify the serving certificate:
 -->
-最后，你可以将 `ca.pem` 填充到
+最后，你可以将 `ca.pem` 存储到
 {{<glossary_tooltip text="ConfigMap" term_id="configmap" >}}
 并将其用作信任根来验证服务证书：
 
@@ -498,10 +503,11 @@ before you grant the `approve` permission.
 {{< /caution >}}
 
 <!--
-Whether a machine or a human using kubectl as above, the role of the _approver_ is
+Whether the approver is a machine or a human using kubectl as above, the role of the _approver_ is
 to verify that the CSR satisfies two requirements:
 -->
-无论上述机器或人使用 kubectl，“批准者”的作用是验证 CSR 满足如下两个要求：
+无论审批者是机器，还是像上文那样使用 kubectl
+的人，“批准者”的作用是验证 CSR 满足如下两个要求：
 
 <!--
 1. The subject of the CSR controls the private key used to sign the CSR. This
@@ -535,7 +541,7 @@ reference page.
 <!--
 ## Configuring your cluster to provide signing
 
-This page assumes that a signer is setup to serve the certificates API. The
+This page assumes that a signer is set up to serve the certificates API. The
 Kubernetes controller manager provides a default implementation of a signer. To
 enable it, pass the `--cluster-signing-cert-file` and
 `--cluster-signing-key-file` parameters to the controller manager with paths to

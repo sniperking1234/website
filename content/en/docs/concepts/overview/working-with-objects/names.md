@@ -4,12 +4,12 @@ reviewers:
 - thockin
 title: Object Names and IDs
 content_type: concept
-weight: 20
+weight: 30
 ---
 
 <!-- overview -->
 
-Each object in your cluster has a [_Name_](#names) that is unique for that type of resource.
+Each {{< glossary_tooltip text="object" term_id="object" >}} in your cluster has a [_Name_](#names) that is unique for that type of resource.
 Every Kubernetes object also has a [_UID_](#uids) that is unique across your whole cluster.
 
 For example, you can only have one Pod named `myapp-1234` within the same [namespace](/docs/concepts/overview/working-with-objects/namespaces/), but you can have one Pod and one Deployment that are each named `myapp-1234`.
@@ -24,9 +24,25 @@ For non-unique user-provided attributes, Kubernetes provides [labels](/docs/conc
 
 {{< glossary_definition term_id="name" length="all" >}}
 
+Names must be unique across all [API versions](/docs/concepts/overview/kubernetes-api/#api-groups-and-versioning) of the same resource. 
+
+Kubernetes uniquely identifies objects using a combination of four attributes:
+* **API group** (e.g., `apps`)
+* **Resource type** (e.g., `deployments`)
+* **Namespace** (for namespaced resources)
+* **Name**
+
+While you can access a resource through different API versions (such as `v1` or `v1beta1`), the version is simply a different representation of the same underlying object. Because the version is not part of the unique identification, you cannot create two objects with the same name and resource type in the same namespace by using different API versions.
+
 {{< note >}}
 In cases when objects represent a physical entity, like a Node representing a physical host, when the host is re-created under the same name without deleting and re-creating the Node, Kubernetes treats the new host as the old one, which may lead to inconsistencies.
 {{< /note >}}
+
+The server may generate a name when `generateName` is provided instead of `name` in a resource create request.
+When `generateName` is used, the provided value is used as a name prefix, which server appends a generated suffix
+to. Even though the name is generated, it may conflict with existing names resulting in an HTTP 409 response. This
+became far less likely to happen in Kubernetes v1.31 and later, since the server will make up to 8 attempts to generate a
+unique name before returning an HTTP 409 response.
 
 Below are four types of commonly used name constraints for resources.
 
@@ -49,8 +65,13 @@ This means the name must:
 
 - contain at most 63 characters
 - contain only lowercase alphanumeric characters or '-'
-- start with an alphanumeric character
+- start with an alphabetic character
 - end with an alphanumeric character
+
+{{< note >}}
+When the `RelaxedServiceNameValidation` feature gate is enabled,
+Service object names are allowed to start with a digit.
+{{< /note >}}
 
 ### RFC 1035 Label Names
 
@@ -62,6 +83,13 @@ This means the name must:
 - contain only lowercase alphanumeric characters or '-'
 - start with an alphabetic character
 - end with an alphanumeric character
+
+{{< note >}}
+While RFC 1123 technically allows labels to start with digits, the current
+Kubernetes implementation requires both RFC 1035 and RFC 1123 labels to start
+with an alphabetic character. The exception is when the `RelaxedServiceNameValidation`
+feature gate is enabled for Service objects, which allows Service names to start with digits.
+{{< /note >}}
 
 ### Path Segment Names
 
@@ -99,5 +127,5 @@ UUIDs are standardized as ISO/IEC 9834-8 and as ITU-T X.667.
 
 ## {{% heading "whatsnext" %}}
 
-* Read about [labels](/docs/concepts/overview/working-with-objects/labels/) in Kubernetes.
+* Read about [labels](/docs/concepts/overview/working-with-objects/labels/) and [annotations](/docs/concepts/overview/working-with-objects/annotations/) in Kubernetes.
 * See the [Identifiers and Names in Kubernetes](https://git.k8s.io/design-proposals-archive/architecture/identifiers.md) design document.

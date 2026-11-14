@@ -1,13 +1,13 @@
 ---
 title: 配置 Pod 初始化
 content_type: task
-weight: 130
+weight: 170
 ---
 
 <!--
 title: Configure Pod Initialization
 content_type: task
-weight: 130
+weight: 170
 -->
 
 <!-- overview -->
@@ -32,13 +32,13 @@ container starts.
 
 Here is the configuration file for the Pod:
 -->
-## 创建一个包含 Init 容器的 Pod  {#creating-a-pod-that-has-an-init-container}
+## 创建一个包含 Init 容器的 Pod  {#create-a-pod-that-has-an-init-container}
 
 本例中你将创建一个包含一个应用容器和一个 Init 容器的 Pod。Init 容器在应用容器启动前运行完成。
 
 下面是 Pod 的配置文件：
 
-{{< codenew file="pods/init-containers.yaml" >}}
+{{% code_sample file="pods/init-containers.yaml" %}}
 
 <!--
 In the configuration file, you can see that the Pod has a Volume that the init
@@ -69,7 +69,7 @@ Create the Pod:
 创建 Pod：
 
 ```shell
-kubectl create -f https://k8s.io/examples/pods/init-containers.yaml
+kubectl apply -f https://k8s.io/examples/pods/init-containers.yaml
 ```
 
 <!--
@@ -132,7 +132,7 @@ The output shows that nginx is serving the web page that was written by the init
 
 <!--
 * Learn more about
-[communicating between Containers running in the same Pod](/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/).
+  [communicating between Containers running in the same Pod](/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/).
 * Learn more about [Init Containers](/docs/concepts/workloads/pods/init-containers/).
 * Learn more about [Volumes](/docs/concepts/storage/volumes/).
 * Learn more about [Debugging Init Containers](/docs/tasks/debug/debug-application/debug-init-containers/)
@@ -142,4 +142,3 @@ The output shows that nginx is serving the web page that was written by the init
 * 进一步了解 [Init 容器](/zh-cn/docs/concepts/workloads/pods/init-containers/)。
 * 进一步了解[卷](/zh-cn/docs/concepts/storage/volumes/)。
 * 进一步了解 [Init 容器排错](/zh-cn/docs/tasks/debug/debug-application/debug-init-containers/)。
-

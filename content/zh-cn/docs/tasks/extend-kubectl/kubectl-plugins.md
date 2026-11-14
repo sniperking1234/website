@@ -15,8 +15,10 @@ content_type: task
 
 <!-- overview -->
 <!--
-This guide demonstrates how to install and write extensions for [kubectl](/docs/reference/kubectl/kubectl/). By thinking of core `kubectl` commands as essential building blocks for interacting with a Kubernetes cluster, a cluster administrator can think
-of plugins as a means of utilizing these building blocks to create more complex behavior. Plugins extend `kubectl` with new sub-commands, allowing for new and custom features not included in the main distribution of `kubectl`.
+This guide demonstrates how to install and write extensions for [kubectl](/docs/reference/kubectl/kubectl/).
+By thinking of core `kubectl` commands as essential building blocks for interacting with a Kubernetes cluster,
+a cluster administrator can think of plugins as a means of utilizing these building blocks to create more complex behavior.
+Plugins extend `kubectl` with new sub-commands, allowing for new and custom features not included in the main distribution of `kubectl`.
 -->
 本指南演示了如何为 [kubectl](/zh-cn/docs/reference/kubectl/kubectl/) 安装和编写扩展。
 通过将核心 `kubectl` 命令看作与 Kubernetes 集群交互的基本构建块，
@@ -37,7 +39,7 @@ You need to have a working `kubectl` binary installed.
 
 A plugin is a standalone executable file, whose name begins with `kubectl-`. To install a plugin, move its executable file to anywhere on your `PATH`.
 -->
-## 安装 kubectl 插件
+## 安装 kubectl 插件  {#installing-kubectl-plugins}
 
 插件是一个独立的可执行文件，名称以 `kubectl-` 开头。
 要安装插件，将其可执行文件移动到 `PATH` 中的任何位置。
@@ -65,7 +67,8 @@ Krew [插件索引](https://krew.sigs.k8s.io/plugins/) 所维护的 kubectl 插�
 ### Discovering plugins
 
 `kubectl` provides a command `kubectl plugin list` that searches your `PATH` for valid plugin executables.
-Executing this command causes a traversal of all files in your `PATH`. Any files that are executable, and begin with `kubectl-` will show up *in the order in which they are present in your `PATH`* in this command's output.
+Executing this command causes a traversal of all files in your `PATH`. Any files that are executable, and
+begin with `kubectl-` will show up *in the order in which they are present in your `PATH`* in this command's output.
 A warning will be included for any files beginning with `kubectl-` that are *not* executable.
 A warning will also be included for any valid plugin files that overlap each other's name.
 
@@ -73,7 +76,7 @@ You can use [Krew](https://krew.dev/) to discover and install `kubectl`
 plugins from a community-curated
 [plugin index](https://krew.sigs.k8s.io/plugins/).
 -->
-### 发现插件
+### 发现插件  {#discovering-plugins}
 
 `kubectl` 提供一个命令 `kubectl plugin list`，用于搜索 `PATH` 查找有效的插件可执行文件。
 执行此命令将遍历 `PATH` 中的所有文件。任何以 `kubectl-` 开头的可执行文件都将在这个命令的输出中**以它们在
@@ -85,19 +88,32 @@ plugins from a community-curated
 中发现和安装 `kubectl` 插件。
 
 <!--
+#### Create plugins
+
+`kubectl` allows plugins to add custom create commands of the shape `kubectl create something` by providing a `kubectl-create-something` binary in the `PATH`.
+-->
+#### 创建插件  {#create-plugins}
+
+通过在 `PATH` 中提供一个 `kubectl-create-something` 二进制文件，`kubectl` 允许插件添加形如 `kubectl create something` 的自定义创建命令。
+
+<!--
 #### Limitations
 
-It is currently not possible to create plugins that overwrite existing `kubectl` commands. For example, creating a plugin `kubectl-version` will cause that plugin to never be executed, as the existing `kubectl version` command will always take precedence over it. Due to this limitation, it is also *not* possible to use plugins to add new subcommands to existing `kubectl` commands. For example, adding a subcommand `kubectl create foo` by naming your plugin `kubectl-create-foo` will cause that plugin to be ignored.
+It is currently not possible to create plugins that overwrite existing `kubectl` commands or extend commands other than `create`.
+For example, creating a plugin `kubectl-version` will cause that plugin to never be executed, as the existing `kubectl version`
+command will always take precedence over it.
+Due to this limitation, it is also *not* possible to use plugins to add new subcommands to existing `kubectl` commands.
+For example, adding a subcommand `kubectl attach vm` by naming your plugin `kubectl-attach-vm` will cause that plugin to be ignored.
 
 `kubectl plugin list` shows warnings for any valid plugins that attempt to do this.
 -->
-#### 限制
+#### 限制  {#limitations}
 
-目前无法创建覆盖现有 `kubectl` 命令的插件。
+目前无法创建覆盖现有 `kubectl` 命令或扩展除 `create` 命令之外的插件。
 例如，创建一个插件 `kubectl-version` 将导致该插件永远不会被执行，
 因为现有的 `kubectl version` 命令总是优先于它执行。
 由于这个限制，也不可能使用插件将新的子命令添加到现有的 `kubectl` 命令中。
-例如，通过将插件命名为 `kubectl-create-foo` 来添加子命令 `kubectl create foo` 将导致该插件被忽略。
+例如，通过将插件命名为 `kubectl-attach-vm` 来添加子命令 `kubectl attach vm` 将导致该插件被忽略。
 
 对于任何试图这样做的有效插件 `kubectl plugin list` 的输出中将显示警告。
 
@@ -106,7 +122,7 @@ It is currently not possible to create plugins that overwrite existing `kubectl`
 
 You can write a plugin in any programming language or script that allows you to write command-line commands.
 -->
-## 编写 kubectl 插件
+## 编写 kubectl 插件  {#writing-kubectl-plugins}
 
 你可以用任何编程语言或脚本编写插件，允许你编写命令行命令。
 
@@ -125,7 +141,7 @@ install the plugin executable somewhere in your `PATH`.
 <!--
 ### Example plugin
 -->
-### 示例插件
+### 示例插件  {#example-plugin}
 
 ```
 #!/bin/bash
@@ -150,7 +166,7 @@ echo "I am a plugin named kubectl-foo"
 <!--
 ### Using a plugin
 -->
-### 使用插件
+### 使用插件  {#using-a-plugin}
 
 <!--
 To use a plugin, make the plugin executable:
@@ -229,7 +245,7 @@ Additionally, the first argument that is passed to a plugin will always be the f
 As seen in the example above, a plugin determines the command path that it will implement based on its filename. Every sub-command in the command path that a plugin targets, is separated by a dash (`-`).
 For example, a plugin that wishes to be invoked whenever the command `kubectl foo bar baz` is invoked by the user, would have the filename of `kubectl-foo-bar-baz`.
 -->
-### 命名插件
+### 命名插件  {#naming-a-plugin}
 
 如上面的例子所示，插件根据文件名确定要实现的命令路径，插件所针对的命令路径中的每个子命令都由破折号（`-`）分隔。
 例如，当用户调用命令 `kubectl foo bar baz` 时，希望调用该命令的插件的文件名为 `kubectl-foo-bar-baz`。
@@ -237,7 +253,7 @@ For example, a plugin that wishes to be invoked whenever the command `kubectl fo
 <!--
 #### Flags and argument handling
 -->
-#### 参数和标记处理
+#### 参数和标记处理  {#flags-and-argument-handling}
 
 <!--
 The plugin mechanism does _not_ create any custom, plugin-specific values or environment variables for a plugin process.
@@ -318,7 +334,7 @@ As you can see, your plugin was found based on the `kubectl` command specified b
 Although the `kubectl` plugin mechanism uses the dash (`-`) in plugin filenames to separate the sequence of sub-commands processed by the plugin, it is still possible to create a plugin
 command containing dashes in its commandline invocation by using underscores (`_`) in its filename.
 -->
-#### 带有破折号和下划线的名称
+#### 带有破折号和下划线的名称  {#names-with-dashes-and-underscores}
 
 虽然 `kubectl` 插件机制在插件文件名中使用破折号（`-`）分隔插件处理的子命令序列，
 但是仍然可以通过在文件名中使用下划线（`_`）来创建命令行中包含破折号的插件命令。
@@ -373,7 +389,7 @@ It is possible to have multiple plugins with the same filename in different loca
 For example, given a `PATH` with the following value: `PATH=/usr/local/bin/plugins:/usr/local/bin/moreplugins`, a copy of plugin `kubectl-foo` could exist in `/usr/local/bin/plugins` and `/usr/local/bin/moreplugins`,
 such that the output of the `kubectl plugin list` command is:
 -->
-#### 命名冲突和弊端
+#### 命名冲突和弊端  {#name-conflicts-and-overshadowing}
 
 可以在 `PATH` 的不同位置提供多个文件名相同的插件，
 例如，给定一个 `PATH` 为: `PATH=/usr/local/bin/plugins:/usr/local/bin/moreplugins`，
@@ -413,7 +429,7 @@ A way to resolve this issue is to ensure that the location of the plugin that yo
 
 There is another kind of overshadowing that can occur with plugin filenames. Given two plugins present in a user's `PATH`: `kubectl-foo-bar` and `kubectl-foo-bar-baz`, the `kubectl` plugin mechanism will always choose the longest possible plugin name for a given user command. Some examples below, clarify this further:
 -->
-#### 调用最长的可执行文件名
+#### 调用最长的可执行文件名  {#invocation-of-the-longest-executable-filename}
 
 对于插件文件名而言还有另一种弊端，给定用户 `PATH` 中的两个插件 `kubectl-foo-bar` 和 `kubectl-foo-bar-baz`，
 `kubectl` 插件机制总是为给定的用户命令选择尽可能长的插件名称。下面的一些例子进一步的说明了这一点：
@@ -471,7 +487,7 @@ kubectl-parent-subcommand-subsubcommand
 
 You can use the aforementioned `kubectl plugin list` command to ensure that your plugin is visible by `kubectl`, and verify that there are no warnings preventing it from being called as a `kubectl` command.
 -->
-### 检查插件警告
+### 检查插件警告  {#checking-for-plugin-warnings}
 
 你可以使用前面提到的 `kubectl plugin list` 命令来确保你的插件可以被 `kubectl` 看到，
 并且验证没有警告防止它被称为 `kubectl` 命令。
@@ -526,7 +542,7 @@ an example usage of the tools provided in the CLI Runtime repo.
 If you have developed a plugin for others to use, you should consider how you
 package it, distribute it and deliver updates to your users.
 -->
-## 分发 kubectl 插件
+## 分发 kubectl 插件  {#distributing-kubectl-plugins}
 
 如果你开发了一个插件给别人使用，你应该考虑如何为其封装打包、如何分发软件
 以及将来的更新到用户。
@@ -591,9 +607,9 @@ installs easier.
   [detailed example](https://github.com/kubernetes/sample-cli-plugin) of a
   plugin written in Go.
   In case of any questions, feel free to reach out to the
-  [SIG CLI team](https://github.com/kubernetes/community/tree/master/sig-cli).
+  [SIG CLI team](https://github.com/kubernetes/community/tree/main/sig-cli).
 * Read about [Krew](https://krew.dev/), a package manager for kubectl plugins.
 -->
 * 查看 CLI 插件库示例，查看用 Go 编写的插件的[详细示例](https://github.com/kubernetes/sample-cli-plugin)
-* 如有任何问题，请随时联系 [SIG CLI 团队](https://github.com/kubernetes/community/tree/master/sig-cli)
+* 如有任何问题，请随时联系 [SIG CLI 团队](https://github.com/kubernetes/community/tree/main/sig-cli)
 * 了解 [Krew](https://krew.dev/)，一个 kubectl 插件管理器。

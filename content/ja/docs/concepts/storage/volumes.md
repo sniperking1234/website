@@ -76,7 +76,7 @@ metadata:
   name: test-ebs
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-container
     volumeMounts:
     - mountPath: /test-ebs
@@ -163,7 +163,7 @@ metadata:
   name: test-cinder
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-cinder-container
     volumeMounts:
     - mountPath: /test-cinder
@@ -213,10 +213,10 @@ spec:
         name: log-config
         items:
           - key: log_level
-            path: log_level
+            path: log_level.conf
 ```
 
-`log-config`ConfigMapはボリュームとしてマウントされ、その`log_level`エントリに格納されているすべてのコンテンツは、パス`/etc/config/log_level`のPodにマウントされます。
+`log-config`ConfigMapはボリュームとしてマウントされ、その`log_level`エントリに格納されているすべてのコンテンツは、パス`/etc/config/log_level.conf`のPodにマウントされます。
 このパスはボリュームの`mountPath`と`log_level`をキーとする`path`から派生することに注意してください。
 
 
@@ -274,7 +274,7 @@ metadata:
   name: test-pd
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-container
     volumeMounts:
     - mountPath: /cache
@@ -293,8 +293,6 @@ spec:
 {{< note >}}
 Kubernetesホストがアクセスできるように、事前にこれらのLUN(ボリューム)をターゲットWWNに割り当ててマスクするようにFCSANゾーニングを構成する必要があります。
 {{< /note >}}
-
-詳細については[fibre channelの例](https://github.com/kubernetes/examples/tree/master/staging/volumes/fibre_channel)を参照してください。
 
 ### flocker (非推奨) {#flocker}
 
@@ -349,7 +347,7 @@ metadata:
   name: test-pd
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-container
     volumeMounts:
     - mountPath: /test-pd
@@ -507,7 +505,7 @@ metadata:
   name: test-pd
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-container
     volumeMounts:
     - mountPath: /test-pd
@@ -536,7 +534,7 @@ metadata:
 spec:
   containers:
   - name: test-webserver
-    image: k8s.gcr.io/test-webserver:latest
+    image: registry.k8s.io/test-webserver:latest
     volumeMounts:
     - mountPath: /var/local/aaa
       name: mydir
@@ -570,8 +568,6 @@ iSCSIの特徴として、複数のコンシューマーから同時に読み取
 つまり、ボリュームにあらかじめデータセットを入れておき、必要な数のPodから並行してデータを提供することができます。
 残念ながら、iSCSIボリュームは1つのコンシューマによってのみ読み書きモードでマウントすることができます。
 同時に書き込みを行うことはできません。
-
-詳細については[iSCSIの例](https://github.com/kubernetes/examples/tree/master/volumes/iscsi)を参照してください。
 
 ### local
 
@@ -614,7 +610,7 @@ spec:
 ```
 
 ローカルボリュームを使用する場合は、PersistentVolume `nodeAffinity`を設定する必要があります。
-KubernetesのスケジューラはPersistentVolume `nodeAffinity`を使用して、これらのPodを正しいノードにスケジューリングします。
+KubernetesのスケジューラーはPersistentVolume `nodeAffinity`を使用して、これらのPodを正しいノードにスケジューリングします。
 
 PersistentVolume `volumeMode`を(デフォルト値の「Filesystem」ではなく)「Block」に設定して、ローカルボリュームをrawブロックデバイスとして公開できます。
 
@@ -640,12 +636,10 @@ NFSは複数のライターによって同時にマウントすることがで�
 使用する前に、共有をエクスポートしてNFSサーバーを実行する必要があります。
 {{< /note >}}
 
-詳細については[NFSの例](https://github.com/kubernetes/examples/tree/master/staging/volumes/nfs)を参照してください。
-
 ### persistentVolumeClaim {#persistentvolumeclaim}
 
 `PersistentVolumeClaim`ボリュームは[PersistentVolume](/ja/docs/concepts/storage/persistent-volumes/)をPodにマウントするために使用されます。
-PersistentVolumeClaimは、ユーザが特定のクラウド環境の詳細を知らなくても、耐久性のあるストレージ(GCE永続ディスクやiSCSIボリュームなど)を「要求」するための方法です。
+PersistentVolumeClaimは、ユーザーが特定のクラウド環境の詳細を知らなくても、耐久性のあるストレージ(GCE永続ディスクやiSCSIボリュームなど)を「要求」するための方法です。
 
 詳細については[PersistentVolume](/ja/docs/concepts/storage/persistent-volumes/)を参照してください。
 
@@ -666,7 +660,7 @@ metadata:
   name: test-portworx-volume-pod
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-container
     volumeMounts:
     - mountPath: /mnt
@@ -682,8 +676,6 @@ spec:
 {{< note >}}
 Podで使用する前に、`pxvol`という名前の既存のPortworxVolumeがあることを確認してください。
 {{< /note >}}
-
-詳細については[Portworxボリューム](https://github.com/kubernetes/examples/tree/master/staging/volumes/portworx/README.md)の例を参照してください。
 
 ### 投影
 
@@ -732,7 +724,7 @@ RBDの特徴として、複数のコンシューマーから同時に読み取�
 
 * Ceph CSIドライバー(`rbd.csi.ceph.com`)v3.5.0以降をKubernetesクラスターにインストールする必要があります。
 * CSIドライバーの動作に必要なパラメーターとして`clusterID`フィールドがありますが、ツリー内StorageClassには`monitors`フィールドがあるため、Kubernetesストレージ管理者はCSI config mapでモニターハッシュ(例：`#echo -n '<monitors_string>' | md5sum`)に基づいたclusterIDを作成し、モニターをこのclusterID設定の下に保持しなければなりません。
-* また、ツリー内Storageclassの`adminId`の値が`admin`と異なる場合、ツリー内Storageclassに記載されている`adminSecretName`に`adminId`パラメーター値のbase64値をパッチしなければなりませんが、それ以外はスキップすることが可能です。
+* また、ツリー内StorageClassの`adminId`の値が`admin`と異なる場合、ツリー内StorageClassに記載されている`adminSecretName`に`adminId`パラメーター値のbase64値をパッチしなければなりませんが、それ以外はスキップすることが可能です。
 {{< /note >}}
 
 ### secret
@@ -848,7 +840,7 @@ metadata:
   name: test-vmdk
 spec:
   containers:
-  - image: k8s.gcr.io/test-webserver
+  - image: registry.k8s.io/test-webserver
     name: test-container
     volumeMounts:
     - mountPath: /test-vmdk
@@ -899,13 +891,13 @@ spec:
 
 Portworxの`CSIMigration`機能が追加されましたが、Kubernetes 1.23ではAlpha状態であるため、デフォルトで無効になっています。
 すべてのプラグイン操作を既存のツリー内プラグインから`pxd.portworx.com`Container Storage Interface(CSI)ドライバーにリダイレクトします。
-[Portworx CSIドライバー](https://docs.portworx.com/portworx-install-with-kubernetes/storage-operations/csi/)をクラスターにインストールする必要があります。
+[Portworx CSIドライバー](https://docs.portworx.com/portworx-enterprise/operations/operate-kubernetes/storage-operations/csi)をクラスターにインストールする必要があります。
 この機能を有効にするには、kube-controller-managerとkubeletで`CSIMigrationPortworx=true`を設定します。
 
 ## subPathの使用 {#using-subpath}
 
 1つのPodで複数の用途に使用するために1つのボリュームを共有すると便利な場合があります。
-`volumeMounts.subPath`プロパティは、ルートではなく、参照されるボリューム内のサブパスを指定します。
+`volumeMounts[*].subPath`プロパティは、ルートではなく、参照されるボリューム内のサブパスを指定します。
 
 次の例は、単一の共有ボリュームを使用してLAMPスタック(Linux Apache MySQL PHP)でPodを構成する方法を示しています。
 このサンプルの`subPath`構成は、プロダクションでの使用にはお勧めしません。
@@ -997,13 +989,13 @@ spec:
 
 CSIとFlexVolumeはどちらも、ボリュームプラグインをKubernetesコードベースとは独立して開発し、拡張機能としてKubernetesクラスターにデプロイ(インストール)することを可能にします。
 
-ツリー外のボリュームプラグインの作成を検討しているストレージベンダーについては、[ボリュームプラグインのFAQ](https://github.com/kubernetes/community/blob/master/sig-storage/volume-plugin-faq.md)を参照してください。
+ツリー外のボリュームプラグインの作成を検討しているストレージベンダーについては、[ボリュームプラグインのFAQ](https://github.com/kubernetes/community/blob/main/sig-storage/volume-plugin-faq.md)を参照してください。
 
 ### csi
 
-[Container Storage Interface](https://github.com/container-storage-interface/spec/blob/master/spec.md)(CSI)は、コンテナオーケストレーションシステム(Kubernetesなど)の標準インターフェイスを定義して、任意のストレージシステムをコンテナワークロードに公開します。
+[Container Storage Interface](https://github.com/container-storage-interface/spec/blob/master/spec.md)(CSI)は、コンテナオーケストレーションシステム(Kubernetesなど)の標準インターフェースを定義して、任意のストレージシステムをコンテナワークロードに公開します。
 
-詳細については[CSI design proposal](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/container-storage-interface.md)を参照してください。
+詳細については[CSI design proposal](https://github.com/kubernetes/community/blob/main/contributors/design-proposals/storage/container-storage-interface.md)を参照してください。
 
 {{< note >}}
 CSI仕様バージョン0.2および0.3のサポートは、Kubernetes v1.13で非推奨になり、将来のリリースで削除される予定です。
@@ -1069,7 +1061,7 @@ FlexVolumeは、ストレージドライバーとのインターフェースにe
 
 Podは`flexVolume`ツリー内ボリュームプラグインを通してFlexVolumeドライバーと対話します。
 
-詳細については[FlexVolumeのREADME](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-storage/flexvolume.md#readme)を参照してください。
+詳細については[FlexVolumeのREADME](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-storage/flexvolume.md#readme)を参照してください。
 
 {{< note >}}
 FlexVolumeは非推奨です。ツリー外のCSIドライバーを使用することは、外部ストレージをKubernetesと統合するための推奨される方法です。
@@ -1081,7 +1073,7 @@ FlexVolumeドライバーのメンテナーは、CSIドライバーを実装し�
 
 マウントの伝播により、コンテナによってマウントされたボリュームを、同じPod内の他のコンテナ、または同じノード上の他のPodに共有できます。
 
-ボリュームのマウント伝播は、`Container.volumeMounts`の`mountPropagation`フィールドによって制御されます。その値は次のとおりです。
+ボリュームのマウント伝播は、`containers[*].volumeMounts`の`mountPropagation`フィールドによって制御されます。その値は次のとおりです。
 
 * `None` - このボリュームマウントは、ホストによってこのボリュームまたはそのサブディレクトリにマウントされる後続のマウントを受け取りません。同様に、コンテナによって作成されたマウントはホストに表示されません。これがデフォルトのモードです。
 
